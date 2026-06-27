@@ -1,0 +1,17 @@
+{
+  "name": "each",
+  "version": "0.2.0",
+  "private": true,
+  "description": "AXIOM — CRM + ERP + HR + Accounting for the startup",
+  "scripts": {
+    "dev": "wrangler pages dev . --compatibility-date=2025-06-27",
+    "deploy": "wrangler pages deploy . --branch=main",
+    "db:create": "wrangler d1 create axiom-db",
+    "db:migrate": "wrangler d1 migrations apply axiom-db",
+    "db:migrate:local": "wrangler d1 migrations apply axiom-db --local",
+    "db:execute": "wrangler d1 execute axiom-db"
+  },
+  "devDependencies": {
+    "wrangler": "^4.105.0"
+  }
+}

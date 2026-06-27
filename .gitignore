@@ -1,0 +1,29 @@
+# Dependencies + build artifacts
+node_modules/
+package-lock.json
+.git/
+
+# Cloudflare / Wrangler
+.wrangler/
+.dev.vars
+
+# Environment
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Local test files
+.test-*.js

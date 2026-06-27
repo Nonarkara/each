@@ -1,0 +1,13 @@
+name = "each"
+pages_build_output_dir = "."
+compatibility_date = "2025-06-27"
+
+# D1 database binding — available in Pages Functions as env.DB
+[[d1_databases]]
+binding = "DB"
+database_name = "axiom-db"
+database_id = "aabeba19-fe64-4eaa-bad3-83b4dc533d34"
+migrations_dir = "migrations"
+
+[observability]
+enabled = true

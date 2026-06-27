@@ -1,115 +1,174 @@
-# AXIOM — the startup superapp
+# AXIOM
 
-CRM + ERP + HR + Accounting for the startup, on the AXIOM DNA. One spine, four pillars.
+> **CRM + ERP + HR + Accounting for the startup.**  
+> One spine. Four pillars. Nothing else.
 
-Live at **https://each.nonarkara.org**
+[![Cloudflare Pages](https://img.shields.io/badge/Deployed%20on-Cloudflare%20Pages-F38020?logo=cloudflare&logoColor=white)](https://each.nonarkara.org)
+[![Cloudflare D1](https://img.shields.io/badge/Database-Cloudflare%20D1-2D8A4E?logo=cloudflare&logoColor=white)](#architecture)
+[![Vanilla JS](https://img.shields.io/badge/Frontend-Vanilla%20JS-191712)](#files)
+[![License: MIT](https://img.shields.io/badge/License-MIT-191712)](#license)
 
-This version runs in the browser, persists to a **Cloudflare D1** database via **Cloudflare Pages Functions**, and falls back to browser `localStorage` when offline or opened locally.
+<p align="center">
+  <img src="./assets/axiom-spine.svg" alt="AXIOM spine and four pillars" width="720"/>
+</p>
+
+---
+
+## Why AXIOM
+
+Most business software is a frankenstein of foreign runtimes, bloated modules, and features you will never use. Founders do not need a dashboard for dashboards. They need to know three things: **cash, people, and what is shipping**. Everything else is noise.
+
+AXIOM strips it down:
+
+- **One spine.** The cockpit, routing, and data layer are shared by every pillar.
+- **Four pillars.** Finances, People, Projects, Accounting. No more, no less.
+- **One bold move per surface.** Runway is the hero number. The rest is context.
+- **No framework fatigue.** Vanilla JS and CSS. No build step in the way of reading the code.
+
+If you are tired of stitching EspoCRM, ERPNext, Frappe HR, and a separate accounting app together, AXIOM is the opposite direction: a single, opinionated workspace that a solo founder can actually run.
+
+---
+
+## The four pillars
+
+| Pillar | Discipline | What it gives you |
+|---|---|---|
+| **Finances** | ERP | Cash, burn, runway, CapEx/OpEx split, revenue pipeline, transparent ledger |
+| **People** | HR | AI operators + human staff, both treated as monthly OpEx |
+| **Projects** | CRM | Kanban, checklists, notes, deal status, AI reads on outstanding revenue |
+| **Accounting** | Books | Chart of accounts, double-entry journal, balance sheet, P&L |
+
+The investor dossier is the fifth surface, but it is not a pillar — it is the **export**. One page, one print button.
+
+---
+
+## Architecture
+
+```mermaid
+flowchart TB
+    subgraph Client
+        A[AXIOM Frontend<br/>vanilla JS + CSS]
+    end
+    subgraph Edge
+        B["/api/state"]
+        C["/api/sync-accounting"]
+    end
+    subgraph Database
+        D[(Cloudflare D1<br/>SQLite)]
+    end
+
+    A <-->|fetch JSON| B
+    A -->|POST state| B
+    A -->|trigger sync| C
+    B <-->|read / write| D
+    C <-->|read / write| D
+```
+
+- **Frontend:** Cloudflare Pages serves static HTML/CSS/JS.
+- **Backend:** Cloudflare Pages Functions handle `/api/state` and `/api/sync-accounting`.
+- **Database:** Cloudflare D1 stores one `workspace_state` row per workspace.
+- **Offline fallback:** When served from `file://` or offline, the app falls back to browser `localStorage`.
+- **Security:** Add Cloudflare Access on `each.nonarkara.org` for zero-code authentication, or set an `API_KEY` secret for token-level protection.
+
+---
 
 ## Quick start
 
 ```bash
-cd /Users/nonarkara/Projects/CRM2
+git clone https://github.com/Nonarkara/each.git
+cd each
 npm install
-npm run dev          # local dev server with D1 bindings
+npm run dev          # http://localhost:8788
 ```
 
-Open `http://localhost:8788`.
+No bundler. No transpiler. The dev server is Wrangler with a local D1 binding.
 
-Try this on the first screen: registration number **`0105566000000`** → the AI fills the company. Scan the paperwork → founding capital lands. Connect Gmail → receipts become expenses.
+**First-screen demo:** registration number **`0105566000000`** → AI autofills the company → scan the paperwork → founding capital lands → connect Gmail → receipts become expenses.
 
-## Architecture
+For day-to-day use, read [`MANUAL.md`](./MANUAL.md).
 
-```
-┌─────────────────────────────────────┐
-│  AXIOM frontend (vanilla JS + CSS)  │  <- Cloudflare Pages + each.nonarkara.org
-└──────────────┬──────────────────────┘
-               │ fetch /api/state
-┌──────────────▼──────────────────────┐
-│  Cloudflare Pages Functions         │  <- /api/state, /api/sync-accounting
-└──────────────┬──────────────────────┘
-               │ D1 binding
-┌──────────────▼──────────────────────┐
-│  Cloudflare D1 (SQLite)             │  <- workspace_state table
-└─────────────────────────────────────┘
-```
+---
 
-For a human-friendly guide, see [`MANUAL.md`](./MANUAL.md).
+## Deploy your own
 
-## The four pillars
-
-- **Onboarding.** Register → AI autofill from public records → scan registration paperwork (Tax ID + paid-in capital) → connect Gmail → expenses flow in. Done.
-- **Finances (ERP).** Cash, monthly burn, runway (the oversized figure — the Divine Move), CapEx vs OpEx split, runway projection chart, seed-stage benchmarks, OKR (not KPI), and a transparent ledger.
-- **People (HR).** AI operators and human staff, both framed as employees with monthly cost. Both feed OpEx directly into Finances.
-- **Projects (CRM).** Kanban with drag-and-drop, checklists, file logs, notes, and AI reads.
-- **Accounting.** Chart of accounts, double-entry journal, balance sheet, and profit & loss. One click syncs capital, expenses, and project revenue into the journal.
-- **Investor dossier.** Editorial-mode one-pager. One click prints.
-
-## Deploy to production
-
-Prerequisites: Node.js, a Cloudflare account, and `nonarkara.org` configured in Cloudflare.
+You need a Cloudflare account and a domain managed by Cloudflare.
 
 ```bash
-# 1. Login (one-time)
 npx wrangler login
-
-# 2. Create the D1 database (already done for axiom-db; skip if reusing)
-npx wrangler d1 create axiom-db
-
-# 3. Apply migrations
-npm run db:migrate
-
-# 4. Optional: set an API key secret if you want token-level protection.
-#    If you use Cloudflare Access on the domain, you can skip this.
-npx wrangler pages secret put API_KEY
-
-# 5. Deploy
-npm run deploy
+npm run db:migrate   # create the workspace_state table
+npm run deploy       # push to Cloudflare Pages
 ```
 
-After deploy, open the Cloudflare dashboard → Workers & Pages → `each` → Custom domains → add `each.nonarkara.org`.
+Then in the Cloudflare dashboard:
 
-## Environment & secrets
+1. Go to **Workers & Pages → each → Custom domains**.
+2. Add `each.nonarkara.org` (or your own domain).
+3. Optional: enable **Cloudflare Access** to gate the site.
 
-| Secret / Var | Purpose |
-|---|---|
-| `API_KEY` | Optional bearer token for `/api/*`. The frontend will prompt for it if the server returns 401. |
+For an optional API-key layer:
 
-Do not commit secrets. They are managed by Wrangler and Cloudflare.
+```bash
+npx wrangler pages secret put API_KEY
+```
+
+The frontend will prompt for the key if the server returns `401`.
+
+---
+
+## Design discipline
+
+This repo follows the **AXIOM DNA**:
+
+- One bold move per surface.
+- Blue enclosed for identity; red bare for signal.
+- Warm paper `#f6f5f2`, square corners, hairline cell grids.
+- Weight ceiling 600, tabular figures, small uppercase labels.
+- No gradients, shadows, glows, rounded corners, or emoji.
+
+The code follows the same rule: the smallest number of files and concepts that still works.
+
+---
 
 ## Files
 
 ```
-index.html              shell, fonts, script load order
-css/axiom.css           the AXIOM design system (tokens → components)
-js/data.js              persistence + seed + simulated registry/Gmail
-js/ui.js                tiny DOM + component helpers
-js/sync.js              cloud sync indicator + remote state load/save
-js/onboarding.js        register → AI autofill → scan → Gmail
-js/erp.js               Finances pillar + the calc engine
-js/hr.js                People pillar
-js/crm.js               Projects pillar
-js/accounting.js        Accounting pillar
-js/app.js               cockpit, routing, investor dossier, export/import
-js/api.js               in-browser CRUD shim (used by pillar modules)
-functions/api/state.js  GET/POST workspace state
-functions/api/sync-accounting.js  server-side accounting sync
-functions/lib/accounting-sync.js  shared accounting logic for backend
-migrations/0001_init.sql          D1 schema
-wrangler.toml           Cloudflare Pages + D1 config
-package.json            npm scripts + wrangler dependency
-MANUAL.md               human user guide
+index.html                shell and script load order
+css/axiom.css             AXIOM design system
+js/data.js                persistence, seed data, simulated integrations
+js/ui.js                  DOM helpers
+js/sync.js                cloud sync indicator + remote state client
+js/onboarding.js          company registration and setup flow
+js/erp.js                 Finances pillar
+js/hr.js                  People pillar
+js/crm.js                 Projects pillar
+js/accounting.js          Accounting pillar
+js/app.js                 cockpit, routing, dossier, export/import
+functions/api/state.js    GET/POST workspace state
+functions/api/sync-accounting.js   server-side accounting sync
+functions/lib/accounting-sync.js   shared accounting logic
+migrations/0001_init.sql  D1 schema
+wrangler.toml             Cloudflare config
+package.json              scripts and wrangler dependency
+MANUAL.md                 human user guide
 ```
 
-## AXIOM DNA compliance
-
-One bold move per surface (the runway hero). Blue enclosed for identity; red bare for signal. Warm paper `#f6f5f2`, square corners, hairline cell grids, weight ceiling 600, tabular figures, labels small/letterspaced/uppercase/grey, the red pulse for live. No gradients, shadows, glows, rounded corners, or emoji.
+---
 
 ## Roadmap
 
-- **Phase 0 — done.** Prototype. AXIOM DNA applied. Four pillars working.
-- **Phase 1 — done.** Cloudflare Pages + D1 backend, custom domain, human manual.
-- **Phase 2.** Real AI company lookup, Gmail OAuth, document OCR.
-- **Phase 3.** Multi-workspace, user accounts, payroll, invoicing, tax export.
+- [x] Prototype with four working pillars
+- [x] Cloudflare Pages + D1 backend
+- [x] Custom domain + deploy pipeline
+- [ ] Real AI company lookup
+- [ ] Real Gmail OAuth + receipt ingestion
+- [ ] Document OCR for registration paperwork
+- [ ] Multi-workspace + user accounts
+- [ ] Payroll, invoicing, tax export
+
+---
+
+## License
+
+[MIT](./LICENSE)
 
 > Beauty is what remains after everything that does not work is gone.

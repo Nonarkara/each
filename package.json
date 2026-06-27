@@ -1,8 +1,13 @@
 {
   "name": "each",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "AXIOM — CRM + ERP + HR + Accounting for the startup",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nonarkara/each.git"
+  },
+  "homepage": "https://each.nonarkara.org",
   "scripts": {
     "dev": "wrangler pages dev . --compatibility-date=2025-06-27",
     "deploy": "wrangler pages deploy . --branch=main",
@@ -12,6 +17,6 @@
     "db:execute": "wrangler d1 execute axiom-db"
   },
   "devDependencies": {
-    "wrangler": "^4.105.0"
+    "wrangler": "^4.0.0"
   }
 }

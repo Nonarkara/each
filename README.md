@@ -148,6 +148,7 @@ css/axiom.css             AXIOM design system
 js/data.js                persistence, seed data, simulated integrations
 js/ui.js                  DOM helpers
 js/sync.js                cloud sync indicator + remote state client
+js/api.js                 in-browser CRUD shim used by pillar modules
 js/onboarding.js          company registration and setup flow
 js/erp.js                 Finances pillar
 js/hr.js                  People pillar
@@ -160,7 +161,9 @@ functions/lib/accounting-sync.js   shared accounting logic
 migrations/0001_init.sql  D1 schema
 wrangler.toml             Cloudflare config
 package.json              scripts and wrangler dependency
+assets/axiom-spine.svg    repo hero diagram
 MANUAL.md                 human user guide
+LICENSE                   MIT
 ```
 
 ---

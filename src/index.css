@@ -1,0 +1,76 @@
+@import "tailwindcss";
+@import "@fontsource/josefin-sans/600.css";
+@import "@fontsource/josefin-sans/700.css";
+@import "@fontsource/source-sans-3/400.css";
+@import "@fontsource/source-sans-3/600.css";
+@import "@fontsource/jetbrains-mono/500.css";
+
+@theme {
+  --font-display: "Josefin Sans", system-ui, sans-serif;
+  --font-body: "Source Sans 3", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-paper: #f6f5f2;
+  --color-panel: #ffffff;
+  --color-ink: #191712;
+  --color-ink-2: #6f6c63;
+  --color-ink-3: #a9a59a;
+  --color-line: #e7e5dd;
+  --color-line-2: #d2cfc5;
+  --color-amber: #f59e0b;
+
+  --text-display: 32px;
+  --text-body: 14px;
+  --text-micro: 11px;
+
+  --radius-none: 0px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-amber);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-amber);
+  outline-offset: 2px;
+}
+
+@media print {
+  header,
+  nav,
+  button {
+    display: none !important;
+  }
+  main {
+    max-width: none;
+    padding: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

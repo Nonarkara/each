@@ -93,10 +93,12 @@ For day-to-day use, read [`MANUAL.md`](./MANUAL.md).
 
 You need a Cloudflare account and a domain managed by Cloudflare.
 
+### One-time setup
+
 ```bash
 npx wrangler login
 npm run db:migrate   # create the workspace_state table
-npm run deploy       # push to Cloudflare Pages
+npm run deploy       # first deploy to Cloudflare Pages
 ```
 
 Then in the Cloudflare dashboard:
@@ -105,7 +107,16 @@ Then in the Cloudflare dashboard:
 2. Add `each.nonarkara.org` (or your own domain).
 3. Optional: enable **Cloudflare Access** to gate the site.
 
-For an optional API-key layer:
+### Continuous deployment
+
+A GitHub Actions workflow is included (`.github/workflows/deploy.yml`). It deploys on every push to `main` once you add two repository secrets:
+
+- `CLOUDFLARE_API_TOKEN` — create one at **Cloudflare dashboard → My Profile → API Tokens** with `Cloudflare Pages:Edit` and `Zone:Read` permissions.
+- `CLOUDFLARE_ACCOUNT_ID` — find it on the right sidebar of any Cloudflare dashboard page.
+
+Add them under **Settings → Secrets and variables → Actions** in the GitHub repo.
+
+### Optional API-key layer
 
 ```bash
 npx wrangler pages secret put API_KEY

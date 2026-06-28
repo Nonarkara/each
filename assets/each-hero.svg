@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" width="900" height="520">
+  <rect width="900" height="520" fill="#f6f5f2"/>
+  <!-- hairline grid -->
+  <g stroke="#e7e5dd" stroke-width="1">
+    <line x1="0" y1="130" x2="900" y2="130"/>
+    <line x1="0" y1="260" x2="900" y2="260"/>
+    <line x1="0" y1="390" x2="900" y2="390"/>
+    <line x1="150" y1="0" x2="150" y2="520"/>
+    <line x1="300" y1="0" x2="300" y2="520"/>
+    <line x1="600" y1="0" x2="600" y2="520"/>
+    <line x1="750" y1="0" x2="750" y2="520"/>
+  </g>
+  <!-- central spine -->
+  <rect x="435" y="90" width="30" height="340" fill="#191712"/>
+  <!-- top cap -->
+  <rect x="415" y="70" width="70" height="20" fill="#191712"/>
+  <!-- red signal -->
+  <circle cx="450" cy="45" r="10" fill="#A8322B"/>
+  <!-- four pillars -->
+  <rect x="210" y="130" width="210" height="70" fill="#26243F"/>
+  <rect x="210" y="245" width="210" height="70" fill="#26243F"/>
+  <rect x="480" y="130" width="210" height="70" fill="#26243F"/>
+  <rect x="480" y="245" width="210" height="70" fill="#26243F"/>
+  <!-- connectors -->
+  <rect x="420" y="160" width="15" height="10" fill="#191712"/>
+  <rect x="420" y="275" width="15" height="10" fill="#191712"/>
+  <rect x="465" y="160" width="15" height="10" fill="#191712"/>
+  <rect x="465" y="275" width="15" height="10" fill="#191712"/>
+  <!-- base / foundation -->
+  <rect x="360" y="430" width="180" height="12" fill="#191712"/>
+</svg>

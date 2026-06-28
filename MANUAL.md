@@ -2,6 +2,21 @@
 
 Each is a simple all-in-one workspace for a small startup: **CRM + ERP + HR + Accounting**. Made by [Axiom](https://axiom.nonarkara.org). It runs in your browser and saves your data to the cloud when you are online.
 
+## How to think about Each
+
+Each turns your startup into a LEGO game:
+
+- **Projects** are the models you want to build.
+- **Resources** are the blocks you need.
+- **Expenses** are the blocks you buy.
+- **Income** is the blocks that come back when someone buys your finished model.
+- **Cash** is the blocks currently in your hand.
+- **Credit** is borrowing blocks now and paying them back later, usually with interest.
+
+Some blocks are **CapEx** — durable helpers and equipment you reuse for future models. Some blocks are **OpEx** — the daily fuel that keeps the workshop open. The game ends when you run out of blocks to keep building. The goal is to finish models that fund bigger models.
+
+Each tracks every block so you always know whether you can keep building.
+
 ## First visit
 
 1. Open `https://each.nonarkara.org`.

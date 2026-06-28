@@ -11,7 +11,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-191712)](./LICENSE)
 
 <p align="center">
-  <img src="./assets/axiom-spine.svg" alt="Each — one spine, four pillars" width="720"/>
+  <img src="./assets/each-hero.svg" alt="Each — one spine, four pillars" width="820"/>
 </p>
 
 ---
@@ -31,9 +31,74 @@ If you are tired of stitching EspoCRM, ERPNext, Frappe HR, and a separate accoun
 
 ---
 
+## Design philosophy
+
+Each is built on the [Axiom Design Core](https://github.com/Nonarkara/Axiom-Design-Core) — a discipline that treats commercial software the same way a modern architect treats a building: every element must be load-bearing, every surface must communicate, and nothing exists without purpose.
+
+### Structure like architecture
+
+Finance is structure. A startup is a building under construction: the foundation is capital, the walls are people and projects, and the roof is revenue. Each renders this structure explicitly:
+
+- **Founding capital** = the foundation you pour before you build.
+- **Expenses** = the materials and labor you buy to keep construction moving.
+- **Revenue** = the floors you finish and sell or lease.
+- **Runway** = how many months the building can stand before it needs the next payment.
+
+The architecture is honest. There are no hidden columns. The balance sheet and P&L are not magic — they are the same structure, viewed from two angles.
+
+### Selling like a human
+
+Sales is not a pipeline stage. It is a relationship. Each's CRM pillar is built from psychology and anthropology: people buy from people they trust, and trust is earned through consistent follow-through.
+
+- Projects live on a Kanban because status is easier to read than lists.
+- AI reads surface the next human action, not vanity metrics.
+- The investor dossier tells a story with numbers, because investors, like customers, decide with narrative first and math second.
+
+### Calculation like communication design
+
+A great spreadsheet is a bad interface. A great interface reveals the calculation without showing the formula. Each uses communication design principles — hierarchy, contrast, grouping, and white space — so the founder sees the answer before reading the label.
+
+- Runway is the largest number on the screen.
+- Red appears only when something is genuinely at risk.
+- Tables are dense, but never crowded.
+- Every label is small, uppercase, and spaced — so the numbers do the talking.
+
+### Digital like a game
+
+Finance should feel like a LEGO set, not a tax audit. Each turns business into a game of blocks:
+
+- **Projects** are the models you want to build.
+- **Resources** are the blocks you need.
+- **Expenses** are the blocks you buy.
+- **Income** is the blocks that come back when someone wants what you built.
+- **Cash** is the blocks currently in your hand.
+- **Credit** is borrowing blocks now and promising to return them later — with interest.
+
+You lose when you have no blocks left to keep building. You win when each finished model funds the next one.
+
+Some blocks are **CapEx** — durable assets and helpers that keep building future models. Some blocks are **OpEx** — the glue, rent, and daily fuel that keep the workshop open. Each tracks both, because confusing them is how founders run out of blocks.
+
+### Behavioral economics in practice
+
+Each is designed to reduce the friction that kills startups:
+
+- **Auto-save** removes the forgetting tax.
+- **Demo mode** lowers the activation energy on first visit.
+- **CSV export** removes the fear of lock-in.
+- **The red runway number** creates loss aversion at the right moment.
+- **One-click accounting sync** turns bookkeeping from a chore into a reward.
+
+### Convenience because finance should be fun
+
+If finance feels like punishment, founders avoid it. Each makes it convenient enough to check every morning. The cockpit loads instantly. The data model is one JSON blob. The mental model is one game.
+
+---
+
 ## Made by Axiom
 
 Each is a product of [Axiom](https://axiom.nonarkara.org) — an innovation consultancy that builds tools for founders and growing teams. Axiom's philosophy: the best tool is the one that disappears into the work.
+
+The visual and interaction system is governed by the [Axiom Design Core](https://github.com/Nonarkara/Axiom-Design-Core).
 
 ---
 
@@ -198,7 +263,7 @@ The frontend prompts for the key on first load if the server returns `401`.
 
 ## Design discipline
 
-Each follows the **AXIOM DNA** from [Axiom](https://axiom.nonarkara.org):
+Each follows the **AXIOM DNA** from [Axiom Design Core](https://github.com/Nonarkara/Axiom-Design-Core):
 
 - One bold move per surface.
 - Blue enclosed for identity; red bare for signal.
@@ -232,7 +297,7 @@ functions/lib/accounting-sync.js   shared double-entry sync logic
 migrations/0001_init.sql           D1 schema
 wrangler.toml                      Cloudflare config
 package.json                       scripts and wrangler dependency
-assets/axiom-spine.svg             spine diagram
+assets/each-hero.svg               hero diagram
 assets/each-badge.svg              Axiom Github Pick of the Day badge
 MANUAL.md                          human user guide
 LICENSE                            MIT

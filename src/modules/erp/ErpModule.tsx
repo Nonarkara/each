@@ -1,9 +1,14 @@
+import { useState } from 'react'
 import { calcFinance } from '../../lib/calc'
-import { money } from '../../lib/format'
+import { money, today, uid } from '../../lib/format'
 import type { EachStore } from '../../lib/types'
 import type { storeApi } from '../../lib/store'
 import {
+  Btn,
+  DataTable,
   Empty,
+  Input,
+  Modal,
   ProgressBar,
   SectionHead,
   StackBar,
@@ -20,6 +25,12 @@ interface ErpModuleProps {
 export function ErpModule({ store, api }: ErpModuleProps) {
   const f = calcFinance(store)
   const safe = f.runwayMonths >= 6
+  const [loanOpen, setLoanOpen] = useState(false)
+  const [lender, setLender] = useState('')
+  const [principal, setPrincipal] = useState('')
+  const [rate, setRate] = useState('')
+  const [termMonths, setTermMonths] = useState('')
+  const [installment, setInstallment] = useState('')
 
   let objectives = store.objectives
   if (!objectives.length) {
@@ -43,6 +54,45 @@ export function ErpModule({ store, api }: ErpModuleProps) {
     })
   }
 
+  function addLoan() {
+    const prin = Number(principal)
+    const inst = Number(installment)
+    if (!lender.trim() || prin <= 0 || inst <= 0) return
+    api.update((s) => {
+      if (!s.loans) s.loans = []
+      s.loans.push({
+        id: uid(),
+        lender: lender.trim(),
+        principal: prin,
+        rate: Number(rate) || 0,
+        termMonths: Number(termMonths) || 0,
+        installment: inst,
+        currency: s.currency,
+        startDate: today(),
+        note: '',
+      })
+      return s
+    })
+    setLoanOpen(false)
+    setLender('')
+    setPrincipal('')
+    setRate('')
+    setTermMonths('')
+    setInstallment('')
+  }
+
+  function removeLoan(id: string) {
+    if (!window.confirm('Remove this loan from your books?')) return
+    api.update((s) => {
+      s.loans = (s.loans || []).filter((l) => l.id !== id)
+      return s
+    })
+  }
+
+  const burnSub = f.monthlyDebtService
+    ? 'Recurring + debt + this month'
+    : 'Recurring + this month'
+
   return (
     <div>
       <Station disc="E" kicker="MODULE 01 · FINANCES" title="Finances" meta={'As of ' + store.asOf} />
@@ -56,6 +106,11 @@ export function ErpModule({ store, api }: ErpModuleProps) {
           <p className="mt-2 text-[14px] text-ink-2">
             {f.monthlyBurn > 0 ? money(f.monthlyBurn, f.cur) + ' / month' : 'No burn recorded'}
           </p>
+          {f.monthlyDebtService > 0 ? (
+            <p className="mt-1 font-mono text-[11px] text-ink-3">
+              Includes {money(f.monthlyDebtService, f.cur)} debt service
+            </p>
+          ) : null}
         </div>
         <div className="bg-panel p-5">
           <p className="font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">Status</p>
@@ -72,9 +127,86 @@ export function ErpModule({ store, api }: ErpModuleProps) {
       <div className="mb-6 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
         <StatCell label="Cash on hand" value={money(f.cash, f.cur)} sub={'After ' + store.expenses.length + ' transactions'} />
         <StatCell label="Founding capital" value={money(f.founding, f.cur)} sub={store.foundingCapital.length + ' entries'} />
-        <StatCell label="Monthly burn" value={money(f.monthlyBurn, f.cur)} sub="Recurring + this month" />
+        <StatCell label="Monthly burn" value={money(f.monthlyBurn, f.cur)} sub={burnSub} />
         <StatCell label="Recurring OpEx" value={money(f.recurring, f.cur)} sub={store.aiEmployees.length + ' AI · ' + store.employees.length + ' human'} />
       </div>
+
+      <div className="mb-6">
+        <SectionHead
+          label="Credit & installments"
+          meta={(store.loans?.length || 0) + ' loans · ' + money(f.totalDebt, f.cur) + ' owed · ' + money(f.monthlyDebtService, f.cur) + ' / mo'}
+        />
+        <DataTable>
+          <thead>
+            <tr className="border-b border-line font-mono text-[11px] uppercase text-ink-3">
+              <th className="p-3 text-left">Lender</th>
+              <th className="p-3 text-right">Principal</th>
+              <th className="p-3 text-right">Rate</th>
+              <th className="p-3 text-right">Term</th>
+              <th className="p-3 text-right">Installment</th>
+              <th className="p-3" />
+            </tr>
+          </thead>
+          <tbody>
+            {(store.loans || []).length ? (
+              store.loans.map((l) => (
+                <tr key={l.id} className="border-b border-line">
+                  <td className="p-3 text-[14px]">{l.lender}</td>
+                  <td className="p-3 text-right font-mono text-[14px]">{money(l.principal, l.currency || f.cur)}</td>
+                  <td className="p-3 text-right font-mono text-[14px]">{l.rate}%</td>
+                  <td className="p-3 text-right font-mono text-[14px]">{l.termMonths} mo</td>
+                  <td className="p-3 text-right font-mono text-[14px]">{money(l.installment, l.currency || f.cur)}</td>
+                  <td className="p-3 text-right">
+                    <Btn variant="ghost" onClick={() => removeLoan(l.id)}>Remove</Btn>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={6} className="p-6 text-center text-[14px] text-ink-3">
+                  No loans. Borrowed blocks appear here — and in your monthly burn.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </DataTable>
+        <Btn variant="ghost" className="mt-3" onClick={() => setLoanOpen(true)}>+ Add loan</Btn>
+      </div>
+
+      <Modal
+        title="Add loan / credit line"
+        open={loanOpen}
+        onClose={() => setLoanOpen(false)}
+        actions={
+          <>
+            <Btn variant="ghost" onClick={() => setLoanOpen(false)}>Cancel</Btn>
+            <Btn onClick={addLoan}>Record</Btn>
+          </>
+        }
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block sm:col-span-2">
+            <span className="font-mono text-[11px] uppercase text-ink-3">Lender</span>
+            <Input value={lender} onChange={(e) => setLender(e.target.value)} className="mt-2" />
+          </label>
+          <label className="block">
+            <span className="font-mono text-[11px] uppercase text-ink-3">Remaining principal ({store.currency})</span>
+            <Input type="number" value={principal} onChange={(e) => setPrincipal(e.target.value)} className="mt-2" />
+          </label>
+          <label className="block">
+            <span className="font-mono text-[11px] uppercase text-ink-3">Annual rate (%)</span>
+            <Input type="number" value={rate} onChange={(e) => setRate(e.target.value)} className="mt-2" />
+          </label>
+          <label className="block">
+            <span className="font-mono text-[11px] uppercase text-ink-3">Term (months)</span>
+            <Input type="number" value={termMonths} onChange={(e) => setTermMonths(e.target.value)} className="mt-2" />
+          </label>
+          <label className="block">
+            <span className="font-mono text-[11px] uppercase text-ink-3">Monthly installment ({store.currency})</span>
+            <Input type="number" value={installment} onChange={(e) => setInstallment(e.target.value)} className="mt-2" />
+          </label>
+        </div>
+      </Modal>
 
       <div className="mb-6">
         <SectionHead label="Revenue pipeline" meta={'Ikigai book · ' + store.projects.length + ' projects'} />

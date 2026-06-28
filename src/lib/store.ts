@@ -43,6 +43,7 @@ export function seedStore(): EachStore {
     projects: seedProjects(),
     objectives: [],
     actions: [],
+    loans: [],
   }
 }
 
@@ -51,7 +52,10 @@ let state: EachStore = load()
 function load(): EachStore {
   try {
     const raw = localStorage.getItem(KEY)
-    if (raw) return { ...seedStore(), ...JSON.parse(raw) }
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<EachStore>
+      return { ...seedStore(), ...parsed, loans: parsed.loans ?? [] }
+    }
   } catch {
     /* ignore */
   }
@@ -64,6 +68,7 @@ function persist() {
   } catch {
     /* ignore */
   }
+  void import('../services/sheets').then((m) => m.scheduleSheetsSave(state))
   listeners.forEach((fn) => fn(state))
 }
 

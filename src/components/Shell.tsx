@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { MODULES } from '../lib/types'
-import { Btn, LiveDot } from './ui/Axiom'
+import { Btn } from './ui/Axiom'
 
 interface ShellProps {
   companyName?: string
@@ -8,6 +8,12 @@ interface ShellProps {
   onNavigate?: (id: string) => void
   onReset?: () => void
   onDossier?: () => void
+  onExport?: () => void
+  onSheets?: () => void
+  onImport?: () => void
+  onSheetsSetup?: () => void
+  syncLabel?: string
+  syncStatus?: 'local' | 'loading' | 'saving' | 'saved' | 'error'
   vitals?: { cash: string; runway: string; runwayRisk?: boolean }
   children: ReactNode
 }
@@ -18,9 +24,23 @@ export function Shell({
   onNavigate,
   onReset,
   onDossier,
+  onExport,
+  onSheets,
+  onImport,
+  onSheetsSetup,
+  syncLabel,
+  syncStatus = 'local',
   vitals,
   children,
 }: ShellProps) {
+  const dotClass =
+    syncStatus === 'saved'
+      ? 'bg-amber'
+      : syncStatus === 'error'
+        ? 'bg-red-600'
+        : syncStatus === 'saving' || syncStatus === 'loading'
+          ? 'bg-ink-3'
+          : 'bg-ink-3'
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 border-b border-line-2 bg-paper">
@@ -52,13 +72,25 @@ export function Shell({
                   <p className={`font-mono text-[14px] font-medium ${vitals.runwayRisk ? 'text-amber' : ''}`}>{vitals.runway}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <LiveDot />
-                  <span className="font-mono text-[11px] uppercase text-ink-3">Live</span>
+                  <span className={`inline-block h-2 w-2 ${dotClass}`} aria-hidden />
+                  <span className="font-mono text-[11px] uppercase text-ink-3">{syncLabel || 'Local only'}</span>
                 </div>
               </div>
             ) : null}
 
             <div className="flex flex-wrap gap-2 sm:ml-auto">
+              {onExport ? (
+                <Btn variant="ghost" onClick={onExport}>Export</Btn>
+              ) : null}
+              {onSheets ? (
+                <Btn variant="ghost" onClick={onSheets}>Sheets</Btn>
+              ) : null}
+              {onImport ? (
+                <Btn variant="ghost" onClick={onImport}>Import</Btn>
+              ) : null}
+              {onSheetsSetup ? (
+                <Btn variant="ghost" onClick={onSheetsSetup}>Sheet URL</Btn>
+              ) : null}
               {onDossier ? (
                 <Btn variant="ghost" onClick={onDossier}>Dossier</Btn>
               ) : null}

@@ -1,0 +1,90 @@
+{
+  "version": "1",
+  "templateName": "EACH Startup Workbook",
+  "tabs": [
+    {
+      "name": "Dashboard",
+      "role": "computed",
+      "module": "erp",
+      "description": "Cash, burn, runway — formulas read from other tabs. Do not type numbers here.",
+      "writable": false
+    },
+    {
+      "name": "Metadata",
+      "role": "scalars",
+      "module": "all",
+      "description": "Company name, currency, as-of date, onboarding flag.",
+      "columns": ["key", "value"]
+    },
+    {
+      "name": "foundingCapital",
+      "role": "data",
+      "module": "erp",
+      "description": "Money put in at incorporation or funding rounds.",
+      "columns": ["id", "source", "taxId", "amount", "currency", "date", "note"]
+    },
+    {
+      "name": "expenses",
+      "role": "data",
+      "module": "act",
+      "description": "Every receipt and purchase. type = opex or capex.",
+      "columns": ["id", "date", "vendor", "category", "type", "amount", "currency", "source", "owner"]
+    },
+    {
+      "name": "employees",
+      "role": "data",
+      "module": "hr",
+      "description": "Human staff and monthly salary.",
+      "columns": ["id", "name", "role", "salary", "currency", "started"]
+    },
+    {
+      "name": "aiEmployees",
+      "role": "data",
+      "module": "hr",
+      "description": "AI tools treated as operators with monthly cost.",
+      "columns": ["id", "name", "vendor", "role", "plan", "cost", "currency", "efficiency", "started"]
+    },
+    {
+      "name": "projects",
+      "role": "data",
+      "module": "crm",
+      "description": "Deals and delivery work. received feeds cash.",
+      "columns": [
+        "id", "title", "status", "owner", "client", "clientId",
+        "totalValue", "received", "taxDeducted", "receivedDate",
+        "dealStatus", "scenarioTier", "currency",
+        "checklist", "notes", "files"
+      ]
+    },
+    {
+      "name": "loans",
+      "role": "data",
+      "module": "erp",
+      "description": "Borrowed money. installment adds to monthly burn.",
+      "columns": ["id", "lender", "principal", "rate", "termMonths", "installment", "currency", "startDate", "note"]
+    },
+    {
+      "name": "objectives",
+      "role": "data",
+      "module": "erp",
+      "description": "OKRs — objective plus keyResults JSON array.",
+      "columns": ["id", "objective", "keyResults", "quarter"]
+    },
+    {
+      "name": "actions",
+      "role": "data",
+      "module": "act",
+      "description": "Manual action queue items.",
+      "columns": ["id", "priority", "label", "module", "done"]
+    },
+    {
+      "name": "RawData_Backup",
+      "role": "hidden",
+      "module": "system",
+      "description": "Full JSON backup written by Apps Script. Hidden.",
+      "writable": false
+    }
+  ],
+  "conservationLaw": "cash = sum(foundingCapital.amount) + sum(projects.received) - sum(expenses.amount)",
+  "burnFormula": "monthlyBurn = sum(aiEmployees.cost) + sum(employees.salary) + sum(loans.installment) + sum(expenses where type=opex and date in current month)"
+}

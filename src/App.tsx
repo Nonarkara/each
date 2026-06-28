@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { calcFinance } from './lib/calc'
 import { Hero } from './components/Hero'
 import { Shell } from './components/Shell'
@@ -11,6 +11,17 @@ import { CrmModule } from './modules/crm'
 import { HrModule } from './modules/hr'
 import { DossierView } from './modules/dossier/DossierView'
 import { money } from './lib/format'
+import {
+  exportJsonBackup,
+  exportSheetCsvBundle,
+  getSheetsWebAppUrl,
+  importJsonBackup,
+  loadFromSheets,
+  setSheetsWebAppUrl,
+  sheetsSyncLabel,
+  subscribeSheetsSyncStatus,
+} from './services/sheets'
+import type { SyncStatus } from './services/sheets'
 
 type AppView = 'landing' | 'onboarding' | 'app'
 type AppRoute = ModuleId | 'dossier'
@@ -19,6 +30,18 @@ export default function App() {
   const [store, api] = useStore()
   const [view, setView] = useState<AppView>(store.onboarded ? 'app' : 'landing')
   const [route, setRoute] = useState<AppRoute>('erp')
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>('local')
+
+  useEffect(() => {
+    return subscribeSheetsSyncStatus(setSyncStatus)
+  }, [])
+
+  useEffect(() => {
+    if (!getSheetsWebAppUrl() || !store.onboarded) return
+    void loadFromSheets().then((remote) => {
+      if (remote) api.load(remote)
+    })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- load once on mount
 
   const fin = useMemo(() => calcFinance(store), [store])
   const companyName = store.company?.legalName || store.companyName
@@ -38,6 +61,21 @@ export default function App() {
     api.reset()
     setView('landing')
     setRoute('erp')
+  }
+
+  function handleSheetsSetup() {
+    const current = getSheetsWebAppUrl()
+    const url = window.prompt(
+      'Paste your Google Apps Script Web App URL (from Deploy → Web app).\nLeave blank to work locally only.',
+      current,
+    )
+    if (url === null) return
+    setSheetsWebAppUrl(url)
+    if (url.trim()) {
+      void loadFromSheets().then((remote) => {
+        if (remote) api.load(remote)
+      })
+    }
   }
 
   if (view === 'landing') {
@@ -78,6 +116,12 @@ export default function App() {
       onNavigate={(id) => setRoute(id as AppRoute)}
       onReset={handleReset}
       onDossier={() => setRoute('dossier')}
+      onExport={() => exportJsonBackup(store)}
+      onSheets={() => exportSheetCsvBundle(store)}
+      onImport={() => importJsonBackup((obj) => api.load(obj))}
+      onSheetsSetup={handleSheetsSetup}
+      syncLabel={sheetsSyncLabel(syncStatus)}
+      syncStatus={syncStatus}
       vitals={{
         cash: money(fin.cash, store.currency),
         runway: (Number.isFinite(fin.runwayMonths) ? fin.runwayMonths : '∞') + ' mo',

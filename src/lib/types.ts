@@ -117,6 +117,18 @@ export interface ActionItem {
   done: boolean
 }
 
+export interface Loan {
+  id: string
+  lender: string
+  principal: number
+  rate: number
+  termMonths: number
+  installment: number
+  currency: string
+  startDate: string
+  note?: string
+}
+
 export interface EachStore {
   onboarded: boolean
   company: Company | null
@@ -132,6 +144,7 @@ export interface EachStore {
   projects: Project[]
   objectives: Objective[]
   actions: ActionItem[]
+  loans: Loan[]
 }
 
 export interface FinanceCalc {
@@ -146,6 +159,8 @@ export interface FinanceCalc {
   recurring: number
   monthOpex: number
   monthCapex: number
+  monthlyDebtService: number
+  totalDebt: number
   monthlyBurn: number
   runwayMonths: number
   capexShare: number

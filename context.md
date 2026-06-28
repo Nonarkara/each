@@ -11,14 +11,24 @@
 | **GitHub** | https://github.com/nonarkara/each |
 | **Predecessor** | `/Users/nonarkara/Projects/CRM2` (AXIOM prototype, static HTML/JS) |
 | **Created** | 2026-06-27 |
-| **Phase** | 0.5 — CRM2 port complete; Phase 1 stubs in place |
+| **Phase** | 0.5 — CRM2 port complete; Sheets manual + sync shipped |
+
+## Human manual & Google Sheets
+
+| Resource | Path | Status |
+|----------|------|--------|
+| **Founder manual** | [`docs/MANUAL.md`](docs/MANUAL.md) | Live — Sheets-first workflow |
+| **Tab schema** | [`docs/sheets/tab-schema.json`](docs/sheets/tab-schema.json) | 10 tabs defined |
+| **Apps Script** | [`sheets/apps-script.gs`](sheets/apps-script.gs) | Copy into Google Sheet |
+| **CSV headers** | [`docs/sheets/*.csv`](docs/sheets/) | Import templates |
+| **Live template URL** | *(pending Dr Non Google account)* | Deploy script → paste Web App URL |
 
 ## Live URLs
 
 | URL | Status |
 |-----|--------|
-| GitHub Pages | https://nonarkara.github.io/each/ (fallback) |
-| Custom domain | https://each.nonarkara.org (CNAME configured — allow DNS propagation) |
+| GitHub Pages | https://nonarkara.github.io/each/ (live; relative asset base `./`) |
+| Custom domain | https://each.nonarkara.org — GitHub Pages CNAME set; **Cloudflare DNS pending** — run `export CF_TOKEN=… && bash scripts/dns-setup.sh` |
 
 ## Module definitions
 
@@ -98,7 +108,7 @@ npm run preview  # preview production build
 | AI company lookup | `src/services/companyLookup.ts` | `VITE_COMPANY_LOOKUP_API` | Local registry sim (0105566000000) |
 | Gmail OAuth | `src/services/gmail.ts` | `VITE_GOOGLE_CLIENT_ID`, `VITE_GOOGLE_REDIRECT_URI` | Simulated receipt import |
 | OCR scan | `src/services/ocr.ts` | `VITE_OCR_API_URL` | Simulated Tax ID + capital extraction |
-| Frappe backend | `src/services/api.ts` | `VITE_FRAPPE_URL` | localStorage only |
+| Google Sheets sync | `src/services/sheets.ts` | `VITE_SHEETS_WEB_APP_URL` | localStorage + optional two-way Apps Script |
 
 See `.env.example` for placeholders. Never commit `.env`.
 

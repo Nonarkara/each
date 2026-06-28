@@ -58,5 +58,18 @@ export function buildDemoStore(): EachStore {
       { id: 'o2', objective: 'Keep monthly burn under 60,000 THB', keyResults: [{ k: 'Burn under cap', done: true }, { k: 'Runway over 12 mo', done: true }] },
     ],
     actions: [],
+    loans: [
+      {
+        id: 'l1',
+        lender: 'SCB SME Loan',
+        principal: 300000,
+        rate: 6.5,
+        termMonths: 24,
+        installment: 13350,
+        currency: 'THB',
+        startDate: '2026-01-15',
+        note: 'MacBook fleet + working capital',
+      },
+    ],
   }
 }

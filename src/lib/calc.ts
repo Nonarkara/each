@@ -36,7 +36,9 @@ export function calcFinance(s: EachStore): FinanceCalc {
     'amount',
   )
 
-  const monthlyBurn = recurring + monthOpex
+  const monthlyDebtService = sum(s.loans || [], 'installment')
+  const totalDebt = sum(s.loans || [], 'principal')
+  const monthlyBurn = recurring + monthOpex + monthlyDebtService
   const runwayMonths = monthlyBurn > 0 ? Math.floor(cash / monthlyBurn) : Infinity
 
   const denom = monthCapex + recurring + monthOpex || 1
@@ -62,6 +64,8 @@ export function calcFinance(s: EachStore): FinanceCalc {
     recurring,
     monthOpex,
     monthCapex,
+    monthlyDebtService,
+    totalDebt,
     monthlyBurn,
     runwayMonths,
     capexShare,

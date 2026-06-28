@@ -39,6 +39,12 @@ npm run dev
 
 Open the URL Vite prints (default `http://localhost:5173`).
 
+## Human manual
+
+**Start here:** [`docs/MANUAL.md`](docs/MANUAL.md) — 15-minute Sheets-first setup, finance formulas, troubleshooting.
+
+Google Sheets template: [`sheets/apps-script.gs`](sheets/apps-script.gs) + tab schema [`docs/sheets/tab-schema.json`](docs/sheets/tab-schema.json).
+
 ## Roadmap
 
 | Phase | Scope |

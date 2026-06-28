@@ -1,6 +1,6 @@
-# AXIOM — Human Manual
+# Each — Human Manual
 
-AXIOM is a simple all-in-one workspace for a small startup: **CRM + ERP + HR + Accounting**. It runs in your browser and saves your data to the cloud when you are online.
+Each is a simple all-in-one workspace for a small startup: **CRM + ERP + HR + Accounting**. Made by [Axiom](https://axiom.nonarkara.org). It runs in your browser and saves your data to the cloud when you are online.
 
 ## First visit
 
@@ -64,7 +64,7 @@ Your data is saved automatically when you are online. A small dot in the top bar
 ## Accounting sync
 
 1. Go to **Accounting**.
-2. Click **Sync to journal**. AXIOM will create journal entries from:
+2. Click **Sync to journal**. Each will create journal entries from:
    - Founding capital
    - Expenses
    - Commissioned projects (received cash and outstanding receivables)

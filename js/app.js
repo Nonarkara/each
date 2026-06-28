@@ -46,7 +46,8 @@
         el('div.spacer'),
         vitals,
         el('div.row-c.gap-m', null,
-          el('button.btn.link', { text: 'Export', title: 'Download your data', onclick: exportData }),
+          el('button.btn.link', { text: 'Export', title: 'Download JSON backup', onclick: exportData }),
+          el('button.btn.link', { text: 'Sheets', title: 'Export to Google Sheets CSV (4 files)', onclick: () => Sheets.exportAll() }),
           el('button.btn.link', { text: 'Import', title: 'Restore from a backup file', onclick: importData }),
           el('button.btn.link', { text: 'Reset',
             onclick: () => { if (confirm('Clear all prototype data?')) { D.Store.reset(); location.reload(); } } }))));
@@ -54,10 +55,11 @@
 
   function mark(companyName) {
     return el('div.row-c.gap-m', null,
-      el('span.disc.ink', { text: 'A', title: 'AXIOM — hub station' }),
+      el('a', { href: 'https://axiom.nonarkara.org', target: '_blank', title: 'Made by Axiom', style: 'text-decoration:none;line-height:0' },
+        el('span.disc.ink', { text: 'A' })),
       el('div', null,
-        el('div.label', { text: 'AXIOM', style: 'letter-spacing:0.2em' }),
-        el('div.micro', { text: companyName ? companyName.split(' ').slice(0, 2).join(' ') : 'Superapp' })));
+        el('div.label', { text: 'Each', style: 'letter-spacing:0.2em' }),
+        el('div.micro', { text: companyName ? companyName.split(' ').slice(0, 2).join(' ') : 'by Axiom' })));
   }
   function mini(label, value, sub) {
     return el('div', null,
@@ -141,7 +143,7 @@
     const blob = new Blob([JSON.stringify(D.Store.get(), null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'axiom-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    a.download = 'each-backup-' + new Date().toISOString().slice(0, 10) + '.json';
     a.click();
     URL.revokeObjectURL(a.href);
   }

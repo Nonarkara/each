@@ -2,7 +2,7 @@
   "name": "each",
   "version": "0.3.0",
   "private": true,
-  "description": "AXIOM — CRM + ERP + HR + Accounting for the startup",
+  "description": "Each — ERP, ACT, CRM, HR for the startup. By Axiom.",
   "repository": {
     "type": "git",
     "url": "https://github.com/Nonarkara/each.git"

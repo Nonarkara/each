@@ -1,10 +1,11 @@
-/* sync.js — background cloud sync for AXIOM state via /api/state.
+/* sync.js — background cloud sync for Each state via /api/state.
    Falls back to localStorage when offline or when not served from Pages. */
 (function (global) {
   'use strict';
   const D = window.Data;
   const API = '/api/state';
-  const API_KEY_KEY = 'axiom_api_key';
+  const API_KEY_KEY = 'each_api_key';
+  const API_KEY_LEGACY = 'axiom_api_key'; // ponytail: migrate old key on first auth call
   let status = 'local'; // local | loading | saving | saved | error
   let saveTimer = null;
   let statusEl = null;
@@ -15,7 +16,11 @@
   }
 
   function authHeaders() {
-    const key = localStorage.getItem(API_KEY_KEY);
+    let key = localStorage.getItem(API_KEY_KEY);
+    if (!key) {
+      const legacy = localStorage.getItem(API_KEY_LEGACY);
+      if (legacy) { localStorage.setItem(API_KEY_KEY, legacy); localStorage.removeItem(API_KEY_LEGACY); key = legacy; }
+    }
     return key ? { 'Authorization': 'Bearer ' + key } : {};
   }
 

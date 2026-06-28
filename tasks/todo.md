@@ -25,7 +25,7 @@
 - [x] GitHub repo + initial push
 - [x] GitHub Pages deploy workflow
 - [x] CNAME each.nonarkara.org
-- [ ] Verify GitHub Actions deploy green (check after push)
+- [x] Verify GitHub Actions deploy green (workflow_dispatch run 28289870430)
 
 ## Review
 

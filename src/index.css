@@ -30,10 +30,6 @@
   box-sizing: border-box;
 }
 
-html {
-  overflow-x: clip;
-}
-
 html,
 body {
   margin: 0;

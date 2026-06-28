@@ -90,7 +90,7 @@ npm run preview  # preview production build
 | **Canonical branch** | `main` — React/Vite app (`fa0e024` → `c5d821b` → `8d06c0f` line) |
 | **Replaced on remote** | Unrelated static CRM2 tree at `origin/main` `b29407c` (no merge-base); Cloudflare Pages workflow removed in favour of GitHub Pages |
 | **Deploy CI** | `.github/workflows/deploy.yml` — GitHub Pages (`npm ci` + `npm run build`, artifact `dist/`) |
-| **HEAD after reconcile** | *(updated after push)* |
+| **HEAD after reconcile** | `f85d20d` (force-with-lease 2026-06-28) |
 
 ## Deployment
 

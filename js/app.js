@@ -1,4 +1,4 @@
-/* app.js — shell, cockpit, routing. The spine the three pillars hang on. */
+/* app.js — shell, cockpit, routing. The spine the four pillars hang on. */
 (function () {
   'use strict';
   const { el, clear, station } = window.UI;

@@ -166,11 +166,16 @@ npm run deploy            # first deploy to Cloudflare Pages
 
 ### Custom domain
 
-```bash
-npx wrangler pages domain add each.yourdomain.com --project-name each
-```
+After the first deploy, add your domain in the Cloudflare dashboard:
 
-Cloudflare auto-creates the CNAME record if your domain is already managed by Cloudflare.
+1. **Workers & Pages → each → Custom domains → Add domain** → enter `each.nonarkara.org`.
+2. **DNS → Add record**:
+   - Type: `CNAME`
+   - Name: `each`
+   - Target: `each-c3p.pages.dev` (your Pages subdomain)
+   - Proxy status: enabled (orange cloud)
+
+Cloudflare will verify the CNAME and issue SSL. Status changes from `Pending` to `Active` within a few minutes.
 
 ### Continuous deployment (GitHub Actions)
 

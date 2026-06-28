@@ -12,6 +12,7 @@
   function migrate(s) {
     if (!s.accounts || !s.accounts.length) s.accounts = seedAccounts();
     if (!s.journal) s.journal = [];
+    if (!s.loans) s.loans = [];
     return s;
   }
   function persist() {
@@ -41,6 +42,7 @@
       objectives: [],                 // OKRs {id, objective, keyResults:[{k,done}], quarter}
       accounts: seedAccounts(),       // chart of accounts {id, name, type}
       journal: [],                    // double-entry transactions {id, date, description, auto, lines:[{accountId, debit, credit}]}
+      loans: [],                      // {id, lender, principal, rate, termMonths, installment, currency, startDate, note}
       currency: 'USD', asOf: today(),
     };
   }

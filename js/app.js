@@ -97,9 +97,17 @@
 
     const facts = el('div.hgrid.g-4', { style: 'margin-bottom:22px' },
       cell('Cash on hand', D.money(fin.cash, s.currency), 'After ' + s.expenses.length + ' txns'),
-      cell('Founding capital', D.money(fin.founding, s.currency), s.foundingCapital.length + ' entries'),
+      cell('Monthly burn', D.money(fin.monthlyBurn, s.currency), fin.monthlyDebtService ? 'Includes debt service' : 'Recurring + this month'),
       cell('Contracted revenue', D.money(fin.contractedRevenue, s.currency), fin.commissionedCount + ' commissioned'),
       cell('Runway', fin.runwayMonths + ' months'));
+
+    const debtFacts = (s.loans && s.loans.length)
+      ? el('div.hgrid.g-4', { style: 'margin-bottom:22px' },
+          cell('Total debt', D.money(fin.totalDebt, s.currency), s.loans.length + ' loans'),
+          cell('Monthly debt service', D.money(fin.monthlyDebtService, s.currency), 'Included in burn'),
+          cell('Net cash position', D.money(fin.cash - fin.totalDebt, s.currency), 'Cash less debt'),
+          cell('Founding capital', D.money(fin.founding, s.currency), s.foundingCapital.length + ' entries'))
+      : null;
 
     const narrative = el('div.split-phi', null,
       el('div.editorial', null,
@@ -116,7 +124,7 @@
           el('span.micro', { text: 'CapEx ' + Math.round(fin.capexShare * 100) + '%' }),
           el('span.micro', { text: 'OpEx ' + Math.round(fin.opexShare * 100) + '%' }))));
 
-    wrap.appendChild(el('div.stack.gap-l', null, facts, narrative,
+    wrap.appendChild(el('div.stack.gap-l', null, facts, debtFacts, narrative,
       el('div', null,
         el('div.sec-head', null, el('span.label', { text: 'Projects in flight' }), el('span.label-meta', { text: s.projects.length + ' total' })),
         el('table.axiom', { html: projectRows(s) })),

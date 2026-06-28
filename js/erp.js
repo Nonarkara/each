@@ -31,7 +31,8 @@
     const monthOpex = sum(s.expenses.filter(e => e.type === 'opex' && String(e.date).slice(0, 7) === monthKey), 'amount');
     const monthCapex = sum(s.expenses.filter(e => e.type === 'capex' && String(e.date).slice(0, 7) === monthKey), 'amount');
 
-    const monthlyBurn = recurring + monthOpex;
+    const monthlyDebtService = sum(s.loans, 'installment');
+    const monthlyBurn = recurring + monthOpex + monthlyDebtService;
     const runwayMonths = monthlyBurn > 0 ? Math.floor(cash / monthlyBurn) : Infinity;
 
     const denom = (monthCapex + recurring + monthOpex) || 1;
@@ -46,10 +47,12 @@
       bal -= monthlyBurn;
     }
 
+    const totalDebt = sum(s.loans, 'principal');
+
     return {
       cur, founding, cash, totalExpenses, totalOpex, totalCapex,
       aiMonthly, humanMonthly, recurring, monthOpex, monthCapex,
-      monthlyBurn, runwayMonths, capexShare, opexShare, proj,
+      monthlyDebtService, totalDebt, monthlyBurn, runwayMonths, capexShare, opexShare, proj,
       receivedRevenue, commissionedCount: commissioned.length, pipelineCount: pipeline.length,
       contractedRevenue, pipelineRevenue, expectedPipeline, outstanding,
     };
@@ -78,12 +81,16 @@
             el('div.meta', { text: safe ? 'The absence of red is the good news.' : 'Raise or cut. Silence is not a plan.' }))))));
 
     /* ---- stat grid ---- */
+    const burnSub = f.monthlyDebtService
+      ? 'Recurring + debt + this month'
+      : 'Recurring + this month';
     wrap.appendChild(el('div.hgrid.g-4', { style: 'margin-bottom:22px' },
       cell('Cash on hand', D.money(f.cash, f.cur), 'After ' + s.expenses.length + ' transactions'),
       cell('Founding capital', D.money(f.founding, f.cur), s.foundingCapital.length + ' entries'),
-      cell('Monthly burn', D.money(f.monthlyBurn, f.cur), 'Recurring + this month'),
+      cell('Monthly burn', D.money(f.monthlyBurn, f.cur), burnSub),
       cell('Recurring OpEx', D.money(f.recurring, f.cur), s.aiEmployees.length + ' AI · ' + s.employees.length + ' human')));
 
+    wrap.appendChild(loans(s, f, remount));
     wrap.appendChild(revenue(f, s));
 
     /* ---- CapEx vs OpEx allocation ---- */
@@ -104,6 +111,44 @@
   }
   function cell(label, value, sub) {
     return el('div.cell', null, el('span.label', { text: label }), el('div.v', { text: value }), sub ? el('div.sub', { text: sub }) : null);
+  }
+
+  /* Credit & installments — borrowed blocks that must be paid back. */
+  function loans(s, f, remount) {
+    const add = () => {
+      const lender = el('input.input', { placeholder: 'Lender' });
+      const principal = el('input.input', { type: 'number', placeholder: 'Principal remaining' });
+      const rate = el('input.input', { type: 'number', placeholder: 'Annual rate %' });
+      const term = el('input.input', { type: 'number', placeholder: 'Term in months' });
+      const installment = el('input.input', { type: 'number', placeholder: 'Monthly installment' });
+      const body = el('div.stack.gap-m', null,
+        el('div.hgrid.g-2', null, cell2('Lender', lender), cell2('Principal (' + s.currency + ')', principal)),
+        el('div.hgrid.g-2', null, cell2('Annual rate %', rate), cell2('Term (months)', term)),
+        el('div.hgrid.g-2', null, cell2('Monthly installment (' + s.currency + ')', installment), el('div.cell')));
+      const m = UI.modal('Add loan / credit line', body, [
+        el('button.btn.ghost', { text: 'Cancel', onclick: () => m.close() }),
+        el('button.btn', { text: 'Record', onclick: () => {
+          const inst = Number(installment.value) || 0;
+          const prin = Number(principal.value) || 0;
+          if (!lender.value || prin <= 0 || inst <= 0) return;
+          Data.Store.update(st => { st.loans.push({ id: D.uid(), lender: lender.value, principal: prin, rate: Number(rate.value) || 0, termMonths: Number(term.value) || 0, installment: inst, currency: st.currency, startDate: today(), note: '' }); return st; });
+          m.close(); remount();
+        } }),
+      ]);
+    };
+
+    const rows = (s.loans || []).map(l =>
+      '<tr><td>' + UI.esc(l.lender) + '</td><td class="num">' + D.money(l.principal, l.currency || s.currency) + '</td>' +
+      '<td class="num">' + (l.rate || 0) + '%</td><td class="num">' + (l.termMonths || '—') + '</td>' +
+      '<td class="num">' + D.money(l.installment, l.currency || s.currency) + '</td>' +
+      '<td style="text-align:right"><button class="btn link red sm" onclick="if(confirm(\'Remove loan from ' + UI.esc(l.lender) + '?\')) { Data.Store.update(st => { st.loans = st.loans.filter(x => x.id !== \'' + l.id + '\'); return st; }); App.remount(); }">×</button></td></tr>').join('');
+
+    return el('div', { style: 'margin-bottom:22px' },
+      el('div.sec-head', null, el('span.label', { text: 'Credit & installments' }), el('span.label-meta', { text: (s.loans || []).length + ' loans · ' + D.money(f.totalDebt, f.cur) + ' owed · ' + D.money(f.monthlyDebtService, f.cur) + ' / mo' })),
+      el('table.axiom', { html: '<thead><tr><th>Lender</th><th class="num">Principal</th><th class="num">Rate</th><th class="num">Term</th><th class="num">Installment</th><th></th></tr></thead><tbody>'
+        + (rows || '<tr><td colspan="6" class="empty">No loans. Borrowed blocks appear here.</td></tr>') + '</tbody>' }),
+      el('button.btn.ghost.sm', { text: '+ Add loan', style: 'margin-top:10px', onclick: add }),
+      f.monthlyDebtService ? el('div.note-callout', { style: 'margin-top:10px' }, el('div.label', { text: 'Note', style: 'margin-bottom:4px' }), 'Debt service is included in monthly burn and runway.') : null);
   }
 
   /* Revenue pipeline — the startup earns. Received → contracted → pipeline (tier-weighted). */

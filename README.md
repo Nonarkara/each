@@ -78,6 +78,8 @@ You lose when you have no blocks left to keep building. You win when each finish
 
 Some blocks are **CapEx** — durable assets and helpers that keep building future models. Some blocks are **OpEx** — the glue, rent, and daily fuel that keep the workshop open. Each tracks both, because confusing them is how founders run out of blocks.
 
+**Credit** is borrowing blocks now and promising to return them later — with interest. Each's **Credit & installments** section lets you record loans, see total debt, and watch the monthly installment reduce your runway in real time. This is the payback schedule made visible.
+
 ### Behavioral economics in practice
 
 Each is designed to reduce the friction that kills startups:
@@ -106,7 +108,7 @@ The visual and interaction system is governed by the [Axiom Design Core](https:/
 
 | Pillar | Discipline | What it gives you |
 |---|---|---|
-| **Finances** | ERP | Cash, burn, runway, CapEx/OpEx split, revenue pipeline, transparent ledger |
+| **Finances** | ERP | Cash, burn, runway, CapEx/OpEx split, revenue pipeline, loans & installments, transparent ledger |
 | **People** | HR | AI operators + human staff, both treated as monthly OpEx |
 | **Projects** | CRM | Kanban, checklists, notes, deal status, AI reads on outstanding revenue |
 | **Accounting** | Books | Chart of accounts, double-entry journal, balance sheet, P&L |

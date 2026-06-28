@@ -61,6 +61,13 @@ Your data is saved automatically when you are online. A small dot in the top bar
 3. Enter vendor, amount, category, and type (OpEx or CapEx).
 4. Click **Record**. Amount must be greater than 0.
 
+## Tracking credit / loans
+
+1. In **Finances**, scroll to **Credit & installments**.
+2. Click **+ Add loan**.
+3. Enter lender, remaining principal, annual rate, term, and monthly installment.
+4. Each includes the monthly installment in your burn and runway automatically.
+
 ## Adding a person
 
 1. Go to **People**.

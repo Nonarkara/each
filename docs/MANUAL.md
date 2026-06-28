@@ -21,10 +21,21 @@ Think of it as a LEGO workshop. **Projects** are models you build. **Expenses** 
 
 ## Quick start — 15 minutes (Sheets-first)
 
+### Step 0 · Load the Axiom demo (optional, 1 min)
+
+The fastest way to see a working ERP without typing anything:
+
+1. Open **https://each.nonarkara.org** → **Enter prototype**.
+2. On the onboarding screen, click **Load Axiom demo**.
+   - This loads **Axiom X Co., Ltd.** — the Ikigai Finance Engine mock company (฿800K called capital, 6 live deals, MacBook installment + AI stack).
+3. Or click **Load demo + export Sheets CSV** — same data, plus nine CSV files download immediately. Import those into Google Sheets (Step 4 below).
+
+Copy-paste templates with the same data live in **`docs/sheets/*.csv`** if you prefer to start in Sheets first, then **Import → 2** in the app.
+
 ### Step 1 · Open the app (2 min)
 
 1. Go to **https://each.nonarkara.org** (or run locally: `npm install && npm run dev`).
-2. Choose **Load demo** to explore a pre-filled Thai AI startup, or **Start blank** for your own company.
+2. Choose **Load Axiom demo** to explore the Ikigai mock-up, or **Start blank** for your own company.
 3. Complete onboarding: company name → registry lookup (or manual entry) → founding capital → skip or connect Gmail.
 
 Your numbers appear in the header: **Cash** and **Runway**.
@@ -52,8 +63,10 @@ From now on, every change in the app pushes to your Sheet. Edits you make in the
 ### Step 4 · Or start from CSV (no Apps Script yet)
 
 1. Click **Sheets** in the top bar. EACH downloads nine CSV files (one per tab).
+   - Or use the pre-filled templates in **`docs/sheets/`** (Axiom X demo data).
 2. In Google Sheets: **File → Import → Upload** each CSV into the matching tab name (`expenses`, `projects`, etc.).
 3. When ready for live sync, complete Step 2–3 above.
+4. To pull CSV data back into the app: **Import** → enter **2** → select all nine CSV files at once.
 
 ### Step 5 · Read your finance (5 min)
 
@@ -162,7 +175,7 @@ In the **Dashboard** tab:
 |--------|--------|
 | **Export** | JSON backup of everything |
 | **Sheets** | Download CSV bundle (one file per tab) |
-| **Import** | Restore from JSON backup |
+| **Import** | Restore from JSON (1) or CSV bundle (2) |
 | **Sheet URL** | Connect or change Apps Script Web App URL |
 | **Dossier** | One-page investor summary → print to PDF |
 | **Reset** | Wipe local data (Sheet unchanged unless synced) |

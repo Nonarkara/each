@@ -126,6 +126,16 @@ export function loadDemoStore(): EachStore {
 }
 
 const REGISTRY: Record<string, Omit<RegistryHit, 'found'>> = {
+  '0105569099335': {
+    source: 'Public business registry (DBD)',
+    legalName: 'AXIOM X CO., LTD.',
+    address: '16 Soi Phahonyothin 59 Yak 1, Anusawari, Bang Khen, Bangkok',
+    country: 'Thailand',
+    industry: 'Technology · AI · Innovation consulting',
+    founded: '2026-05-28',
+    capitalHint: 800000,
+    currency: 'THB',
+  },
   '0105566000000': {
     source: 'Public business registry',
     legalName: 'AXIOM DECISION SYSTEMS CO., LTD.',

@@ -1,1 +1,4 @@
 id,date,vendor,category,type,amount,currency,source,owner
+e_cap_mac,2026-04-01,Apple / Copperwired,Hardware,capex,190000,THB,Manual,Founder
+e_cap_care,2026-04-15,Apple / Copperwired,Warranty,capex,12000,THB,Manual,Founder
+e_opex_cf,2026-06-01,Cloudflare,Cloud,opex,175,THB,Manual,Founder

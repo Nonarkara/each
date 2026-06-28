@@ -15,6 +15,7 @@ import {
   exportJsonBackup,
   exportSheetCsvBundle,
   getSheetsWebAppUrl,
+  importCsvBundle,
   importJsonBackup,
   loadFromSheets,
   setSheetsWebAppUrl,
@@ -78,9 +79,22 @@ export default function App() {
     }
   }
 
+  function handleImport() {
+    const mode = window.prompt(
+      'Import backup:\n1 = JSON backup\n2 = CSV bundle (select all tab CSVs)\n\nEnter 1 or 2, or Cancel.',
+      '1',
+    )
+    if (mode === null) return
+    if (mode.trim() === '2') {
+      importCsvBundle((obj) => api.load(obj))
+      return
+    }
+    importJsonBackup((obj) => api.load(obj))
+  }
+
   if (view === 'landing') {
     return (
-      <div className="min-h-screen px-4 py-5 sm:px-[22px] sm:py-[22px]">
+      <div className="min-h-screen overflow-y-auto px-4 py-5 sm:px-[22px] sm:py-[22px]">
         <div className="mx-auto max-w-[1360px]">
           <Hero onEnter={startOnboarding} />
           <section className="mt-8">
@@ -118,7 +132,7 @@ export default function App() {
       onDossier={() => setRoute('dossier')}
       onExport={() => exportJsonBackup(store)}
       onSheets={() => exportSheetCsvBundle(store)}
-      onImport={() => importJsonBackup((obj) => api.load(obj))}
+      onImport={handleImport}
       onSheetsSetup={handleSheetsSetup}
       syncLabel={sheetsSyncLabel(syncStatus)}
       syncStatus={syncStatus}

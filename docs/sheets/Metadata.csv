@@ -1,7 +1,8 @@
 key,value
 onboarded,true
-companyName,Your Company Ltd
+companyName,Axiom X Co., Ltd.
 currency,THB
 asOf,2026-06-28
-gmailConnected,false
-gmailImported,0
+gmailConnected,true
+gmailImported,3
+company,"{""legalName"":""AXIOM X CO., LTD."",""reg"":""0105569099335"",""name"":""Axiom X Co., Ltd."",""country"":""Thailand"",""industry"":""Technology · AI · Innovation consulting"",""founded"":""2026-05-28"",""address"":""16 Soi Phahonyothin 59 Yak 1, Anusawari, Bang Khen, Bangkok""}"

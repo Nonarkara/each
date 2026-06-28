@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { companyLookup } from '../../services/companyLookup'
 import { gmailService } from '../../services/gmail'
 import { ocrService } from '../../services/ocr'
+import { buildAxiomMockStore } from '../../data/axiom-mock'
 import { loadDemoStore, readStore } from '../../lib/store'
+import { exportSheetCsvBundle } from '../../services/sheets'
 import { money } from '../../lib/format'
 import type { Company } from '../../lib/types'
 import type { storeApi } from '../../lib/store'
@@ -88,6 +90,13 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
     onDone()
   }
 
+  function loadDemoAndExportSheets() {
+    const demo = buildAxiomMockStore()
+    api.load(demo)
+    exportSheetCsvBundle(demo)
+    onDone()
+  }
+
   function addManualCapital() {
     if (!manualTax || !manualAmt) return
     api.update((s) => {
@@ -108,6 +117,7 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
   }
 
   return (
+    <div className="min-h-screen overflow-y-auto">
     <div className="mx-auto max-w-[760px] px-4 py-8 sm:px-[22px]">
       <div className="mb-7 flex items-center gap-3">
         <span className="flex h-11 w-11 items-center justify-center border border-amber font-display text-lg font-bold text-amber">E</span>
@@ -121,10 +131,11 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
         <div className="mb-7 grid gap-px border border-line bg-line lg:grid-cols-[1.618fr_1fr]">
           <div className="bg-panel p-4">
             <p className="font-mono text-[11px] uppercase text-ink-3">Demo workspace</p>
-            <p className="mt-2 text-[14px] text-ink-2">Ikigai Finance Engine — pre-populated Thai AI-startup. 6 projects, real clients, 10.5M THB book.</p>
+            <p className="mt-2 text-[14px] text-ink-2">Axiom X Co., Ltd. — Ikigai Finance Engine mock-up. 6 projects, real clients, 10.5M THB book, ฿800K called capital.</p>
           </div>
           <div className="flex flex-col justify-center gap-3 bg-panel p-4">
-            <Btn onClick={loadDemo}>Load demo</Btn>
+            <Btn onClick={loadDemo}>Load Axiom demo</Btn>
+            <Btn variant="ghost" onClick={loadDemoAndExportSheets}>Load demo + export Sheets CSV</Btn>
             <span className="text-[14px] text-ink-3">or onboard your own below</span>
           </div>
         </div>
@@ -151,7 +162,7 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
             </label>
             <label className="block">
               <span className="font-mono text-[11px] uppercase text-ink-3">Registration number</span>
-              <Input value={company.reg || ''} onChange={(e) => setCompany((c) => ({ ...c, reg: e.target.value }))} placeholder="Try 0105566000000" className="mt-2" />
+              <Input value={company.reg || ''} onChange={(e) => setCompany((c) => ({ ...c, reg: e.target.value }))} placeholder="Try 0105569099335" className="mt-2" />
             </label>
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -166,7 +177,7 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
             <label className="block sm:col-span-2"><span className="font-mono text-[11px] uppercase text-ink-3">Registered address</span><Input value={company.address || ''} onChange={(e) => setCompany((c) => ({ ...c, address: e.target.value }))} className="mt-2" /></label>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-            <span className="text-[14px] text-ink-3">Tip: registration number 0105566000000 returns a full record.</span>
+            <span className="text-[14px] text-ink-3">Tip: registration number 0105569099335 returns Axiom X from the registry stub.</span>
             <Btn onClick={() => setStep(1)}>Continue</Btn>
           </div>
         </>
@@ -244,6 +255,7 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
           </div>
         </>
       ) : null}
+    </div>
     </div>
   )
 }

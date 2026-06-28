@@ -1,0 +1,8 @@
+id,name,vendor,role,plan,cost,currency,efficiency,started
+ai-1,Claude,Anthropic,Reasoning & writing,Max 5x,7000,THB,92,2026-06-01
+ai-2,Cursor,Anysphere,Engineering pair,Pro Plus,2100,THB,88,2026-06-01
+ai-3,ChatGPT,OpenAI,General & vision,Pro,700,THB,85,2026-06-01
+ai-4,Gemini,Google,Long-context research,Advanced,700,THB,79,2026-06-01
+ai-5,Kimi,Moonshot,Long-doc & CN market,Pro,3500,THB,70,2026-06-01
+ai-6,ZAD.ai,ZAD.ai,GLM inline edits,GLM 5.2,2100,THB,74,2026-06-01
+ai-7,LLM tokens,Various,API variable spend,OpenRouter / others,3500,THB,65,2026-06-01

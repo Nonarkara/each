@@ -1,4 +1,5 @@
 import type { EachStore } from '../lib/types'
+import { buildAxiomMockStore } from '../data/axiom-mock'
 import { seedStore } from '../lib/store'
 
 const WEB_APP_URL = import.meta.env.VITE_SHEETS_WEB_APP_URL as string | undefined
@@ -265,6 +266,172 @@ export function importJsonBackup(onLoad: (store: EachStore) => void): void {
     reader.readAsText(file)
   }
   input.click()
+}
+
+const TAB_SUFFIXES = [
+  'Metadata',
+  'foundingCapital',
+  'expenses',
+  'employees',
+  'aiEmployees',
+  'projects',
+  'loans',
+  'objectives',
+  'actions',
+] as const
+
+type TabSuffix = (typeof TAB_SUFFIXES)[number]
+
+function parseCsv(text: string): string[][] {
+  const rows: string[][] = []
+  let row: string[] = []
+  let cell = ''
+  let inQuotes = false
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]
+    const next = text[i + 1]
+    if (inQuotes) {
+      if (ch === '"' && next === '"') {
+        cell += '"'
+        i++
+      } else if (ch === '"') {
+        inQuotes = false
+      } else {
+        cell += ch
+      }
+      continue
+    }
+    if (ch === '"') {
+      inQuotes = true
+    } else if (ch === ',') {
+      row.push(cell)
+      cell = ''
+    } else if (ch === '\n' || (ch === '\r' && next === '\n')) {
+      row.push(cell)
+      rows.push(row)
+      row = []
+      cell = ''
+      if (ch === '\r') i++
+    } else if (ch !== '\r') {
+      cell += ch
+    }
+  }
+  if (cell.length || row.length) {
+    row.push(cell)
+    rows.push(row)
+  }
+  return rows.filter((r) => r.some((c) => c.trim() !== ''))
+}
+
+function tabFromFilename(name: string): TabSuffix | null {
+  const base = name.replace(/\.csv$/i, '')
+  for (const tab of TAB_SUFFIXES) {
+    if (base === tab || base.endsWith('-' + tab)) return tab
+  }
+  return null
+}
+
+function rowsToObjects(rows: string[][]): Record<string, unknown>[] {
+  if (rows.length < 2) return []
+  const headers = rows[0]
+  const out: Record<string, unknown>[] = []
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i]
+    const obj: Record<string, unknown> = {}
+    let empty = true
+    headers.forEach((h, j) => {
+      if (!h) return
+      let val: unknown = row[j] ?? ''
+      if (typeof val === 'string' && (val.startsWith('{') || val.startsWith('['))) {
+        try {
+          val = JSON.parse(val)
+        } catch {
+          /* keep string */
+        }
+      } else if (val !== '' && !Number.isNaN(Number(val)) && h !== 'id' && !h.includes('Date') && h !== 'title' && h !== 'objective' && h !== 'label' && h !== 'note' && h !== 'source' && h !== 'vendor' && h !== 'lender' && h !== 'name' && h !== 'client' && h !== 'clientId' && h !== 'owner' && h !== 'category' && h !== 'type' && h !== 'module' && h !== 'priority' && h !== 'plan' && h !== 'role' && h !== 'taxId' && h !== 'quarter' && h !== 'currency') {
+        val = Number(val)
+      }
+      if (val !== '') empty = false
+      obj[h] = val
+    })
+    if (!empty) out.push(obj)
+  }
+  return out
+}
+
+function applyMetadata(store: EachStore, rows: string[][]): void {
+  rows.slice(1).forEach((r) => {
+    const key = r[0]
+    let val: unknown = r[1] ?? ''
+    if (key === 'onboarded' || key === 'gmailConnected') val = val === 'true' || val === true
+    else if (key === 'gmailImported') val = Number(val) || 0
+    else if (key === 'company' && typeof val === 'string' && val.startsWith('{')) {
+      try {
+        val = JSON.parse(val)
+      } catch {
+        /* keep */
+      }
+    }
+    if (key === 'company') store.company = val as EachStore['company']
+    else if (key in store) (store as unknown as Record<string, unknown>)[key] = val
+  })
+}
+
+/** Import a CSV bundle (select all tab CSVs at once). Merges into one store. */
+export function importCsvBundle(onLoad: (store: EachStore) => void): void {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.csv,text/csv'
+  input.multiple = true
+  input.onchange = async () => {
+    const files = input.files
+    if (!files?.length) return
+    if (!window.confirm('Replace current data with these CSV files? This cannot be undone.')) return
+
+    const store = normalizeStore({})
+    const unmatched: string[] = []
+
+    await Promise.all(
+      Array.from(files).map(
+        (file) =>
+          new Promise<void>((resolve) => {
+            const reader = new FileReader()
+            reader.onload = () => {
+              const tab = tabFromFilename(file.name)
+              const rows = parseCsv(String(reader.result))
+              if (!tab) {
+                unmatched.push(file.name)
+                resolve()
+                return
+              }
+              if (tab === 'Metadata') {
+                applyMetadata(store, rows)
+              } else {
+                const arr = rowsToObjects(rows)
+                ;(store as unknown as Record<string, unknown>)[tab] = arr
+              }
+              resolve()
+            }
+            reader.readAsText(file)
+          }),
+      ),
+    )
+
+    store.onboarded = true
+    if (store.company?.legalName) store.companyName = store.company.legalName
+    else if (store.company?.name) store.companyName = store.company.name
+
+    if (unmatched.length) {
+      window.alert('Skipped unrecognized files: ' + unmatched.join(', '))
+    }
+    onLoad(store)
+  }
+  input.click()
+}
+
+/** Load Axiom demo and download sheet-ready CSV bundle in one step. */
+export function exportAxiomDemoCsvBundle(): void {
+  exportSheetCsvBundle(buildAxiomMockStore())
 }
 
 export async function loadFromSheets(): Promise<EachStore | null> {

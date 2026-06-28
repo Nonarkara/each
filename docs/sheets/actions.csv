@@ -1,0 +1,4 @@
+id,priority,label,module,done
+act_1,high,Invoice EDA Horizon — Jul 1 tranche (฿300K),act,false
+act_2,high,Schedule Chula scoping workshop,crm,false
+act_3,medium,Export investor dossier before next PMU check-in,dossier,false

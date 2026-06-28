@@ -13,6 +13,17 @@
 | **Created** | 2026-06-27 |
 | **Phase** | 0.5 — CRM2 port complete; Sheets manual + sync shipped |
 
+## Ikigai mock data sources
+
+| Path | What it contains |
+|------|------------------|
+| `dashboards/ikigai and co/data/tenant_ikigai.json` | **Primary** — Axiom X Co., Ltd. company profile, funding, projects, opex/capex, investor brief |
+| `CRM2/js/demo.js` | Prior Ikigai Finance Engine port (CRM2 lineage) |
+| `ikigai-finance-engine/README.md` | Research prototype docs (ABC Company Limited = separate fictitious tenant) |
+| `axiom/public/data/evidence-snapshot.json` | Axiom consultancy pipeline cross-reference |
+
+EACH demo store: `src/data/axiom-mock.ts` → `src/lib/demo.ts` → **Load Axiom demo** in onboarding.
+
 ## Human manual & Google Sheets
 
 | Resource | Path | Status |
@@ -107,7 +118,7 @@ npm run preview  # preview production build
 | `hr.js` | `src/modules/hr/HrModule.tsx` |
 | `crm.js` kanban | `src/modules/crm/CrmModule.tsx` |
 | `onboarding.js` | `src/modules/onboarding/Onboarding.tsx` |
-| `demo.js` | `src/lib/demo.ts` |
+| `demo.js` | `src/lib/demo.ts` + `src/data/axiom-mock.ts` |
 | `app.js` dossier | `src/modules/dossier/DossierView.tsx` |
 | Expense ledger (was ERP) | `src/modules/act/ActModule.tsx` |
 

@@ -15,14 +15,37 @@
 
 ## Ikigai mock data sources
 
-| Path | What it contains |
-|------|------------------|
-| `dashboards/ikigai and co/data/tenant_ikigai.json` | **Primary** — Axiom X Co., Ltd. company profile, funding, projects, opex/capex, investor brief |
-| `CRM2/js/demo.js` | Prior Ikigai Finance Engine port (CRM2 lineage) |
-| `ikigai-finance-engine/README.md` | Research prototype docs (ABC Company Limited = separate fictitious tenant) |
-| `axiom/public/data/evidence-snapshot.json` | Axiom consultancy pipeline cross-reference |
+| Path | Path | What it contains |
+|------|------|------------------|
+| **Axiom (auth)** | `dashboards/ikigai and co/data/tenant_ikigai.json` | Axiom X Co., Ltd. — funding, projects, opex/capex, investor brief |
+| **ABC (demo)** | `dashboards/ikigai and co/data/tenant_sic.json` | ABC Company Limited — Siam InnoCity failing startup, audited FY2025 |
+| Prior port | `CRM2/js/demo.js` | CRM2 lineage |
+| Research docs | `ikigai-finance-engine/README.md` | ABC Company fictitious tenant description |
 
-EACH demo store: `src/data/axiom-mock.ts` → `src/lib/demo.ts` → **Load Axiom demo** in onboarding.
+EACH stores: `src/data/axiom-mock.ts` (auth path) · `src/data/abc-mock.ts` (demo path)
+
+### Finance number reconciliation (Axiom)
+
+| Metric | Ikigai `tenant_ikigai.json` | EACH `calcFinance()` |
+|--------|----------------------------|----------------------|
+| Called capital | ฿800,000 | ฿800,000 |
+| Revenue received | ฿97,000 | ฿97,000 |
+| CapEx to date | ฿202,000 (Mac + AppleCare) | ฿202,175 (+ ฿175 Jun Cloudflare opex in ledger) |
+| Cash (static) | ฿695,000 (cap table) | ฿694,825 |
+| Monthly burn (Jun 2026) | ฿38,775 recurring opex sum | ฿38,775 (AI ฿19,600 + Mac installment ฿19,000 + opex ฿175) |
+| Runway (static) | ~18 mo at static cash/burn | 17 mo (floor) |
+
+**Root cause of ฿175 cash delta:** EACH records Jun Cloudflare opex (฿175) in `expenses`; Ikigai static capex sum excludes operating receipts. **Runway delta vs Ikigai dashboard:** Ikigai API builds a **month-by-month time series** with scheduled pipeline installments; EACH uses point-in-time conservation at `asOf`.
+
+## Auth (Phase 0)
+
+| Provider | Client env | Server secret |
+|----------|------------|---------------|
+| Google GIS | `VITE_GOOGLE_CLIENT_ID` | None — JWT verified client-side |
+| GitHub OAuth | `VITE_GITHUB_CLIENT_ID`, `VITE_GITHUB_REDIRECT_URI` | `GITHUB_CLIENT_SECRET` on Cloudflare Pages only |
+
+Cloudflare Pages Function: `functions/api/auth/github.js` exchanges OAuth code.  
+Demo path (`ABC`) skips OAuth — session flagged `demo: true` in sessionStorage (8 h TTL).
 
 ## Human manual & Google Sheets
 

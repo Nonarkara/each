@@ -1,0 +1,6 @@
+id,title,status,owner,client,clientId,totalValue,received,taxDeducted,receivedDate,dealStatus,scenarioTier,currency
+sic-opening-cash,Opening cash · FY2025 carry-forward,done,Finance,Treasury,,43181.7,43181.7,0,2026-04-01,commissioned,1,THB
+sic-services-runrate,ABC Index Engine · services run-rate,doing,Delivery,Client portfolio,,9716008.97,0,0,,commissioned,1,THB
+sic-gproc-2026,Samastiti Portal · G-Procurement 2026,backlog,Sales,Government sector · 12 contracts,,2905820.38,0,0,,pipeline,2,THB
+sic-citypulse-muni,CityPulse Analytics,doing,Delivery,Municipality · Client C,,1200000,0,0,,commissioned,1,THB
+sic-sciti-data,SCITI Data Layer,backlog,Sales,Provincial agency · Client D,,850000,0,0,,pipeline,2,THB

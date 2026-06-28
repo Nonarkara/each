@@ -129,8 +129,12 @@ export interface Loan {
   note?: string
 }
 
+export type DataTenant = 'axiom' | 'abc' | 'custom'
+
 export interface EachStore {
   onboarded: boolean
+  /** Which curated dataset backs this workspace. */
+  dataTenant?: DataTenant
   company: Company | null
   companyName: string
   currency: string

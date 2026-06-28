@@ -1,5 +1,5 @@
 import type { EachStore, Expense, RegistryHit } from './types'
-import { buildDemoStore } from './demo'
+import { buildAbcDemoStore, buildAxiomDemoStore } from './demo'
 import { today, uid } from './format'
 
 const KEY = 'each-store-v1'
@@ -121,8 +121,17 @@ export function resetStore(): void {
   storeApi.reset()
 }
 
+export function loadAxiomStore(): EachStore {
+  return storeApi.load(buildAxiomDemoStore())
+}
+
+export function loadAbcStore(): EachStore {
+  return storeApi.load(buildAbcDemoStore())
+}
+
+/** @deprecated Use loadAxiomStore */
 export function loadDemoStore(): EachStore {
-  return storeApi.load(buildDemoStore())
+  return loadAxiomStore()
 }
 
 const REGISTRY: Record<string, Omit<RegistryHit, 'found'>> = {

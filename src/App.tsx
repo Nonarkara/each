@@ -10,7 +10,15 @@ import { ActModule } from './modules/act'
 import { CrmModule } from './modules/crm'
 import { HrModule } from './modules/hr'
 import { DossierView } from './modules/dossier/DossierView'
+import { LoginGate } from './modules/auth/LoginGate'
+import { GitHubCallback } from './modules/auth/GitHubCallback'
 import { money } from './lib/format'
+import {
+  clearAuthSession,
+  getAuthSession,
+  setDemoSession,
+} from './lib/auth'
+import { loadAbcStore, loadAxiomStore, seedStore } from './lib/store'
 import {
   exportJsonBackup,
   exportSheetCsvBundle,
@@ -24,14 +32,26 @@ import {
 } from './services/sheets'
 import type { SyncStatus } from './services/sheets'
 
-type AppView = 'landing' | 'onboarding' | 'app'
+type AppView = 'login' | 'landing' | 'onboarding' | 'app'
 type AppRoute = ModuleId | 'dossier'
+
+function isGitHubCallbackPath(): boolean {
+  return /oauth\/github\/callback/i.test(window.location.pathname)
+}
+
+function initialView(): AppView {
+  const session = getAuthSession()
+  if (session?.dataPath === 'axiom' && !session.demo) return 'app'
+  if (session?.dataPath === 'abc' && session.demo) return 'app'
+  return 'login'
+}
 
 export default function App() {
   const [store, api] = useStore()
-  const [view, setView] = useState<AppView>(store.onboarded ? 'app' : 'landing')
+  const [view, setView] = useState<AppView>(initialView)
   const [route, setRoute] = useState<AppRoute>('erp')
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('local')
+  const [authError, setAuthError] = useState('')
 
   useEffect(() => {
     return subscribeSheetsSyncStatus(setSyncStatus)
@@ -44,23 +64,54 @@ export default function App() {
     })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps -- load once on mount
 
+  useEffect(() => {
+    const session = getAuthSession()
+    if (!session || store.onboarded) return
+    if (session.dataPath === 'axiom') loadAxiomStore()
+    else if (session.dataPath === 'abc') loadAbcStore()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- hydrate once from session
+
   const fin = useMemo(() => calcFinance(store), [store])
   const companyName = store.company?.legalName || store.companyName
   const safeRunway = fin.runwayMonths >= 6
-
-  function startOnboarding() {
-    setView('onboarding')
-  }
 
   function enterApp() {
     setView('app')
     setRoute('erp')
   }
 
+  function handleGoogleAuth() {
+    setAuthError('')
+    loadAxiomStore()
+    enterApp()
+  }
+
+  function handleGitHubAuth() {
+    setAuthError('')
+    loadAxiomStore()
+    enterApp()
+  }
+
+  function handleDemo() {
+    setAuthError('')
+    setDemoSession()
+    const abc = loadAbcStore()
+    exportSheetCsvBundle(abc)
+    enterApp()
+  }
+
+  function handleBlank() {
+    setAuthError('')
+    clearAuthSession()
+    api.load(seedStore())
+    setView('onboarding')
+  }
+
   function handleReset() {
-    if (!window.confirm('Clear all prototype data?')) return
+    if (!window.confirm('Clear all prototype data and sign out?')) return
+    clearAuthSession()
     api.reset()
-    setView('landing')
+    setView('login')
     setRoute('erp')
   }
 
@@ -92,11 +143,36 @@ export default function App() {
     importJsonBackup((obj) => api.load(obj))
   }
 
+  if (isGitHubCallbackPath()) {
+    return (
+      <GitHubCallback
+        onSuccess={handleGitHubAuth}
+        onError={(msg) => {
+          setAuthError(msg)
+          window.history.replaceState({}, '', import.meta.env.BASE_URL || './')
+          setView('login')
+        }}
+      />
+    )
+  }
+
+  if (view === 'login') {
+    return (
+      <LoginGate
+        onGoogleSuccess={handleGoogleAuth}
+        onGitHubSuccess={handleGitHubAuth}
+        onDemo={handleDemo}
+        onBlank={handleBlank}
+        error={authError}
+      />
+    )
+  }
+
   if (view === 'landing') {
     return (
       <div className="min-h-screen px-4 py-5 sm:px-[22px] sm:py-[22px]">
         <div className="mx-auto max-w-[1360px]">
-          <Hero onEnter={startOnboarding} />
+          <Hero onEnter={() => setView('onboarding')} />
           <section className="mt-8">
             <h2 className="mb-4 font-display text-[24px] font-semibold">Why EACH works</h2>
             <div className="grid gap-px border border-line bg-line md:grid-cols-2">
@@ -122,6 +198,15 @@ export default function App() {
   }
 
   const activeModule = MODULES.find((m) => m.id === route)
+  const session = getAuthSession()
+  const tenantLabel =
+    store.dataTenant === 'abc'
+      ? 'ABC demo'
+      : store.dataTenant === 'axiom'
+        ? 'Axiom'
+        : session?.demo
+          ? 'Demo'
+          : undefined
 
   return (
     <Shell
@@ -136,6 +221,7 @@ export default function App() {
       onSheetsSetup={handleSheetsSetup}
       syncLabel={sheetsSyncLabel(syncStatus)}
       syncStatus={syncStatus}
+      tenantLabel={tenantLabel}
       vitals={{
         cash: money(fin.cash, store.currency),
         runway: (Number.isFinite(fin.runwayMonths) ? fin.runwayMonths : '∞') + ' mo',
@@ -150,6 +236,7 @@ export default function App() {
       {activeModule ? (
         <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">
           Active: {activeModule.label} · as of {store.asOf}
+          {tenantLabel ? ` · ${tenantLabel}` : ''}
         </p>
       ) : null}
     </Shell>

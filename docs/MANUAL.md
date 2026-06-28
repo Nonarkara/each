@@ -19,24 +19,39 @@ Think of it as a LEGO workshop. **Projects** are models you build. **Expenses** 
 
 ---
 
+## Two entry paths
+
+EACH has **two curated workspaces** plus a blank onboarding path:
+
+| Path | How you enter | Company | Data source |
+|------|---------------|---------|-------------|
+| **Sign in** | Google or GitHub OAuth on the login screen | **Axiom X Co., Ltd.** | `dashboards/ikigai and co/data/tenant_ikigai.json` |
+| **Try demo** | “Try demo — ABC Company (no account)” | **ABC Company Limited** | `dashboards/ikigai and co/data/tenant_sic.json` |
+| **Start blank** | “Start blank — onboard your own company” | Yours | Empty store → onboarding |
+
+OAuth opens **Axiom** (healthy pre-seed consultancy: ฿800K called capital, TKC + EDA pipeline).  
+Demo opens **ABC** (failing startup case study: ฿43K cash, ~฿351K/mo burn, negative equity).
+
+---
+
 ## Quick start — 15 minutes (Sheets-first)
 
-### Step 0 · Load the Axiom demo (optional, 1 min)
+### Step 0 · Choose your path (1 min)
 
-The fastest way to see a working ERP without typing anything:
+1. Open **https://each.nonarkara.org**
+2. **Sign in with Google** or **Sign in with GitHub** → Axiom X workspace (requires OAuth keys — see `.env.example`)
+3. Or **Try demo — ABC Company** → immediate access, no account; nine CSV files download for Google Sheets
+4. Or **Start blank** → three-step onboarding for your own company
 
-1. Open **https://each.nonarkara.org** → **Enter prototype**.
-2. On the onboarding screen, click **Load Axiom demo**.
-   - This loads **Axiom X Co., Ltd.** — the Ikigai Finance Engine mock company (฿800K called capital, 6 live deals, MacBook installment + AI stack).
-3. Or click **Load demo + export Sheets CSV** — same data, plus nine CSV files download immediately. Import those into Google Sheets (Step 4 below).
+ABC CSV templates (same data as the demo button): **`docs/sheets/abc-demo/*.csv`**
 
-Copy-paste templates with the same data live in **`docs/sheets/*.csv`** if you prefer to start in Sheets first, then **Import → 2** in the app.
+Axiom CSV templates: **`docs/sheets/*.csv`**
 
 ### Step 1 · Open the app (2 min)
 
 1. Go to **https://each.nonarkara.org** (or run locally: `npm install && npm run dev`).
-2. Choose **Load Axiom demo** to explore the Ikigai mock-up, or **Start blank** for your own company.
-3. Complete onboarding: company name → registry lookup (or manual entry) → founding capital → skip or connect Gmail.
+2. **Sign in** for Axiom, **Try demo** for ABC, or **Start blank** for your own company.
+3. If blank: complete onboarding — company name → registry lookup → founding capital → Gmail.
 
 Your numbers appear in the header: **Cash** and **Runway**.
 

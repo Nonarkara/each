@@ -1,0 +1,10 @@
+id,name,role,salary,currency,started
+emp-a,Mr. A,CEO,120000,THB,2019-07-09
+emp-b,Mr. B,CTO,30000,THB,2019-07-09
+emp-c,Mr. C,Sales,20000,THB,2020-01-01
+emp-d,Ms. D,Research,20000,THB,2021-06-01
+oh-insurance,Employee insurance & benefits,Overhead,18000,THB,2026-04-01
+oh-office,Office rental · Pak Kret,Overhead,58000,THB,2026-04-01
+oh-biz,Business expenses,Overhead,32000,THB,2026-04-01
+oh-fuel,Fuel & transport,Overhead,12000,THB,2026-04-01
+oh-software,Software & cloud platforms,Overhead,25996.55,THB,2026-04-01

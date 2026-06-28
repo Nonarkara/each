@@ -1,0 +1,4 @@
+id,priority,label,module,done
+abc-a1,high,Emergency: negotiate payables stretch (฿4.31M AP vs ฿43K cash),act,false
+abc-a2,high,Cut CEO salary — Mr. A is 35.7% of operating burn,hr,false
+abc-a3,medium,Harden cyber posture (external rating F) before gov scale-up,erp,false

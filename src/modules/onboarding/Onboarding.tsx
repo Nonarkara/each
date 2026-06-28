@@ -2,9 +2,7 @@ import { useState } from 'react'
 import { companyLookup } from '../../services/companyLookup'
 import { gmailService } from '../../services/gmail'
 import { ocrService } from '../../services/ocr'
-import { buildAxiomMockStore } from '../../data/axiom-mock'
-import { loadDemoStore, readStore } from '../../lib/store'
-import { exportSheetCsvBundle } from '../../services/sheets'
+import { readStore } from '../../lib/store'
 import { money } from '../../lib/format'
 import type { Company } from '../../lib/types'
 import type { storeApi } from '../../lib/store'
@@ -81,19 +79,8 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
       companyName: company.legalName || company.name || 'Startup',
       currency: company.currency || cur,
       onboarded: true,
+      dataTenant: 'custom',
     })
-    onDone()
-  }
-
-  function loadDemo() {
-    loadDemoStore()
-    onDone()
-  }
-
-  function loadDemoAndExportSheets() {
-    const demo = buildAxiomMockStore()
-    api.load(demo)
-    exportSheetCsvBundle(demo)
     onDone()
   }
 
@@ -125,20 +112,6 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
           <p className="font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">ERP + ACT + CRM + HR · for the startup</p>
         </div>
       </div>
-
-      {step === 0 ? (
-        <div className="mb-7 grid gap-px border border-line bg-line lg:grid-cols-[1.618fr_1fr]">
-          <div className="bg-panel p-4">
-            <p className="font-mono text-[11px] uppercase text-ink-3">Demo workspace</p>
-            <p className="mt-2 text-[14px] text-ink-2">Axiom X Co., Ltd. — Ikigai Finance Engine mock-up. 6 projects, real clients, 10.5M THB book, ฿800K called capital.</p>
-          </div>
-          <div className="flex flex-col justify-center gap-3 bg-panel p-4">
-            <Btn onClick={loadDemo}>Load Axiom demo</Btn>
-            <Btn variant="ghost" onClick={loadDemoAndExportSheets}>Load demo + export Sheets CSV</Btn>
-            <span className="text-[14px] text-ink-3">or onboard your own below</span>
-          </div>
-        </div>
-      ) : null}
 
       <div className="mb-8 flex flex-wrap gap-4">
         {labels.map((l, idx) => (

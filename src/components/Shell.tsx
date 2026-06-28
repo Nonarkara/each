@@ -14,6 +14,7 @@ interface ShellProps {
   onSheetsSetup?: () => void
   syncLabel?: string
   syncStatus?: 'local' | 'loading' | 'saving' | 'saved' | 'error'
+  tenantLabel?: string
   vitals?: { cash: string; runway: string; runwayRisk?: boolean }
   children: ReactNode
 }
@@ -30,6 +31,7 @@ export function Shell({
   onSheetsSetup,
   syncLabel,
   syncStatus = 'local',
+  tenantLabel,
   vitals,
   children,
 }: ShellProps) {
@@ -57,6 +59,7 @@ export function Shell({
                 <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-ink">EACH</p>
                 <p className="font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">
                   {companyName || 'Startup / SME'}
+                  {tenantLabel ? ` · ${tenantLabel}` : ''}
                 </p>
               </div>
             </div>

@@ -26,7 +26,8 @@ export function buildAxiomMockStore(): EachStore {
     },
     companyName: 'Axiom X Co., Ltd.',
     currency: 'THB',
-    asOf: '2026-06-28',
+    asOf: '2026-06-26',
+    dataTenant: 'axiom',
     foundingCapital: [
       {
         id: 'fc_pmu',

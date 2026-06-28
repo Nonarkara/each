@@ -1,7 +1,11 @@
 import type { EachStore, FinanceCalc } from './types'
 import { sum, today } from './format'
 
-/** Finance engine — deterministic. Phase 2 swaps data source, not this logic. */
+/** Finance engine — deterministic. Phase 2 swaps data source, not this logic.
+ *  Source of truth for static snapshot: cash = founding + received − totalExpenses;
+ *  burn = human + AI + debt service + this month's opex.
+ *  Ikigai dashboard API also runs month-by-month time series with scheduled installments —
+ *  runway there can differ when pipeline cash is projected forward. */
 export function calcFinance(s: EachStore): FinanceCalc {
   const cur = s.currency
   const founding = sum(s.foundingCapital, 'amount')

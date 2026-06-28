@@ -25,6 +25,7 @@ Your data is saved automatically when you are online. A small dot in the top bar
 ### Top bar
 - **Cash / Runway** — quick numbers. If runway is below 6 months, the number turns red.
 - **Export** — download your full data as a JSON backup.
+- **Sheets** — download 4 CSV files ready for Google Sheets.
 - **Import** — restore from a JSON backup.
 - **Reset** — wipe everything and start over.
 
@@ -71,11 +72,12 @@ Your data is saved automatically when you are online. A small dot in the top bar
 3. Review the **Balance sheet** and **Profit & loss**.
 4. You can also add manual journal entries with **+ Manual entry**. Debits must equal credits.
 
-## Backups
+## Backups & Google Sheets
 
 - Click **Export** in the top bar anytime to download a JSON file.
-- Keep the file somewhere safe (your computer or cloud drive).
-- To restore, click **Import** and choose the JSON file. This replaces your current data.
+- Click **Sheets** to download four CSV files: finances, people, projects, and journal.
+- Open any CSV in Google Sheets with **File → Import → Upload**.
+- To restore from a JSON backup, click **Import** and choose the file. This replaces your current data.
 
 ## Troubleshooting
 

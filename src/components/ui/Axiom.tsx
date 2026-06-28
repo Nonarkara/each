@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 
 interface StationProps {
   disc: string
@@ -120,9 +120,18 @@ interface ModalProps {
 }
 
 export function Modal({ title, open, onClose, children, actions }: ModalProps) {
+  useEffect(() => {
+    if (!open) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [open])
+
   if (!open) return null
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-ink/40 p-4 sm:items-center" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[100] flex items-end justify-center overflow-y-auto overscroll-contain bg-ink/40 p-4 sm:items-center" role="dialog" aria-modal="true">
       <div className="max-h-[90vh] w-full max-w-lg overflow-auto border border-line-2 bg-panel">
         <div className="flex items-center justify-between border-b border-line px-4 py-3">
           <h3 className="font-display text-[18px] font-semibold">{title}</h3>

@@ -42,7 +42,7 @@ export function Shell({
           ? 'bg-ink-3'
           : 'bg-ink-3'
   return (
-    <div className="flex min-h-screen flex-col overflow-y-auto">
+    <div>
       <header className="sticky top-0 z-50 border-b border-line-2 bg-paper">
         <div className="mx-auto flex max-w-[1360px] flex-col gap-3 px-4 py-3 lg:px-[22px]">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -121,7 +121,7 @@ export function Shell({
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[1360px] flex-1 px-4 py-5 sm:px-[22px] sm:py-[22px]">
+      <main className="mx-auto w-full max-w-[1360px] px-4 py-5 sm:px-[22px] sm:py-[22px]">
         {children}
       </main>
     </div>

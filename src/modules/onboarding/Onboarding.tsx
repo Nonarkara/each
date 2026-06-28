@@ -117,7 +117,6 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
   }
 
   return (
-    <div className="min-h-screen overflow-y-auto">
     <div className="mx-auto max-w-[760px] px-4 py-8 sm:px-[22px]">
       <div className="mb-7 flex items-center gap-3">
         <span className="flex h-11 w-11 items-center justify-center border border-amber font-display text-lg font-bold text-amber">E</span>
@@ -255,7 +254,6 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
           </div>
         </>
       ) : null}
-    </div>
     </div>
   )
 }

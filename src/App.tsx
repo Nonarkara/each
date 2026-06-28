@@ -94,7 +94,7 @@ export default function App() {
 
   if (view === 'landing') {
     return (
-      <div className="min-h-screen overflow-y-auto px-4 py-5 sm:px-[22px] sm:py-[22px]">
+      <div className="min-h-screen px-4 py-5 sm:px-[22px] sm:py-[22px]">
         <div className="mx-auto max-w-[1360px]">
           <Hero onEnter={startOnboarding} />
           <section className="mt-8">

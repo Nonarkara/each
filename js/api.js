@@ -1,14 +1,22 @@
-/* api.js — The API shim layer. Phase 2 replaces these with fetch() calls to Frappe REST. */
-(function(global) {
+/* api.js — API shim. Mutations go to the local store, then fan-out to:
+   - D1 cache (window.Sync, debounced 1.2s)
+   - Google Sheet (window.SheetsSync, debounced 1.2s) — only if configured
+   The sheets write is no-op until the user pastes a Web App URL in Settings. */
+(function (global) {
   'use strict';
   const D = window.Data;
   const uid = D.uid;
 
-  // Internal helper to update state instantly in prototype phase
+  function syncToGoogleSheets(state) {
+    if (!window.SheetsSync || !window.SheetsSync.isConfigured()) return;
+    window.SheetsSync.scheduleSave(state);
+  }
+
   function set(fn) {
     D.Store.update(st => {
-      const next = fn(st);
-      return next || st; // fallback
+      const next = fn(st) || st;
+      syncToGoogleSheets(next);
+      return next;
     });
   }
 

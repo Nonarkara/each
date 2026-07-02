@@ -5,18 +5,41 @@
   const D = window.Data;
 
   const ROUTES = [
-    { id: 'erp',     disc: 'F', kicker: 'PILLAR 01', label: 'Finances' },
-    { id: 'hr',      disc: 'H', kicker: 'PILLAR 02', label: 'People' },
-    { id: 'crm',     disc: 'P', kicker: 'PILLAR 03', label: 'Projects' },
-    { id: 'acct',    disc: 'A', kicker: 'PILLAR 04', label: 'Accounting' },
-    { id: 'dossier', disc: 'I', kicker: 'EXPORT',    label: 'Dossier' },
+    { id: 'erp', disc: 'F', kicker: 'PILLAR 01', label: 'Finances' },
+    { id: 'hr', disc: 'H', kicker: 'PILLAR 02', label: 'People' },
+    { id: 'crm', disc: 'P', kicker: 'PILLAR 03', label: 'Projects' },
+    { id: 'acct', disc: 'A', kicker: 'PILLAR 04', label: 'Accounting' },
+    { id: 'dossier', disc: 'I', kicker: 'EXPORT', label: 'Dossier' },
   ];
   let current = 'erp';
 
-  function mount() {
+  function hasBackend() {
+    return location.protocol === 'http:' || location.protocol === 'https:';
+  }
+
+  async function mount() {
     const root = document.getElementById('root');
     clear(root);
-    const s = D.Store.get();
+
+    // Auth gate: only when served from a real backend (http/https).
+    // file:// and offline mode skip auth and use localStorage directly.
+    if (hasBackend()) {
+      const user = await Auth.me();
+      if (!user) {
+        root.appendChild(Auth.renderAuthScreen(mount));
+        return;
+      }
+    }
+
+    let s = D.Store.get();
+    if (!s) {
+      root.appendChild(el('div', { style: 'padding:40px;color:var(--ink-2)' },
+        el('div.t-hero', { text: 'EACH' }),
+        el('div.meta', { text: 'Loading your workspace...' })));
+      s = await D.boot();
+      clear(root);
+    }
+
     if (!s.onboarded) { root.appendChild(Onboarding.render(done)); return; }
 
     root.appendChild(el('div.app-shell', null, cockpit(s), el('main#view.main')));
@@ -31,13 +54,41 @@
 
     const fin = ERP.calc(s);
     const syncWrap = el('div.row-c.gap-s', null,
-      el('span.live-dot'), el('span.label-meta', { text: 'Live' }));
+      el('span.live-dot'), el('span.label-meta', { text: 'Cache' }));
     if (window.Sync) window.Sync.mountIndicator(syncWrap);
+
+    // Sheets sync — first-class affordance. The pill is the dashboard for the data store.
+    const sheetsConnected = window.SheetsSync && window.SheetsSync.isConfigured();
+    const sheetsLabel = window.SheetsSync ? window.SheetsSync.statusLabel() : '';
+    const sheetsDot = el('span', {
+      class: 'sync-status sheets ' + ((window.SheetsSync && window.SheetsSync.getStatus()) || 'idle'),
+      title: sheetsLabel,
+    });
+    const sheetsText = el('span.label-meta', { text: sheetsConnected ? sheetsLabel : 'No Sheet' });
+    const sheetsIndicator = el('div.sheets-pill', {
+      onclick: () => window.SheetsSync && window.SheetsSync.openSettings(),
+      title: sheetsConnected ? 'Sheet connected — click to manage' : 'Connect Google Sheet',
+      style: 'cursor:pointer',
+    },
+      sheetsDot, sheetsText);
 
     const vitals = el('div.row.gap-l', null,
       mini('Cash', D.money(fin.cash, s.currency), 'On hand'),
       mini('Runway', fin.runwayMonths + ' mo', fin.runwayMonths < 6 ? 'Below safe line' : 'At current burn'),
+      sheetsIndicator,
       syncWrap);
+
+    const u = Auth.user();
+    const userChip = u
+      ? el('div.row-c.gap-s', null,
+        el('span.disc.sm.ink', { text: (u.name || u.email || '?').charAt(0).toUpperCase(), title: u.name + ' · ' + u.email }),
+        el('button.btn.link', { text: 'Log out', title: u.email, onclick: doLogout }))
+      : null;
+
+    const sheetsCtaText = sheetsConnected ? 'Sheet' : 'Connect Sheet';
+    const sheetsCtaTitle = sheetsConnected
+      ? 'Sheet connected — manage or refresh'
+      : 'Set up Google Sheets as your data store';
 
     return el('header.cockpit', null,
       el('div.cockpit-bar', null,
@@ -47,10 +98,27 @@
         vitals,
         el('div.row-c.gap-m', null,
           el('button.btn.link', { text: 'Export', title: 'Download JSON backup', onclick: exportData }),
-          el('button.btn.link', { text: 'Sheets', title: 'Export to Google Sheets CSV (4 files)', onclick: () => Sheets.exportAll() }),
+          sheetsConnected
+            ? el('button.btn.link', { text: 'CSV', title: 'Export 4 CSV files ready for Google Sheets', onclick: () => Sheets.exportAll() })
+            : null,
+          el('button.btn' + (sheetsConnected ? '.link' : '.blue.sm'), {
+            text: sheetsCtaText, title: sheetsCtaTitle,
+            onclick: () => window.SheetsSync && window.SheetsSync.openSettings(),
+          }),
           el('button.btn.link', { text: 'Import', title: 'Restore from a backup file', onclick: importData }),
-          el('button.btn.link', { text: 'Reset',
-            onclick: () => { if (confirm('Clear all prototype data?')) { D.Store.reset(); location.reload(); } } }))));
+          userChip)));
+  }
+
+  // Expose helper so onboard flow can prompt for Sheets URL too.
+  function promptSheetsIfNotConfigured() {
+    if (!window.SheetsSync || window.SheetsSync.isConfigured()) return;
+    setTimeout(() => window.SheetsSync.openSettings(), 200);
+  }
+
+  async function doLogout() {
+    await Auth.logout();
+    D.Store.update(s => { s._cached = true; return s; }); // no-op to avoid stale
+    location.reload();
   }
 
   function mark(companyName) {
@@ -103,10 +171,10 @@
 
     const debtFacts = (s.loans && s.loans.length)
       ? el('div.hgrid.g-4', { style: 'margin-bottom:22px' },
-          cell('Total debt', D.money(fin.totalDebt, s.currency), s.loans.length + ' loans'),
-          cell('Monthly debt service', D.money(fin.monthlyDebtService, s.currency), 'Included in burn'),
-          cell('Net cash position', D.money(fin.cash - fin.totalDebt, s.currency), 'Cash less debt'),
-          cell('Founding capital', D.money(fin.founding, s.currency), s.foundingCapital.length + ' entries'))
+        cell('Total debt', D.money(fin.totalDebt, s.currency), s.loans.length + ' loans'),
+        cell('Monthly debt service', D.money(fin.monthlyDebtService, s.currency), 'Included in burn'),
+        cell('Net cash position', D.money(fin.cash - fin.totalDebt, s.currency), 'Cash less debt'),
+        cell('Founding capital', D.money(fin.founding, s.currency), s.foundingCapital.length + ' entries'))
       : null;
 
     const narrative = el('div.split-phi', null,
@@ -140,12 +208,12 @@
     const rows = s.projects.slice().sort((a, b) => order[a.status] - order[b.status]);
     return '<thead><tr><th>Project</th><th>Status</th><th>Owner</th><th class="num">Tasks</th></tr></thead><tbody>'
       + rows.map(p => {
-          const done = (p.checklist || []).filter(c => c.done).length, tot = (p.checklist || []).length;
-          return '<tr><td>' + UI.esc(p.title) + '</td><td>' + UI.esc(p.status.toUpperCase()) + '</td><td>' + UI.esc(p.owner) + '</td><td class="num">' + done + '/' + tot + '</td></tr>';
-        }).join('') + '</tbody>';
+        const done = (p.checklist || []).filter(c => c.done).length, tot = (p.checklist || []).length;
+        return '<tr><td>' + UI.esc(p.title) + '</td><td>' + UI.esc(p.status.toUpperCase()) + '</td><td>' + UI.esc(p.owner) + '</td><td class="num">' + done + '/' + tot + '</td></tr>';
+      }).join('') + '</tbody>';
   }
 
-  function done() { mount(); go('erp'); }
+  function done() { mount(); /* mount() invokes go() itself */ }
 
   function exportData() {
     const blob = new Blob([JSON.stringify(D.Store.get(), null, 2)], { type: 'application/json' });

@@ -3,11 +3,28 @@
   'use strict';
   const KEY = 'axiom_crm2_state_v1';
   const listeners = new Set();
-  let state = load();
+  let state = null;
 
-  function load() {
-    try { const raw = localStorage.getItem(KEY); if (raw) { const s = JSON.parse(raw); return migrate(s); } } catch (e) {}
-    return seed();
+  async function boot() {
+    // 1. If a Google Sheet is configured, it's the system of record — boot from it.
+    if (global.SheetsSync && global.SheetsSync.isConfigured()) {
+      try {
+        const remote = await global.SheetsSync.loadAll();
+        if (remote && Object.keys(remote).length) {
+          state = migrate(remote);
+          persist();
+          return state;
+        }
+      } catch (e) { console.error('Sheets boot failed:', e); }
+    }
+
+    // 2. Otherwise fall back to localStorage (per-browser cache).
+    try { const raw = localStorage.getItem(KEY); if (raw) { const s = JSON.parse(raw); state = migrate(s); return state; } } catch (e) {}
+
+    // 3. No data anywhere — seed a fresh workspace.
+    state = seed();
+    persist();
+    return state;
   }
   function migrate(s) {
     if (!s.accounts || !s.accounts.length) s.accounts = seedAccounts();
@@ -136,6 +153,6 @@
     catch (e) { return (n || 0).toFixed(0); }
   }
 
-  global.Data = { Store, registryLookup, gmailReceipts, money, compact, uid: () => 'id-' + Math.random().toString(36).slice(2, 9) };
+  global.Data = { Store, boot, registryLookup, gmailReceipts, money, compact, uid: () => 'id-' + Math.random().toString(36).slice(2, 9) };
 })(window);
 

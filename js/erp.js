@@ -116,22 +116,37 @@
   /* Credit & installments — borrowed blocks that must be paid back. */
   function loans(s, f, remount) {
     const add = () => {
-      const lender = el('input.input', { placeholder: 'Lender' });
-      const principal = el('input.input', { type: 'number', placeholder: 'Principal remaining' });
-      const rate = el('input.input', { type: 'number', placeholder: 'Annual rate %' });
-      const term = el('input.input', { type: 'number', placeholder: 'Term in months' });
-      const installment = el('input.input', { type: 'number', placeholder: 'Monthly installment' });
+      const lenderInp = el('input.input', { placeholder: 'e.g. SCB SME Loan' });
+      const principalInp = el('input.input', { type: 'number', min: '0', step: '0.01', placeholder: '0' });
+      const rateInp = el('input.input', { type: 'number', min: '0', step: '0.1', placeholder: '0' });
+      const termInp = el('input.input', { type: 'number', min: '0', step: '1', placeholder: '0' });
+      const installmentInp = el('input.input', { type: 'number', min: '0', step: '0.01', placeholder: '0' });
+      const currencySel = el('select.select', null, ...['THB','USD','EUR','GBP','JPY','SGD','CNY','AUD','CAD'].map(c => el('option', { value: c, text: c, selected: c === s.currency ? 'selected' : null })));
+
+      const fLender = UI.formField('Lender', lenderInp, 'Bank, credit card, or person you owe');
+      const fPrincipal = UI.formField('Principal remaining', principalInp);
+      const fRate = UI.formField('Annual interest rate', rateInp, 'Percent, e.g. 6.5');
+      const fTerm = UI.formField('Term', termInp, 'Months remaining');
+      const fInstallment = UI.formField('Monthly installment', installmentInp);
+      const fCurrency = UI.formField('Currency', currencySel);
+
       const body = el('div.stack.gap-m', null,
-        el('div.hgrid.g-2', null, cell2('Lender', lender), cell2('Principal (' + s.currency + ')', principal)),
-        el('div.hgrid.g-2', null, cell2('Annual rate %', rate), cell2('Term (months)', term)),
-        el('div.hgrid.g-2', null, cell2('Monthly installment (' + s.currency + ')', installment), el('div.cell')));
+        fLender.wrap,
+        el('div.hgrid.g-2', null, fPrincipal.wrap, fCurrency.wrap),
+        el('div.hgrid.g-2', null, fRate.wrap, fTerm.wrap),
+        fInstallment.wrap);
+
       const m = UI.modal('Add loan / credit line', body, [
         el('button.btn.ghost', { text: 'Cancel', onclick: () => m.close() }),
         el('button.btn', { text: 'Record', onclick: () => {
-          const inst = Number(installment.value) || 0;
-          const prin = Number(principal.value) || 0;
-          if (!lender.value || prin <= 0 || inst <= 0) return;
-          Data.Store.update(st => { st.loans.push({ id: D.uid(), lender: lender.value, principal: prin, rate: Number(rate.value) || 0, termMonths: Number(term.value) || 0, installment: inst, currency: st.currency, startDate: today(), note: '' }); return st; });
+          [fLender, fPrincipal, fRate, fTerm, fInstallment].forEach(f => f.clear());
+          const inst = Number(installmentInp.value) || 0;
+          const prin = Number(principalInp.value) || 0;
+          if (!lenderInp.value.trim()) { fLender.setError('Lender is required.'); return; }
+          if (prin <= 0) { fPrincipal.setError('Principal must be greater than 0.'); return; }
+          if (inst <= 0) { fInstallment.setError('Installment must be greater than 0.'); return; }
+          Data.Store.update(st => { st.loans.push({ id: D.uid(), lender: lenderInp.value.trim(), principal: prin, rate: Number(rateInp.value) || 0, termMonths: Number(termInp.value) || 0, installment: inst, currency: currencySel.value || st.currency, startDate: today(), note: '' }); return st; });
+          UI.toast('Loan added: ' + lenderInp.value.trim(), 'success');
           m.close(); remount();
         } }),
       ]);
@@ -141,12 +156,21 @@
       '<tr><td>' + UI.esc(l.lender) + '</td><td class="num">' + D.money(l.principal, l.currency || s.currency) + '</td>' +
       '<td class="num">' + (l.rate || 0) + '%</td><td class="num">' + (l.termMonths || '—') + '</td>' +
       '<td class="num">' + D.money(l.installment, l.currency || s.currency) + '</td>' +
-      '<td style="text-align:right"><button class="btn link red sm" onclick="if(confirm(\'Remove loan from ' + UI.esc(l.lender) + '?\')) { Data.Store.update(st => { st.loans = st.loans.filter(x => x.id !== \'' + l.id + '\'); return st; }); App.remount(); }">×</button></td></tr>').join('');
+      '<td style="text-align:right"><button class="btn link red sm" data-rm-loan="' + l.id + '">×</button></td></tr>').join('');
+
+    const table = el('table.axiom', { html: '<thead><tr><th>Lender</th><th class="num">Principal</th><th class="num">Rate</th><th class="num">Term</th><th class="num">Installment</th><th></th></tr></thead><tbody>'
+        + (rows || '<tr><td colspan="6" class="empty">No loans. Borrowed blocks appear here.</td></tr>') + '</tbody>' });
+    table.addEventListener('click', (e) => {
+      const id = e.target?.dataset?.rmLoan;
+      if (id) {
+        const loan = (Data.Store.get().loans || []).find(x => x.id === id);
+        if (loan) UI.confirm('Remove loan from ' + loan.lender + '? This will reduce your monthly burn.', { title: 'Remove loan', danger: true, confirmText: 'Remove' }).then(ok => { if (ok) { Data.Store.update(st => { st.loans = st.loans.filter(x => x.id !== id); return st; }); UI.toast('Loan removed', 'info'); remount(); } });
+      }
+    });
 
     return el('div', { style: 'margin-bottom:22px' },
       el('div.sec-head', null, el('span.label', { text: 'Credit & installments' }), el('span.label-meta', { text: (s.loans || []).length + ' loans · ' + D.money(f.totalDebt, f.cur) + ' owed · ' + D.money(f.monthlyDebtService, f.cur) + ' / mo' })),
-      el('table.axiom', { html: '<thead><tr><th>Lender</th><th class="num">Principal</th><th class="num">Rate</th><th class="num">Term</th><th class="num">Installment</th><th></th></tr></thead><tbody>'
-        + (rows || '<tr><td colspan="6" class="empty">No loans. Borrowed blocks appear here.</td></tr>') + '</tbody>' }),
+      table,
       el('button.btn.ghost.sm', { text: '+ Add loan', style: 'margin-top:10px', onclick: add }),
       f.monthlyDebtService ? el('div.note-callout', { style: 'margin-top:10px' }, el('div.label', { text: 'Note', style: 'margin-bottom:4px' }), 'Debt service is included in monthly burn and runway.') : null);
   }
@@ -251,20 +275,40 @@
   /* Ledger — startup-transparent. Everyone sees everyone's expenses. */
   function ledger(s, remount) {
     const add = () => {
-      const vendor = el('input.input', { placeholder: 'Vendor' });
-      const v = el('input.input', { type: 'number', placeholder: '0' });
-      const cat = el('input.input', { placeholder: 'Category' });
-      const type = el('select.select', null, el('option', { value: 'opex', text: 'OpEx' }), el('option', { value: 'capex', text: 'CapEx' }));
+      const vendorInp = el('input.input', { placeholder: 'e.g. AWS, Figma, Apple' });
+      const amtInp = el('input.input', { type: 'number', min: '0', step: '0.01', placeholder: '0' });
+      const catInp = el('input.input', { placeholder: 'e.g. Cloud, Hardware, Office' });
+      const typeSel = el('select.select', null,
+        el('option', { value: 'opex', text: 'OpEx — daily operations' }),
+        el('option', { value: 'capex', text: 'CapEx — durable asset' }));
+      const ownerInp = el('input.input', { value: 'Founder', placeholder: 'Who paid' });
+      const dateInp = el('input.input', { type: 'date', value: today() });
+      const currencySel = el('select.select', null, ...['THB','USD','EUR','GBP','JPY','SGD','CNY','AUD','CAD'].map(c => el('option', { value: c, text: c, selected: c === s.currency ? 'selected' : null })));
+
+      const fVendor = UI.formField('Vendor', vendorInp);
+      const fAmt = UI.formField('Amount', amtInp);
+      const fCat = UI.formField('Category', catInp, 'Used for charts and breakdowns');
+      const fType = UI.formField('Type', typeSel);
+      const fOwner = UI.formField('Owner', ownerInp, 'Who paid — for accountability');
+      const fDate = UI.formField('Date', dateInp);
+      const fCurrency = UI.formField('Currency', currencySel);
+
       const body = el('div.stack.gap-m', null,
-        el('div.hgrid.g-2', null, cell2('Vendor', vendor), cell2('Amount (' + s.currency + ')', v)),
-        el('div.hgrid.g-2', null, cell2('Category', cat), cell2('Type', type)));
+        el('div.hgrid.g-2', null, fVendor.wrap, fAmt.wrap),
+        el('div.hgrid.g-2', null, fCat.wrap, fType.wrap),
+        el('div.hgrid.g-3', null, fDate.wrap, fOwner.wrap, fCurrency.wrap));
+
       const m = UI.modal('Add expense', body, [
         el('button.btn.ghost', { text: 'Cancel', onclick: () => m.close() }),
         el('button.btn', { text: 'Record', onclick: () => {
-          const amt = Number(v.value);
-          if (!vendor.value || !v.value) return;
-          if (amt <= 0) { alert('Amount must be greater than 0.'); return; }
-          API.addExpense({ date: today(), vendor: vendor.value, category: cat.value || '—', type: type.value, amount: amt, currency: s.currency, source: 'Manual', owner: 'Founder' });
+          [fVendor, fAmt, fCat, fType, fOwner, fDate, fCurrency].forEach(f => f.clear());
+          const amt = Number(amtInp.value);
+          if (!vendorInp.value.trim()) { fVendor.setError('Vendor is required.'); return; }
+          if (!amtInp.value) { fAmt.setError('Amount is required.'); return; }
+          if (isNaN(amt)) { fAmt.setError('Amount must be a number.'); return; }
+          if (amt <= 0) { fAmt.setError('Amount must be greater than 0.'); return; }
+          API.addExpense({ date: dateInp.value || today(), vendor: vendorInp.value.trim(), category: catInp.value.trim() || '—', type: typeSel.value, amount: amt, currency: currencySel.value || s.currency, source: 'Manual', owner: ownerInp.value.trim() || 'Founder' });
+          UI.toast('Expense recorded: ' + D.money(amt, currencySel.value || s.currency), 'success');
           m.close(); remount();
         } }),
       ]);
@@ -273,13 +317,22 @@
     const rows = s.expenses.slice().reverse().map(e =>
       '<tr><td>' + UI.esc(e.date) + '</td><td>' + UI.esc(e.vendor) + '</td><td>' + UI.esc(e.category) +
       '</td><td><span class="tag-chip ' + (e.type === 'capex' ? 'capex' : 'opex') + '">' + e.type.toUpperCase() + '</span></td>' +
-      '<td>' + UI.esc(e.owner) + '</td><td class="num">' + D.money(e.amount, e.currency) + '</td>' +
-      '<td style="text-align:right">' + (e.source === 'Manual' ? '<button class="btn link red sm" onclick="API.removeExpense(\'' + e.id + '\'); App.remount();">×</button>' : '') + '</td></tr>').join('');
+      '</td><td>' + UI.esc(e.owner) + '</td><td class="num">' + D.money(e.amount, e.currency) + '</td>' +
+      '<td style="text-align:right">' + (e.source === 'Manual' ? '<button class="btn link red sm" data-rm-expense="' + e.id + '">×</button>' : '') + '</td></tr>').join('');
+
+    const table = el('table.axiom', { html: '<thead><tr><th>Date</th><th>Vendor</th><th>Category</th><th>Type</th><th>Owner</th><th class="num">Amount</th><th></th></tr></thead><tbody>'
+        + (rows || '<tr><td colspan="7" class="empty">No expenses yet. Connect Gmail or add manually.</td></tr>') + '</tbody>' });
+    table.addEventListener('click', (e) => {
+      const id = e.target?.dataset?.rmExpense;
+      if (id) {
+        const exp = Data.Store.get().expenses.find(x => x.id === id);
+        if (exp) UI.confirm('Remove expense for ' + exp.vendor + ' (' + D.money(exp.amount, exp.currency) + ')?', { title: 'Remove expense', danger: true, confirmText: 'Remove' }).then(ok => { if (ok) { API.removeExpense(id); UI.toast('Expense removed', 'info'); remount(); } });
+      }
+    });
 
     return el('div', null,
       el('div.sec-head', null, el('span.label', { text: 'Expense ledger' }), el('span.label-meta', { text: 'Transparent — all members' })),
-      el('table.axiom', { html: '<thead><tr><th>Date</th><th>Vendor</th><th>Category</th><th>Type</th><th>Owner</th><th class="num">Amount</th><th></th></tr></thead><tbody>'
-        + (rows || '<tr><td colspan="7" class="empty">No expenses yet. Connect Gmail or add manually.</td></tr>') + '</tbody>' }),
+      table,
       el('button.btn.ghost.sm', { text: '+ Add expense', style: 'margin-top:10px', onclick: add }));
   }
   function cell2(label, input) { return el('div.cell', null, el('span.label', { text: label }), input); }

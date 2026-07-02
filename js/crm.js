@@ -98,8 +98,19 @@
     }
     drawFiles();
     const upload = el('button.btn.ghost.sm', { text: '+ Upload file', onclick: () => {
-      const name = prompt('File name to attach:');
-      if (name) { API.addProjectFile(p.id, name); refresh(); }
+      const nameInp = el('input.input', { placeholder: 'e.g. contract.pdf' });
+      const f = UI.formField('File name', nameInp, 'Real file upload coming soon — for now, log the name');
+      const body = el('div.stack.gap-m', null, f.wrap);
+      const m = UI.modal('Attach file', body, [
+        el('button.btn.ghost', { text: 'Cancel', onclick: () => m.close() }),
+        el('button.btn', { text: 'Attach', onclick: () => {
+          f.clear();
+          if (!nameInp.value.trim()) { f.setError('File name is required.'); return; }
+          API.addProjectFile(p.id, nameInp.value.trim());
+          UI.toast('File attached', 'info');
+          m.close(); refresh();
+        } }),
+      ]);
     }});
 
     const noteList = el('div.stack.gap-s');
@@ -128,17 +139,28 @@
     const canInvoice = isCommissioned && out > 0;
 
     const m = UI.modal(p.title, body, [
-      el('button.btn.ghost.red', { text: 'Delete', onclick: () => { if (confirm('Delete project?')) { API.removeProject(p.id); m.close(); remount(); } } }),
+      el('button.btn.ghost.red', { text: 'Delete', onclick: () => { UI.confirm('Delete project "' + p.title + '"? Notes, tasks, and files will be lost.', { title: 'Delete project', danger: true, confirmText: 'Delete' }).then(ok => { if (ok) { API.removeProject(p.id); UI.toast('Project deleted', 'info'); m.close(); remount(); } }); } }),
       canInvoice ? el('button.btn.blue', { text: 'Collect revenue', onclick: () => {
-        const amt = prompt('Amount to collect (outstanding: ' + D.money(out, s.currency) + '):', out);
-        if (amt && !isNaN(amt)) {
-          const v = Number(amt);
-          API.receiveProjectRevenue(p.id, v);
-          API.addProjectNote(p.id, 'Collected ' + D.money(v, s.currency) + ' from client.', new Date().toISOString().slice(0,10));
-          refresh();
-        }
+        const amtInp = el('input.input', { type: 'number', min: '0', step: '0.01', value: out });
+        const currencySel = el('select.select', null, ...['THB','USD','EUR','GBP','JPY','SGD','CNY','AUD','CAD'].map(c => el('option', { value: c, text: c, selected: c === s.currency ? 'selected' : null })));
+        const f = UI.formField('Amount collected', amtInp, 'Outstanding: ' + D.money(out, s.currency));
+        const fCur = UI.formField('Currency', currencySel);
+        const body2 = el('div.stack.gap-m', null, f.wrap, fCur.wrap);
+        const m2 = UI.modal('Collect revenue', body2, [
+          el('button.btn.ghost', { text: 'Cancel', onclick: () => m2.close() }),
+          el('button.btn', { text: 'Record collection', onclick: () => {
+            f.clear();
+            const v = Number(amtInp.value);
+            if (isNaN(v) || v <= 0) { f.setError('Enter a positive amount.'); return; }
+            if (v > out) { f.setError('Cannot collect more than outstanding (' + D.money(out, s.currency) + ').'); return; }
+            API.receiveProjectRevenue(p.id, v);
+            API.addProjectNote(p.id, 'Collected ' + D.money(v, currencySel.value || s.currency) + ' from client.', new Date().toISOString().slice(0,10));
+            UI.toast('Collected ' + D.money(v, currencySel.value || s.currency), 'success');
+            m2.close(); m.close(); remount();
+          } }),
+        ]);
       } }) : null,
-      el('button.btn.ghost', { text: 'To Backlog', onclick: () => { setStatus(p.id, 'backlog', remount); m.close(); } }),
+      p.status !== 'backlog' ? el('button.btn.ghost', { text: 'To Backlog', onclick: () => { setStatus(p.id, 'backlog', remount); m.close(); } }) : null,
       el('button.btn', { text: 'Close', onclick: () => m.close() }),
     ].filter(Boolean));
   }
@@ -177,13 +199,45 @@
 
   function addBar(s, remount) {
     const add = () => {
-      const title = el('input.input', { placeholder: 'Project title' });
-      const body = el('div.stack.gap-m', null, el('div.cell', null, el('span.label', { text: 'Title' }), title));
+      const titleInp = el('input.input', { placeholder: 'e.g. Investor dossier Q3' });
+      const clientInp = el('input.input', { placeholder: 'Client name (if a deal)' });
+      const dealSel = el('select.select', null,
+        el('option', { value: '', text: '— Internal work —' }),
+        el('option', { value: 'commissioned', text: 'Commissioned (signed deal)' }),
+        el('option', { value: 'pipeline', text: 'Pipeline (expected)' }));
+      const valueInp = el('input.input', { type: 'number', min: '0', step: '0.01', placeholder: '0' });
+      const currencySel = el('select.select', null, ...['THB','USD','EUR','GBP','JPY','SGD','CNY','AUD','CAD'].map(c => el('option', { value: c, text: c, selected: c === s.currency ? 'selected' : null })));
+      const tierSel = el('select.select', null,
+        el('option', { value: '1', text: 'Tier 1 — certain' }),
+        el('option', { value: '2', text: 'Tier 2 — likely (50%)' }),
+        el('option', { value: '3', text: 'Tier 3 — stretch (25%)' }));
+
+      const fTitle = UI.formField('Project title', titleInp);
+      const fClient = UI.formField('Client', clientInp, 'Optional — who is this for?');
+      const fDeal = UI.formField('Deal status', dealSel);
+      const fValue = UI.formField('Deal value', valueInp);
+      const fCurrency = UI.formField('Currency', currencySel);
+      const fTier = UI.formField('Scenario tier', tierSel, 'Affects weighted pipeline forecast');
+
+      const body = el('div.stack.gap-m', null,
+        fTitle.wrap,
+        fClient.wrap,
+        el('div.hgrid.g-2', null, fDeal.wrap, fTier.wrap),
+        el('div.hgrid.g-2', null, fValue.wrap, fCurrency.wrap));
+
       const m = UI.modal('New project', body, [
         el('button.btn.ghost', { text: 'Cancel', onclick: () => m.close() }),
         el('button.btn', { text: 'Create', onclick: () => {
-          if (!title.value) return;
-          API.addProject({ title: title.value });
+          [fTitle, fClient, fDeal, fValue, fCurrency, fTier].forEach(f => f.clear());
+          if (!titleInp.value.trim()) { fTitle.setError('Title is required.'); return; }
+          const opts = { title: titleInp.value.trim() };
+          if (clientInp.value.trim()) opts.client = clientInp.value.trim();
+          if (dealSel.value) opts.dealStatus = dealSel.value;
+          if (valueInp.value) opts.totalValue = Number(valueInp.value) || 0;
+          if (currencySel.value) opts.currency = currencySel.value;
+          if (tierSel.value) opts.scenarioTier = Number(tierSel.value);
+          API.addProject(opts);
+          UI.toast('Project created', 'success');
           m.close(); remount();
         } }) ]);
     };

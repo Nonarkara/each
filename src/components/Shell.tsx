@@ -12,6 +12,7 @@ interface ShellProps {
   onSheets?: () => void
   onImport?: () => void
   onSheetsSetup?: () => void
+  onSyncIndicatorClick?: () => void
   syncLabel?: string
   syncStatus?: 'local' | 'loading' | 'saving' | 'saved' | 'error'
   tenantLabel?: string
@@ -29,6 +30,7 @@ export function Shell({
   onSheets,
   onImport,
   onSheetsSetup,
+  onSyncIndicatorClick,
   syncLabel,
   syncStatus = 'local',
   tenantLabel,
@@ -43,6 +45,7 @@ export function Shell({
         : syncStatus === 'saving' || syncStatus === 'loading'
           ? 'bg-ink-3'
           : 'bg-ink-3'
+  const indicatorInteractive = Boolean(onSyncIndicatorClick)
   return (
     <div>
       <header className="sticky top-0 z-50 border-b border-line-2 bg-paper">
@@ -75,8 +78,22 @@ export function Shell({
                   <p className={`font-mono text-[14px] font-medium ${vitals.runwayRisk ? 'text-amber' : ''}`}>{vitals.runway}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`inline-block h-2 w-2 ${dotClass}`} aria-hidden />
-                  <span className="font-mono text-[11px] uppercase text-ink-3">{syncLabel || 'Local only'}</span>
+                  {indicatorInteractive ? (
+                    <button
+                      type="button"
+                      onClick={onSyncIndicatorClick}
+                      className="inline-flex min-h-[44px] items-center gap-2 border border-transparent px-1 hover:border-line"
+                      title="Open Sheet settings"
+                    >
+                      <span className={`inline-block h-2 w-2 ${dotClass}`} aria-hidden />
+                      <span className="font-mono text-[11px] uppercase text-ink-3">{syncLabel || 'Local only'}</span>
+                    </button>
+                  ) : (
+                    <>
+                      <span className={`inline-block h-2 w-2 ${dotClass}`} aria-hidden />
+                      <span className="font-mono text-[11px] uppercase text-ink-3">{syncLabel || 'Local only'}</span>
+                    </>
+                  )}
                 </div>
               </div>
             ) : null}

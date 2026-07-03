@@ -1,6 +1,7 @@
 import type { EachStore, Expense, RegistryHit } from './types'
 import { buildAbcDemoStore, buildAxiomDemoStore } from './demo'
 import { today, uid } from './format'
+import { scheduleSheetsSave } from '../services/sheets'
 
 const KEY = 'each-store-v1'
 const listeners = new Set<(s: EachStore) => void>()
@@ -68,7 +69,7 @@ function persist() {
   } catch {
     /* ignore */
   }
-  void import('../services/sheets').then((m) => m.scheduleSheetsSave(state))
+  scheduleSheetsSave(state)
   listeners.forEach((fn) => fn(state))
 }
 

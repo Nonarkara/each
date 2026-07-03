@@ -22,15 +22,14 @@ import { loadAbcStore, loadAxiomStore, seedStore } from './lib/store'
 import {
   exportJsonBackup,
   exportSheetCsvBundle,
-  getSheetsWebAppUrl,
   importCsvBundle,
   importJsonBackup,
   loadFromSheets,
-  setSheetsWebAppUrl,
   sheetsSyncLabel,
   subscribeSheetsSyncStatus,
 } from './services/sheets'
 import type { SyncStatus } from './services/sheets'
+import { SheetsSettingsModal } from './components/SheetsSettingsModal'
 
 type AppView = 'login' | 'landing' | 'onboarding' | 'app'
 type AppRoute = ModuleId | 'dossier'
@@ -52,13 +51,14 @@ export default function App() {
   const [route, setRoute] = useState<AppRoute>('erp')
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('local')
   const [authError, setAuthError] = useState('')
+  const [sheetsOpen, setSheetsOpen] = useState(false)
 
   useEffect(() => {
     return subscribeSheetsSyncStatus(setSyncStatus)
   }, [])
 
   useEffect(() => {
-    if (!getSheetsWebAppUrl() || !store.onboarded) return
+    if (!store.onboarded) return
     void loadFromSheets().then((remote) => {
       if (remote) api.load(remote)
     })
@@ -115,19 +115,12 @@ export default function App() {
     setRoute('erp')
   }
 
-  function handleSheetsSetup() {
-    const current = getSheetsWebAppUrl()
-    const url = window.prompt(
-      'Paste your Google Apps Script Web App URL (from Deploy → Web app).\nLeave blank to work locally only.',
-      current,
-    )
-    if (url === null) return
-    setSheetsWebAppUrl(url)
-    if (url.trim()) {
-      void loadFromSheets().then((remote) => {
-        if (remote) api.load(remote)
-      })
-    }
+  function openSheetsSettings() {
+    setSheetsOpen(true)
+  }
+
+  function handleSheetsPull(remote: Parameters<typeof api.load>[0]) {
+    api.load(remote)
   }
 
   function handleImport() {
@@ -209,36 +202,45 @@ export default function App() {
           : undefined
 
   return (
-    <Shell
-      companyName={companyName}
-      activeModule={route === 'dossier' ? undefined : route}
-      onNavigate={(id) => setRoute(id as AppRoute)}
-      onReset={handleReset}
-      onDossier={() => setRoute('dossier')}
-      onExport={() => exportJsonBackup(store)}
-      onSheets={() => exportSheetCsvBundle(store)}
-      onImport={handleImport}
-      onSheetsSetup={handleSheetsSetup}
-      syncLabel={sheetsSyncLabel(syncStatus)}
-      syncStatus={syncStatus}
-      tenantLabel={tenantLabel}
-      vitals={{
-        cash: money(fin.cash, store.currency),
-        runway: (Number.isFinite(fin.runwayMonths) ? fin.runwayMonths : '∞') + ' mo',
-        runwayRisk: !safeRunway,
-      }}
-    >
-      {route === 'erp' ? <ErpModule store={store} api={api} /> : null}
-      {route === 'act' ? <ActModule store={store} api={api} /> : null}
-      {route === 'crm' ? <CrmModule store={store} api={api} /> : null}
-      {route === 'hr' ? <HrModule store={store} api={api} /> : null}
-      {route === 'dossier' ? <DossierView store={store} /> : null}
-      {activeModule ? (
-        <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">
-          Active: {activeModule.label} · as of {store.asOf}
-          {tenantLabel ? ` · ${tenantLabel}` : ''}
-        </p>
-      ) : null}
-    </Shell>
+    <>
+      <Shell
+        companyName={companyName}
+        activeModule={route === 'dossier' ? undefined : route}
+        onNavigate={(id) => setRoute(id as AppRoute)}
+        onReset={handleReset}
+        onDossier={() => setRoute('dossier')}
+        onExport={() => exportJsonBackup(store)}
+        onSheets={() => exportSheetCsvBundle(store)}
+        onImport={handleImport}
+        onSheetsSetup={openSheetsSettings}
+        onSyncIndicatorClick={openSheetsSettings}
+        syncLabel={sheetsSyncLabel(syncStatus)}
+        syncStatus={syncStatus}
+        tenantLabel={tenantLabel}
+        vitals={{
+          cash: money(fin.cash, store.currency),
+          runway: (Number.isFinite(fin.runwayMonths) ? fin.runwayMonths : '∞') + ' mo',
+          runwayRisk: !safeRunway,
+        }}
+      >
+        {route === 'erp' ? <ErpModule store={store} api={api} /> : null}
+        {route === 'act' ? <ActModule store={store} api={api} /> : null}
+        {route === 'crm' ? <CrmModule store={store} api={api} /> : null}
+        {route === 'hr' ? <HrModule store={store} api={api} /> : null}
+        {route === 'dossier' ? <DossierView store={store} /> : null}
+        {activeModule ? (
+          <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">
+            Active: {activeModule.label} · as of {store.asOf}
+            {tenantLabel ? ` · ${tenantLabel}` : ''}
+          </p>
+        ) : null}
+      </Shell>
+      <SheetsSettingsModal
+        open={sheetsOpen}
+        onClose={() => setSheetsOpen(false)}
+        store={store}
+        onPull={handleSheetsPull}
+      />
+    </>
   )
 }

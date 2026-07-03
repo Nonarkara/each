@@ -1,9 +1,11 @@
 import type { EachStore } from '../lib/types'
 import { buildAxiomMockStore } from '../data/axiom-mock'
 import { seedStore } from '../lib/store'
+import APPS_SCRIPT_SOURCE from '../../sheets/apps-script.gs?raw'
 
 const WEB_APP_URL = import.meta.env.VITE_SHEETS_WEB_APP_URL as string | undefined
 const URL_STORAGE_KEY = 'each-sheets-web-app-url'
+const LAST_SAVE_KEY = 'each-sheets-last-saved'
 
 type SyncStatus = 'local' | 'loading' | 'saving' | 'saved' | 'error'
 
@@ -30,6 +32,46 @@ export function setSheetsWebAppUrl(url: string): void {
 
 export function isSheetsSyncEnabled(): boolean {
   return Boolean(getSheetsWebAppUrl())
+}
+
+export function lastSheetsSavedAt(): number {
+  try {
+    return parseInt(localStorage.getItem(LAST_SAVE_KEY) || '0', 10) || 0
+  } catch {
+    return 0
+  }
+}
+
+/** Pinned Apps Script body — single source of truth in /sheets/apps-script.gs, bundled at build. */
+export function getSheetsAppsScript(): string {
+  return APPS_SCRIPT_SOURCE
+}
+
+/** Pre-save validation: shape check + GET probe. The Apps Script doGet returns JSON. */
+export async function testSheetsUrl(url: string): Promise<{ ok: boolean; message: string }> {
+  const target = (url || '').trim()
+  if (!target) return { ok: false, message: 'No URL configured.' }
+  if (!/^https:\/\/script\.google\.com\/.*exec/.test(target)) {
+    return {
+      ok: false,
+      message: 'That does not look like an Apps Script Web App URL. Expected https://script.google.com/.../exec',
+    }
+  }
+  try {
+    const res = await fetch(target, { method: 'GET', redirect: 'follow' })
+    const text = await res.text()
+    let data: { error?: string } | null = null
+    try {
+      data = JSON.parse(text)
+    } catch {
+      /* not JSON — still treat as reachable */
+    }
+    if (data && data.error) return { ok: false, message: 'Apps Script error: ' + data.error }
+    if (res.ok) return { ok: true, message: 'Connected.' }
+    return { ok: false, message: 'HTTP ' + res.status + ' ' + res.statusText }
+  } catch (e) {
+    return { ok: false, message: 'Network error: ' + ((e as Error)?.message || String(e)) }
+  }
 }
 
 export function getSheetsSyncStatus(): SyncStatus {
@@ -466,6 +508,11 @@ export async function saveToSheets(store: EachStore): Promise<void> {
       body: JSON.stringify(store),
       mode: 'no-cors',
     })
+    try {
+      localStorage.setItem(LAST_SAVE_KEY, String(Date.now()))
+    } catch {
+      /* ignore */
+    }
     setStatus('saved')
   } catch (e) {
     console.error('Sheets save failed:', e)

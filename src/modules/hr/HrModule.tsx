@@ -115,7 +115,7 @@ export function HrModule({ store, api }: HrModuleProps) {
           {ai.map((a) => (
             <div key={a.id} className="bg-panel p-4">
               <div className="flex items-center gap-3">
-                <span className="flex h-11 w-11 items-center justify-center border border-ink font-display text-[18px] font-bold">
+                <span className="flex h-11 w-11 items-center justify-center border border-ink font-display text-[14px] font-bold">
                   {a.name.charAt(0)}
                 </span>
                 <div>

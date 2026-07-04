@@ -1,3 +1,4 @@
+// Not yet wired — see context.md Phase 2 plan
 import type { EachStore } from '../lib/types'
 import { storeApi } from '../lib/store'
 

@@ -14,7 +14,9 @@
   --color-panel: #ffffff;
   --color-ink: #191712;
   --color-ink-2: #6f6c63;
-  --color-ink-3: #a9a59a;
+  /* ink-3 darkened from #7a766c → #65615a to clear WCAG AA (≥4.5:1) on both #f6f5f2 paper (5.65:1)
+     and #ffffff panel (6.16:1). Used for 11px micro labels — AA body-text requirement applies. */
+  --color-ink-3: #65615a;
   --color-line: #e7e5dd;
   --color-line-2: #d2cfc5;
   --color-amber: #f59e0b;

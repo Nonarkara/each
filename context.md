@@ -47,6 +47,8 @@ EACH stores: `src/data/axiom-mock.ts` (auth path) · `src/data/abc-mock.ts` (dem
 Cloudflare Pages Function: `functions/api/auth/github.js` exchanges OAuth code.  
 Demo path (`ABC`) skips OAuth — session flagged `demo: true` in sessionStorage (8 h TTL).
 
+> **Security Note (Phase 0):** Auth is currently client-state only and performs zero server-side authorization. It is used strictly to gate mock data sets locally. In Phase 2, this will be replaced with server-side validation via Frappe session cookies. Additionally, Phase 0 stores PII (e.g., salaries, tax IDs) unencrypted in `localStorage`. This architectural trade-off will also be resolved in Phase 2 by migrating data off `localStorage` to a secured Frappe REST API.
+
 ## Human manual & Google Sheets
 
 | Resource | Path | Status |

@@ -11,7 +11,7 @@ export function Station({ disc, kicker, title, meta }: StationProps) {
   return (
     <header className="mb-5 flex flex-col gap-2 border-b border-ink pb-2 sm:flex-row sm:items-baseline sm:justify-between">
       <div className="flex items-start gap-3">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-ink font-display text-[18px] font-bold">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-ink font-display text-[14px] font-bold">
           {disc}
         </span>
         <div>
@@ -36,7 +36,7 @@ export function StatCell({ label, value, sub }: StatCellProps) {
   return (
     <div className="border border-line bg-panel p-4">
       <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.11em] text-ink-3">{label}</p>
-      <p className="mt-2 font-mono text-[20px] font-medium text-ink">{value}</p>
+      <p className="mt-2 font-mono text-[32px] font-medium text-ink">{value}</p>
       {sub ? <p className="mt-1 text-[14px] text-ink-2">{sub}</p> : null}
     </div>
   )
@@ -145,7 +145,7 @@ export function Modal({ title, open, onClose, children, actions }: ModalProps) {
     <div className="fixed inset-0 z-[100] flex items-end justify-center overflow-y-auto overscroll-contain bg-ink/40 p-4 sm:items-center" role="dialog" aria-modal="true">
       <div className="max-h-[90vh] w-full max-w-lg overflow-auto border border-line-2 bg-panel">
         <div className="flex items-center justify-between border-b border-line px-4 py-3">
-          <h3 className="font-display text-[18px] font-semibold">{title}</h3>
+          <h3 className="font-display text-[14px] font-bold">{title}</h3>
           <button type="button" onClick={onClose} className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center border border-line px-3 text-[14px]">
             Close
           </button>

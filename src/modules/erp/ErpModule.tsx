@@ -331,5 +331,3 @@ export function ErpModule({ store, api }: ErpModuleProps) {
     </div>
   )
 }
-
-export { calcFinance }

@@ -1,1 +1,1 @@
-export { ErpModule, calcFinance } from './ErpModule'
+export { ErpModule } from './ErpModule'

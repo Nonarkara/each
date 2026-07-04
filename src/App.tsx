@@ -11,7 +11,7 @@ import { CrmModule } from './modules/crm'
 import { HrModule } from './modules/hr'
 import { DossierView } from './modules/dossier/DossierView'
 import { LoginGate } from './modules/auth/LoginGate'
-import { GitHubCallback } from './modules/auth/GitHubCallback'
+
 import { money } from './lib/format'
 import {
   clearAuthSession,
@@ -34,9 +34,6 @@ import { SheetsSettingsModal } from './components/SheetsSettingsModal'
 type AppView = 'login' | 'landing' | 'onboarding' | 'app'
 type AppRoute = ModuleId | 'dossier'
 
-function isGitHubCallbackPath(): boolean {
-  return /oauth\/github\/callback/i.test(window.location.pathname)
-}
 
 function initialView(): AppView {
   const session = getAuthSession()
@@ -86,11 +83,6 @@ export default function App() {
     enterApp()
   }
 
-  function handleGitHubAuth() {
-    setAuthError('')
-    loadAxiomStore()
-    enterApp()
-  }
 
   function handleDemo() {
     setAuthError('')
@@ -136,24 +128,11 @@ export default function App() {
     importJsonBackup((obj) => api.load(obj))
   }
 
-  if (isGitHubCallbackPath()) {
-    return (
-      <GitHubCallback
-        onSuccess={handleGitHubAuth}
-        onError={(msg) => {
-          setAuthError(msg)
-          window.history.replaceState({}, '', import.meta.env.BASE_URL || './')
-          setView('login')
-        }}
-      />
-    )
-  }
 
   if (view === 'login') {
     return (
       <LoginGate
         onGoogleSuccess={handleGoogleAuth}
-        onGitHubSuccess={handleGitHubAuth}
         onDemo={handleDemo}
         onBlank={handleBlank}
         error={authError}
@@ -167,7 +146,7 @@ export default function App() {
         <div className="mx-auto max-w-[1360px]">
           <Hero onEnter={() => setView('onboarding')} />
           <section className="mt-8">
-            <h2 className="mb-4 font-display text-[24px] font-semibold">Why EACH works</h2>
+            <h2 className="mb-4 font-display text-[32px] font-semibold">Why EACH works</h2>
             <div className="grid gap-px border border-line bg-line md:grid-cols-2">
               {[
                 'Four logins become one word founders can spell in a pitch.',

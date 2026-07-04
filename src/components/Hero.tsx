@@ -9,14 +9,14 @@ export function Hero({ onEnter }: HeroProps) {
         <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">
           Dr Non&apos;s No-Brainer Complete Startup / SME Management Tool
         </p>
-        <h1 className="mt-3 font-display text-[32px] font-bold leading-[1.05] tracking-tight text-ink sm:text-[36px]">
+        <h1 className="mt-3 font-display text-[32px] font-bold leading-[1.05] tracking-tight text-ink">
           Every piece of your startup, unified.
         </h1>
         <p className="mt-4 max-w-[52ch] text-[14px] leading-relaxed text-ink-2">
           EACH rearranges ERP, ACT, CRM, and HR into one word founders can spell, share, and
           remember. One login. One spine. Every metric that matters — without the four-app chaos.
         </p>
-        <p className="mt-3 font-display text-[18px] font-semibold text-amber">
+        <p className="mt-3 font-display text-[14px] font-bold text-amber">
           One system. Every metric. Zero chaos.
         </p>
         {onEnter ? (
@@ -38,8 +38,8 @@ export function Hero({ onEnter }: HeroProps) {
           { letter: 'H', name: 'HR', desc: 'People · payroll · leave' },
         ].map((item) => (
           <div key={item.letter} className="bg-panel p-4">
-            <span className="font-display text-[24px] font-bold text-amber">{item.letter}</span>
-            <p className="mt-2 font-display text-[18px] font-semibold">{item.name}</p>
+            <span className="font-display text-[32px] font-bold text-amber">{item.letter}</span>
+            <p className="mt-2 font-display text-[14px] font-bold">{item.name}</p>
             <p className="mt-1 text-[14px] text-ink-2">{item.desc}</p>
           </div>
         ))}

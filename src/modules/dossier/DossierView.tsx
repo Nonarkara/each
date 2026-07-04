@@ -20,7 +20,7 @@ export function DossierView({ store }: DossierViewProps) {
 
       <div className="mb-6 border border-line bg-panel p-5">
         <TagChip tone="amber">DOSSIER</TagChip>
-        <p className="mt-3 font-display text-[24px] font-semibold">{company?.legalName || store.companyName || '—'}</p>
+        <p className="mt-3 font-display text-[32px] font-semibold">{company?.legalName || store.companyName || '—'}</p>
         <p className="mt-1 text-[14px] text-ink-2">
           {(company?.industry ? company.industry + ' · ' : '') + (company?.country || '')}
         </p>

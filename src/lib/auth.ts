@@ -1,6 +1,6 @@
 /** Phase 0 auth — sessionStorage gate. No secrets in repo. */
 
-export type AuthProvider = 'google' | 'github'
+export type AuthProvider = 'google'
 export type DataPath = 'axiom' | 'abc' | 'custom'
 
 export interface AuthSession {
@@ -57,38 +57,6 @@ export function isGoogleConfigured(): boolean {
   return Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID)
 }
 
-export function isGitHubConfigured(): boolean {
-  return Boolean(import.meta.env.VITE_GITHUB_CLIENT_ID)
-}
-
-export function githubRedirectUri(): string {
-  const configured = import.meta.env.VITE_GITHUB_REDIRECT_URI
-  if (configured) return configured
-  const base = import.meta.env.BASE_URL || './'
-  const path = base.endsWith('/') ? `${base}oauth/github/callback` : `${base}/oauth/github/callback`
-  return new URL(path, window.location.href).href
-}
-
-export function githubAuthorizeUrl(): string {
-  const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID
-  if (!clientId) throw new Error('VITE_GITHUB_CLIENT_ID not set')
-  const state = crypto.randomUUID()
-  setOAuthState(state)
-  const params = new URLSearchParams({
-    client_id: clientId,
-    redirect_uri: githubRedirectUri(),
-    scope: 'read:user user:email',
-    state,
-  })
-  return `https://github.com/login/oauth/authorize?${params}`
-}
-
-export function tokenExchangeUrl(): string {
-  return (
-    import.meta.env.VITE_GITHUB_TOKEN_EXCHANGE_URL ||
-    `${window.location.origin}/api/auth/github`
-  )
-}
 
 interface GoogleJwtPayload {
   iss?: string
@@ -125,26 +93,6 @@ export function verifyGoogleCredential(credential: string): AuthSession {
   })
 }
 
-export async function exchangeGitHubCode(code: string): Promise<AuthSession> {
-  const res = await fetch(tokenExchangeUrl(), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code, redirect_uri: githubRedirectUri() }),
-  })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error((err as { error?: string }).error || `GitHub auth failed (${res.status})`)
-  }
-  const data = (await res.json()) as { email?: string; name?: string; login?: string; avatar_url?: string }
-  const email = data.email || `${data.login || 'github-user'}@users.noreply.github.com`
-  return setAuthSession({
-    provider: 'github',
-    email,
-    name: data.name || data.login || email,
-    picture: data.avatar_url,
-    dataPath: 'axiom',
-  })
-}
 
 export function setDemoSession(): AuthSession {
   return setAuthSession({

@@ -63,6 +63,14 @@ Google Sheets template: [`sheets/apps-script.gs`](sheets/apps-script.gs) + tab s
 - **Persistence (phase 0):** `localStorage` shim in `src/lib/store.ts`
 - **Deployment target:** GitHub Pages (static) or Render when API routes land
 
+## Security Notice (Phase 0)
+
+As a Phase 0.5 static client application, EACH currently employs two architectural trade-offs that must be understood before storing real business data:
+1. **Unencrypted Local Storage:** Sensitive PII (such as employee salaries and tax IDs) is persisted in plaintext within the browser's `localStorage`. Any malicious script running on the page (e.g., via a compromised dependency or browser extension) could read this data.
+2. **Client-Side Authorization:** OAuth sign-in only authenticates identity client-side to gate mock data sets. There is currently no server-side enforcement of authorization limits.
+
+Both issues are actively mitigated in the **Phase 2 (Frappe REST)** migration, where data will move off `localStorage` into a secured database, and all sessions will be validated server-side via Frappe session cookies.
+
 ## Project layout
 
 ```

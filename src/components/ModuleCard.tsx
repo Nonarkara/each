@@ -30,7 +30,7 @@ export function ModuleCard({ module, active, onSelect }: ModuleCardProps) {
           <p className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3">
             {module.kicker}
           </p>
-          <h3 className="font-display text-[18px] font-semibold leading-tight text-ink">
+          <h3 className="font-display text-[14px] font-bold leading-tight text-ink">
             {module.label}
           </h3>
           <p className="mt-1 text-[14px] text-ink-2">{module.tagline}</p>

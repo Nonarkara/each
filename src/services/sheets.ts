@@ -6,6 +6,15 @@ import APPS_SCRIPT_SOURCE from '../../sheets/apps-script.gs?raw'
 const WEB_APP_URL = import.meta.env.VITE_SHEETS_WEB_APP_URL as string | undefined
 const URL_STORAGE_KEY = 'each-sheets-web-app-url'
 const LAST_SAVE_KEY = 'each-sheets-last-saved'
+/**
+ * Explicit user opt-in gate (Phase 0 — S1 mitigation).
+ * Connecting Sheets triggers automatic background upload of plaintext payroll/tax IDs to Google on
+ * every edit. Until Phase 2 Frappe REST replaces this bridge, we require the user to acknowledge
+ * this risk in `SheetsSettingsModal` and store the ack separately from the URL — saving the URL
+ * without ack does NOT activate sync.
+ */
+const ACK_STORAGE_KEY = 'each-sheets-exfil-ack-v1'
+const ACK_VERSION = 1
 
 type SyncStatus = 'local' | 'loading' | 'saving' | 'saved' | 'error'
 
@@ -30,8 +39,26 @@ export function setSheetsWebAppUrl(url: string): void {
   else localStorage.removeItem(URL_STORAGE_KEY)
 }
 
+/** Returns the saved URL only if the user has acknowledged the plaintext-exfil risk. */
 export function isSheetsSyncEnabled(): boolean {
-  return Boolean(getSheetsWebAppUrl())
+  return Boolean(getSheetsWebAppUrl()) && hasSheetsExfilAck()
+}
+
+export function hasSheetsExfilAck(): boolean {
+  try {
+    return localStorage.getItem(ACK_STORAGE_KEY) === String(ACK_VERSION)
+  } catch {
+    return false
+  }
+}
+
+export function setSheetsExfilAck(ack: boolean): void {
+  try {
+    if (ack) localStorage.setItem(ACK_STORAGE_KEY, String(ACK_VERSION))
+    else localStorage.removeItem(ACK_STORAGE_KEY)
+  } catch {
+    /* ignore */
+  }
 }
 
 export function lastSheetsSavedAt(): number {
@@ -479,6 +506,10 @@ export function exportAxiomDemoCsvBundle(): void {
 export async function loadFromSheets(): Promise<EachStore | null> {
   const url = getSheetsWebAppUrl()
   if (!url) return null
+  if (!hasSheetsExfilAck()) {
+    setStatus('local')
+    return null
+  }
   setStatus('loading')
   try {
     const res = await fetch(url)
@@ -501,6 +532,10 @@ export async function loadFromSheets(): Promise<EachStore | null> {
 export async function saveToSheets(store: EachStore): Promise<void> {
   const url = getSheetsWebAppUrl()
   if (!url) return
+  if (!hasSheetsExfilAck()) {
+    setStatus('local')
+    return
+  }
   setStatus('saving')
   try {
     await fetch(url, {
@@ -521,7 +556,7 @@ export async function saveToSheets(store: EachStore): Promise<void> {
 }
 
 export function scheduleSheetsSave(store: EachStore): void {
-  if (!getSheetsWebAppUrl()) return
+  if (!getSheetsWebAppUrl() || !hasSheetsExfilAck()) return
   if (saveTimer) clearTimeout(saveTimer)
   setStatus('saving')
   saveTimer = setTimeout(() => {

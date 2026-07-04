@@ -3,10 +3,12 @@ import { Btn, Input, Modal } from './ui/Axiom'
 import {
   getSheetsAppsScript,
   getSheetsWebAppUrl,
+  hasSheetsExfilAck,
   isSheetsSyncEnabled,
   lastSheetsSavedAt,
   loadFromSheets,
   saveToSheets,
+  setSheetsExfilAck,
   setSheetsWebAppUrl,
   sheetsSyncLabel,
   subscribeSheetsSyncStatus,
@@ -30,10 +32,12 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
   const [result, setResult] = useState<{ tone: 'ok' | 'err'; message: string } | null>(null)
   const [copied, setCopied] = useState(false)
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('local')
+  const [ack, setAck] = useState(false)
 
   useEffect(() => {
     if (!open) return
     setUrl(getSheetsWebAppUrl())
+    setAck(hasSheetsExfilAck())
     setResult(null)
     return subscribeSheetsSyncStatus(setSyncStatus)
   }, [open])
@@ -46,6 +50,14 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
 
   async function runTest() {
     const target = url.trim()
+    if (!ack) {
+      setResult({
+        tone: 'err',
+        message:
+          '✕ Acknowledge the security notice below before connecting. Connecting Sheets triggers automatic background upload of unencrypted payroll/tax IDs to Google on every edit.',
+      })
+      return
+    }
     setTesting(true)
     setResult(null)
     const out = await testSheetsUrl(target)
@@ -55,6 +67,7 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
       return
     }
     setSheetsWebAppUrl(target)
+    setSheetsExfilAck(true)
     setResult({ tone: 'ok', message: '✓ Connected — first sync kicked off.' })
     try {
       await saveToSheets(store)
@@ -80,6 +93,8 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
   function runDisconnect() {
     if (!window.confirm('Disconnect from this Sheet? Your data will still be cached locally.')) return
     setSheetsWebAppUrl('')
+    setSheetsExfilAck(false)
+    setAck(false)
     try {
       localStorage.removeItem('each-sheets-last-saved')
     } catch {
@@ -119,7 +134,7 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
               </Btn>
             </>
           ) : null}
-          <Btn onClick={runTest} disabled={testing || pulling}>
+          <Btn onClick={runTest} disabled={testing || pulling || !ack}>
             {testing ? 'Testing…' : 'Test & Connect'}
           </Btn>
         </>
@@ -191,7 +206,7 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
           <div className="flex items-start gap-3">
             <span
               className={
-                'flex h-11 w-11 shrink-0 items-center justify-center border font-display text-[16px] font-bold ' +
+                'flex h-11 w-11 shrink-0 items-center justify-center border font-display text-[14px] font-bold ' +
                 (configured ? 'border-amber bg-amber text-ink' : 'border-line text-ink-2')
               }
               aria-hidden
@@ -199,7 +214,7 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
               {configured ? '✓' : '1'}
             </span>
             <div className="space-y-1">
-              <p className="font-display text-[16px] font-semibold">Create a fresh Sheet</p>
+              <p className="font-display text-[14px] font-bold">Create a fresh Sheet</p>
               <p className="text-[14px] text-ink-2">
                 <a
                   href="https://sheets.new"
@@ -215,11 +230,11 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
           </div>
 
           <div className="flex items-start gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-line font-display text-[16px] font-bold text-ink-2" aria-hidden>
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-line font-display text-[14px] font-bold text-ink-2" aria-hidden>
               2
             </span>
             <div className="space-y-1">
-              <p className="font-display text-[16px] font-semibold">Install the script</p>
+              <p className="font-display text-[14px] font-bold">Install the script</p>
               <p className="text-[14px] text-ink-2">
                 Extensions → Apps Script → delete any starter code → paste the script (Copy full script above) → Save.
                 Run <span className="font-mono">setupWorkbook</span> once (Run menu → function: setupWorkbook → Run). Authorize on first run.
@@ -228,16 +243,37 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
           </div>
 
           <div className="flex items-start gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-line font-display text-[16px] font-bold text-ink-2" aria-hidden>
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-line font-display text-[14px] font-bold text-ink-2" aria-hidden>
               3
             </span>
             <div className="space-y-1">
-              <p className="font-display text-[16px] font-semibold">Deploy as Web App</p>
+              <p className="font-display text-[14px] font-bold">Deploy as Web App</p>
               <p className="text-[14px] text-ink-2">
                 Deploy → New deployment → type "Web app" → Execute as "Me" → Who has access "Anyone" → Deploy → copy the URL.
               </p>
             </div>
           </div>
+        </div>
+
+        <div className="border-l-2 border-red-600 bg-paper px-3 py-3">
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-red-600">
+            Security Notice
+          </p>
+          <p className="mt-2 text-[14px] text-ink-2">
+            Pasting an Apps Script URL enables automatic background upload of your full dataset—including unencrypted payroll salaries and tax IDs—to Google's servers on every edit. Proceed only if you trust the deployment environment.
+          </p>
+          <label className="mt-3 flex min-h-[44px] cursor-pointer items-start gap-3 border-t border-line pt-3">
+            <input
+              type="checkbox"
+              checked={ack}
+              onChange={(e) => setAck(e.target.checked)}
+              className="mt-1 h-4 w-4 shrink-0 border border-line accent-amber"
+              aria-describedby="exfil-ack-desc"
+            />
+            <span id="exfil-ack-desc" className="text-[14px] leading-relaxed text-ink-2">
+              <strong className="font-semibold text-ink">I understand</strong> that pasting an Apps Script URL enables automatic background upload of unencrypted payroll, tax IDs, and full business data to Google on every edit, and I trust the deployment environment.
+            </span>
+          </label>
         </div>
 
         <div className="border-l-2 border-amber bg-paper px-3 py-3">

@@ -133,20 +133,14 @@ Short labels so GitHub’s renderer does not clip.
 
 ```mermaid
 flowchart LR
-  You[You] --> Gate[Login]
-  Gate --> Shell[Shell]
-  Shell --> E[ERP]
-  Shell --> A[ACT]
-  Shell --> C[CRM]
-  Shell --> H[HR]
-  E --> S[store.ts]
-  A --> S
-  C --> S
-  H --> S
+  You[You] --> UI[React]
+  UI --> S[store.ts]
   S --> LS[localStorage]
   Sheet[Sheets] --> S
-  S --> Calc[calc.ts]
+  S --> F[calc.ts]
 ```
+
+React modules **ERP · ACT · CRM · HR** all call `storeApi`. Sheets is optional.
 
 UI modules talk to `storeApi` / `useStore()` only. Phase 2 is meant to replace that shim with `frappeClient` in `src/services/api.ts` — that backend is **not** in this tree.
 

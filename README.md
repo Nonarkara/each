@@ -101,7 +101,9 @@ If a contribution only works by pasting a secret or a real company’s books, it
 
 ## How to use / learn
 
-Requires Node 20+ (CI uses Node 20). From the repo root:
+Requires **Node 20.19+ within 20.x, or Node 22.12+** (the locked Vite requirement).
+Node 22 LTS is the suggested local line; `.nvmrc` selects it for nvm users.
+CI’s Node 20 selector resolves a current 20.x release. From the repo root:
 
 ```bash
 npm install

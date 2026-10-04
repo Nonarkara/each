@@ -1,0 +1,60 @@
+name: each
+
+services:
+  mariadb:
+    image: mariadb:10.6
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+    environment:
+      MARIADB_ROOT_PASSWORD: ${EACH_DB_ROOT_PASSWORD:-each-local}
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - each-mariadb:/var/lib/mysql
+
+  redis:
+    image: redis:6.2-alpine
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - each-redis:/data
+
+  frappe:
+    image: frappe/bench:v5.29.1
+    # The pinned Bench image lacks ARM Python headers needed by Frappe v15's psutil.
+    # Docker emulation keeps first-run behavior identical on Intel and Apple Silicon.
+    platform: linux/amd64
+    user: root
+    command: bash /workspace/docker/init-frappe.sh
+    working_dir: /home/frappe
+    environment:
+      SHELL: /bin/bash
+      EACH_ADMIN_PASSWORD: ${EACH_ADMIN_PASSWORD:-admin}
+      EACH_DB_ROOT_PASSWORD: ${EACH_DB_ROOT_PASSWORD:-each-local}
+      EACH_SITE_NAME: ${EACH_SITE_NAME:-each.localhost}
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${EACH_FRAPPE_PORT:-8000}:8000"
+      - "127.0.0.1:${EACH_SOCKETIO_PORT:-9000}:9000"
+    volumes:
+      - each-bench:/home/frappe/bench-data
+      - ./docker/init-frappe.sh:/workspace/docker/init-frappe.sh:ro
+      - ./backend/each_backend:/workspace/backend/each_backend:ro
+
+volumes:
+  each-bench:
+  each-mariadb:
+  each-redis:

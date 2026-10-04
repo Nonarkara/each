@@ -19,7 +19,7 @@ export function ModuleCard({ module, active, onSelect }: ModuleCardProps) {
       <div className="flex items-start gap-3">
         <span
           className={[
-            'flex h-11 w-11 shrink-0 items-center justify-center border font-display text-lg font-semibold',
+            'flex h-11 w-11 shrink-0 items-center justify-center border font-display text-[14px] font-semibold',
             active ? 'border-amber text-amber' : 'border-line-2 text-ink',
           ].join(' ')}
           aria-hidden

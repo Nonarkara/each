@@ -1,3 +1,5 @@
+import { useLanguage } from '../lib/languageContext'
+import { LanguageSwitch } from '../lib/language'
 import type { ReactNode } from 'react'
 import { MODULES } from '../lib/types'
 import { Btn } from './ui/Axiom'
@@ -7,6 +9,8 @@ interface ShellProps {
   activeModule?: string
   onNavigate?: (id: string) => void
   onReset?: () => void
+  onIntake?: () => void
+  onMirrors?: () => void
   onDossier?: () => void
   onExport?: () => void
   onSheets?: () => void
@@ -15,6 +19,7 @@ interface ShellProps {
   onSyncIndicatorClick?: () => void
   syncLabel?: string
   syncStatus?: 'local' | 'loading' | 'saving' | 'saved' | 'error'
+  storageLabel?: string
   tenantLabel?: string
   vitals?: { cash: string; runway: string; runwayRisk?: boolean }
   children: ReactNode
@@ -25,6 +30,8 @@ export function Shell({
   activeModule,
   onNavigate,
   onReset,
+  onIntake,
+  onMirrors,
   onDossier,
   onExport,
   onSheets,
@@ -33,15 +40,17 @@ export function Shell({
   onSyncIndicatorClick,
   syncLabel,
   syncStatus = 'local',
+  storageLabel,
   tenantLabel,
   vitals,
   children,
 }: ShellProps) {
+  const { t } = useLanguage()
   const dotClass =
     syncStatus === 'saved'
       ? 'bg-amber'
       : syncStatus === 'error'
-        ? 'bg-red-600'
+        ? 'bg-amber'
         : syncStatus === 'saving' || syncStatus === 'loading'
           ? 'bg-ink-3'
           : 'bg-ink-3'
@@ -53,7 +62,7 @@ export function Shell({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="flex items-center gap-3">
               <span
-                className="flex h-11 w-11 items-center justify-center border border-amber font-display text-lg font-bold text-amber"
+                className="flex h-11 w-11 items-center justify-center border border-amber font-display text-[14px] font-bold text-amber"
                 aria-hidden
               >
                 E
@@ -70,11 +79,11 @@ export function Shell({
             {vitals ? (
               <div className="flex flex-wrap items-center gap-4 sm:ml-6">
                 <div>
-                  <p className="font-mono text-[11px] uppercase text-ink-3">Cash</p>
+                  <p className="font-mono text-[11px] uppercase text-ink-3">{t('Cash', 'เงินสด')}</p>
                   <p className="font-mono text-[14px] font-medium">{vitals.cash}</p>
                 </div>
                 <div>
-                  <p className="font-mono text-[11px] uppercase text-ink-3">Runway</p>
+                  <p className="font-mono text-[11px] uppercase text-ink-3">{t('Runway', 'ระยะเวลาที่เงินพอใช้')}</p>
                   <p className={`font-mono text-[14px] font-medium ${vitals.runwayRisk ? 'text-amber' : ''}`}>{vitals.runway}</p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -95,28 +104,39 @@ export function Shell({
                     </>
                   )}
                 </div>
+                {storageLabel ? (
+                  <p className="font-mono text-[11px] uppercase text-ink-3">{storageLabel}</p>
+                ) : null}
               </div>
             ) : null}
 
             <div className="flex flex-wrap gap-2 sm:ml-auto">
+              <LanguageSwitch />
+              {onIntake ? <Btn onClick={onIntake}>{t('Add document', 'เพิ่มเอกสาร')}</Btn> : null}
+              {onMirrors ? <Btn variant="ghost" onClick={onMirrors}>{t('Data mirrors', 'สำเนาข้อมูล')}</Btn> : null}
+              <details className="relative">
+                <summary className="inline-flex min-h-[44px] min-w-[44px] cursor-pointer list-none items-center justify-center border border-line bg-panel px-3" aria-label={t('Workspace tools', 'เครื่องมือพื้นที่ทำงาน')} title={t('Workspace tools', 'เครื่องมือพื้นที่ทำงาน')}><span aria-hidden>⋯</span></summary>
+                <div className="absolute right-0 top-full z-50 mt-px grid w-[min(340px,90vw)] grid-cols-2 gap-px border border-line-2 bg-line p-px">
               {onExport ? (
-                <Btn variant="ghost" onClick={onExport}>Export</Btn>
+                <Btn variant="ghost" onClick={onExport}>{t('Backup', 'สำรองข้อมูล')}</Btn>
               ) : null}
               {onSheets ? (
-                <Btn variant="ghost" onClick={onSheets}>Sheets</Btn>
+                <Btn variant="ghost" onClick={onSheets}>CSV</Btn>
               ) : null}
               {onImport ? (
-                <Btn variant="ghost" onClick={onImport}>Import</Btn>
+                <Btn variant="ghost" onClick={onImport}>{t('Restore', 'กู้คืนข้อมูล')}</Btn>
               ) : null}
               {onSheetsSetup ? (
-                <Btn variant="ghost" onClick={onSheetsSetup}>Sheet URL</Btn>
+                <Btn variant="ghost" onClick={onSheetsSetup}>Google Sheets</Btn>
               ) : null}
               {onDossier ? (
-                <Btn variant="ghost" onClick={onDossier}>Dossier</Btn>
+                <Btn variant="ghost" onClick={onDossier}>{t('Dossier', 'สรุปข้อมูล')}</Btn>
               ) : null}
               {onReset ? (
-                <Btn variant="ghost" onClick={onReset}>Reset</Btn>
+                <Btn variant="ghost" onClick={onReset}>{t('Reset', 'ล้างข้อมูล')}</Btn>
               ) : null}
+                </div>
+              </details>
             </div>
           </div>
 
@@ -134,7 +154,7 @@ export function Shell({
                 ].join(' ')}
               >
                 <span className="font-mono text-[11px]">{m.letter}</span>
-                <span className="hidden sm:inline">{m.label}</span>
+                <span className="inline">{m.label}</span>
               </button>
             ))}
           </nav>

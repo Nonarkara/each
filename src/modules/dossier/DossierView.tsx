@@ -1,3 +1,4 @@
+import { useCopy } from "../../lib/copy"
 import { calcFinance } from '../../lib/calc'
 import { money } from '../../lib/format'
 import type { EachStore } from '../../lib/types'
@@ -8,6 +9,7 @@ interface DossierViewProps {
 }
 
 export function DossierView({ store }: DossierViewProps) {
+  const copy = useCopy()
   const fin = calcFinance(store)
   const company = store.company
 
@@ -16,7 +18,7 @@ export function DossierView({ store }: DossierViewProps) {
 
   return (
     <div>
-      <Station disc="I" kicker={'EXPORT · FY' + new Date().getFullYear()} title="Investor dossier" meta={'As of ' + store.asOf} />
+      <Station disc="I" kicker={'EXPORT · FY' + new Date().getFullYear()} title={copy("Investor dossier")} meta={'As of ' + store.asOf} />
 
       <div className="mb-6 border border-line bg-panel p-5">
         <TagChip tone="amber">DOSSIER</TagChip>
@@ -27,10 +29,10 @@ export function DossierView({ store }: DossierViewProps) {
       </div>
 
       <div className="mb-6 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-        <StatCell label="Cash on hand" value={money(fin.cash, fin.cur)} sub={'After ' + store.expenses.length + ' txns'} />
-        <StatCell label="Founding capital" value={money(fin.founding, fin.cur)} sub={store.foundingCapital.length + ' entries'} />
-        <StatCell label="Contracted revenue" value={money(fin.contractedRevenue, fin.cur)} sub={fin.commissionedCount + ' commissioned'} />
-        <StatCell label="Runway" value={fin.runwayMonths + ' months'} sub="At current burn" />
+        <StatCell label={copy("Cash on hand")} value={money(fin.cash, fin.cur)} sub={'After ' + store.expenses.length + ' txns'} />
+        <StatCell label={copy("Founding capital")} value={money(fin.founding, fin.cur)} sub={store.foundingCapital.length + ' entries'} />
+        <StatCell label={copy("Contracted revenue")} value={money(fin.contractedRevenue, fin.cur)} sub={fin.commissionedCount + ' commissioned'} />
+        <StatCell label={copy("Runway")} value={fin.runwayMonths + ' months'} sub={copy("At current burn")} />
       </div>
 
       <div className="mb-6 grid gap-px border border-line bg-line lg:grid-cols-[1.618fr_1fr]">
@@ -41,7 +43,7 @@ export function DossierView({ store }: DossierViewProps) {
           <p>{fin.runwayMonths < 6 ? 'Burn exceeds the safe line. Raise or cut. Silence is not a plan.' : 'Spend is disciplined. The absence of red is the good news.'}</p>
         </div>
         <div className="bg-panel p-5">
-          <SectionHead label="Spend allocation" />
+          <SectionHead label={copy("Spend allocation")} />
           <StackBar segments={[{ pct: fin.capexShare * 100, variant: 'ink' }, { pct: fin.opexShare * 100, variant: 'amber' }]} />
           <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-3">
             <span>CapEx {Math.round(fin.capexShare * 100)}%</span>
@@ -50,15 +52,15 @@ export function DossierView({ store }: DossierViewProps) {
         </div>
       </div>
 
-      <SectionHead label="Projects in flight" meta={store.projects.length + ' total'} />
+      <SectionHead label={copy("Projects in flight")} meta={store.projects.length + ' total'} />
       <div className="overflow-x-auto border border-line">
         <table className="w-full min-w-[480px] text-left text-[14px]">
           <thead>
             <tr className="border-b border-line bg-paper">
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">Project</th>
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">Status</th>
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">Owner</th>
-              <th className="p-3 text-right font-mono text-[11px] uppercase text-ink-3">Tasks</th>
+              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Project")}</th>
+              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Status")}</th>
+              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Owner")}</th>
+              <th className="p-3 text-right font-mono text-[11px] uppercase text-ink-3">{copy("Tasks")}</th>
             </tr>
           </thead>
           <tbody>
@@ -79,7 +81,7 @@ export function DossierView({ store }: DossierViewProps) {
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <Btn onClick={() => window.print()}>Print dossier</Btn>
+        <Btn onClick={() => window.print()}>{copy("Print dossier")}</Btn>
         <span className="text-[14px] text-ink-3">Provenance: prototype state, {store.asOf}</span>
       </div>
     </div>

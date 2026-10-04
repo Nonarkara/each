@@ -1,0 +1,17 @@
+[project]
+name = "each_backend"
+authors = [
+  { name = "EACH contributors" }
+]
+description = "Frappe persistence bridge for EACH"
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = ["google-auth>=2.40,<3", "requests>=2.32,<3"]
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.bench.frappe-dependencies]
+frappe = ">=15.0.0,<16.0.0"

@@ -1,0 +1,2 @@
+id,name,amount,currency
+opex_llm_tokens,Variable LLM API token allowance,3500,THB

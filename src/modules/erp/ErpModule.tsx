@@ -1,3 +1,5 @@
+import { useLanguage } from '../../lib/languageContext'
+import { useCopy } from "../../lib/copy"
 import { useState } from 'react'
 import { calcFinance } from '../../lib/calc'
 import { money, today, uid } from '../../lib/format'
@@ -23,6 +25,8 @@ interface ErpModuleProps {
 }
 
 export function ErpModule({ store, api }: ErpModuleProps) {
+  const copy = useCopy()
+  const { t } = useLanguage()
   const f = calcFinance(store)
   const safe = f.runwayMonths >= 6
   const [loanOpen, setLoanOpen] = useState(false)
@@ -38,7 +42,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
       { id: 'o1', objective: 'Reach capital-efficient product-market fit', keyResults: [{ k: 'First paying pilot', done: false }, { k: 'Burn under $4k/mo', done: true }, { k: 'Runway > 18 mo', done: true }] },
       { id: 'o2', objective: 'Ship the Frappe migration', keyResults: [{ k: 'ERPNext live', done: false }, { k: 'Chart of accounts mapped', done: false }] },
     ]
-    api.set({ objectives })
+    // Example objectives are displayed only; opening a module never saves invented progress.
   }
 
   const funnel = f.receivedRevenue + f.outstanding + f.pipelineRevenue
@@ -95,55 +99,56 @@ export function ErpModule({ store, api }: ErpModuleProps) {
 
   return (
     <div>
-      <Station disc="E" kicker="MODULE 01 · FINANCES" title="Finances" meta={'As of ' + store.asOf} />
+      <Station disc="E" kicker="MODULE 01 · FINANCES" title={copy("Finances")} meta={'As of ' + store.asOf} />
+      <p className="mb-5 max-w-3xl text-[14px] leading-relaxed text-ink-2">{t("Cash is money already received minus recorded spending. Burn is monthly payroll, AI, recurring costs, debt service and this month\u2019s operating expenses. Runway estimates how long that cash lasts; unsigned deals do not count as cash.", "เงินสดคือเงินที่ได้รับแล้วหักรายจ่ายที่บันทึก รายจ่ายต่อเดือนรวมเงินเดือน AI ค่าใช้จ่ายประจำ เงินผ่อน และรายจ่ายดำเนินงานเดือนนี้ ระยะเวลาที่เงินพอใช้เป็นประมาณการ โครงการที่ยังไม่เซ็นสัญญาไม่ใช่เงินสด")}</p>
 
       <div className="mb-6 grid gap-px border border-line bg-line lg:grid-cols-[1.618fr_1fr]">
         <div className="bg-panel p-5">
-          <p className="font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">Runway at current burn</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">{copy("Runway at current burn")}</p>
           <p className={`mt-2 font-display text-[32px] font-bold leading-none ${safe ? 'text-ink' : 'text-amber'}`}>
-            {Number.isFinite(f.runwayMonths) ? f.runwayMonths + ' mo' : '∞'}
+            {Number.isFinite(f.runwayMonths) ? f.runwayMonths + ' ' + t('mo', 'เดือน') : '∞'}
           </p>
           <p className="mt-2 text-[14px] text-ink-2">
-            {f.monthlyBurn > 0 ? money(f.monthlyBurn, f.cur) + ' / month' : 'No burn recorded'}
+            {f.monthlyBurn > 0 ? money(f.monthlyBurn, f.cur) + ' / ' + t('month', 'เดือน') : t('No burn recorded', 'ยังไม่มีรายจ่าย')}
           </p>
           {f.monthlyDebtService > 0 ? (
             <p className="mt-1 font-mono text-[11px] text-ink-3">
-              Includes {money(f.monthlyDebtService, f.cur)} debt service
+              {t('Includes', 'รวมเงินผ่อน')} {money(f.monthlyDebtService, f.cur)}
             </p>
           ) : null}
         </div>
         <div className="bg-panel p-5">
-          <p className="font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">Status</p>
-          <TagChip tone={safe ? 'amber' : 'default'}>{safe ? 'ON TRACK' : 'AT RISK'}</TagChip>
+          <p className="font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">{copy("Status")}</p>
+          <TagChip tone={safe ? 'amber' : 'default'}>{safe ? t('At least 6 months', 'อย่างน้อย 6 เดือน') : t('Below 6 months', 'ต่ำกว่า 6 เดือน')}</TagChip>
           <p className="mt-3 text-[14px] font-semibold text-ink">
-            {safe ? 'Spend within the safe line.' : 'Burn exceeds the safe line.'}
+            {safe ? t('Cash lasts at least six months at the recorded burn.', 'เงินสดพอใช้อย่างน้อยหกเดือนตามรายจ่ายที่บันทึก') : t('Review collections and spending this week.', 'ตรวจยอดรับเงินและรายจ่ายในสัปดาห์นี้')}
           </p>
           <p className="mt-1 text-[14px] text-ink-2">
-            {safe ? 'The absence of red is the good news.' : 'Raise or cut. Silence is not a plan.'}
+            {t('This is a cash estimate, not a guarantee. Update your records before deciding.', 'นี่เป็นประมาณการเงินสด ไม่ใช่การรับประกัน อัปเดตข้อมูลก่อนตัดสินใจ')}
           </p>
         </div>
       </div>
 
       <div className="mb-6 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-        <StatCell label="Cash on hand" value={money(f.cash, f.cur)} sub={'After ' + store.expenses.length + ' transactions'} />
-        <StatCell label="Founding capital" value={money(f.founding, f.cur)} sub={store.foundingCapital.length + ' entries'} />
-        <StatCell label="Monthly burn" value={money(f.monthlyBurn, f.cur)} sub={burnSub} />
-        <StatCell label="Recurring OpEx" value={money(f.recurring, f.cur)} sub={store.aiEmployees.length + ' AI · ' + store.employees.length + ' human'} />
+        <StatCell label={copy("Cash on hand")} value={money(f.cash, f.cur)} sub={'After ' + store.expenses.length + ' transactions'} />
+        <StatCell label={copy("Founding capital")} value={money(f.founding, f.cur)} sub={store.foundingCapital.length + ' entries'} />
+        <StatCell label={copy("Monthly burn")} value={money(f.monthlyBurn, f.cur)} sub={t(burnSub, f.monthlyDebtService ? 'ค่าใช้จ่ายประจำ + เงินผ่อน + เดือนนี้' : 'ค่าใช้จ่ายประจำ + เดือนนี้')} />
+        <StatCell label={copy("Recurring OpEx")} value={money(f.recurring, f.cur)} sub={store.aiEmployees.length + ' AI · ' + store.employees.length + ' human'} />
       </div>
 
       <div className="mb-6">
         <SectionHead
-          label="Credit & installments"
+          label={copy("Credit & installments")}
           meta={(store.loans?.length || 0) + ' loans · ' + money(f.totalDebt, f.cur) + ' owed · ' + money(f.monthlyDebtService, f.cur) + ' / mo'}
         />
         <DataTable>
           <thead>
             <tr className="border-b border-line font-mono text-[11px] uppercase text-ink-3">
-              <th className="p-3 text-left">Lender</th>
-              <th className="p-3 text-right">Principal</th>
-              <th className="p-3 text-right">Rate</th>
-              <th className="p-3 text-right">Term</th>
-              <th className="p-3 text-right">Installment</th>
+              <th className="p-3 text-left">{copy("Lender")}</th>
+              <th className="p-3 text-right">{copy("Principal")}</th>
+              <th className="p-3 text-right">{copy("Rate")}</th>
+              <th className="p-3 text-right">{copy("Term")}</th>
+              <th className="p-3 text-right">{copy("Installment")}</th>
               <th className="p-3" />
             </tr>
           </thead>
@@ -157,7 +162,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
                   <td className="p-3 text-right font-mono text-[14px]">{l.termMonths} mo</td>
                   <td className="p-3 text-right font-mono text-[14px]">{money(l.installment, l.currency || f.cur)}</td>
                   <td className="p-3 text-right">
-                    <Btn variant="ghost" onClick={() => removeLoan(l.id)}>Remove</Btn>
+                    <Btn variant="ghost" onClick={() => removeLoan(l.id)}>{copy("Remove")}</Btn>
                   </td>
                 </tr>
               ))
@@ -170,23 +175,23 @@ export function ErpModule({ store, api }: ErpModuleProps) {
             )}
           </tbody>
         </DataTable>
-        <Btn variant="ghost" className="mt-3" onClick={() => setLoanOpen(true)}>+ Add loan</Btn>
+        <Btn variant="ghost" className="mt-3" onClick={() => setLoanOpen(true)}>{copy("+ Add loan")}</Btn>
       </div>
 
       <Modal
-        title="Add loan / credit line"
+        title={copy("Add loan / credit line")}
         open={loanOpen}
         onClose={() => setLoanOpen(false)}
         actions={
           <>
-            <Btn variant="ghost" onClick={() => setLoanOpen(false)}>Cancel</Btn>
-            <Btn onClick={addLoan}>Record</Btn>
+            <Btn variant="ghost" onClick={() => setLoanOpen(false)}>{copy("Cancel")}</Btn>
+            <Btn onClick={addLoan}>{copy("Record")}</Btn>
           </>
         }
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block sm:col-span-2">
-            <span className="font-mono text-[11px] uppercase text-ink-3">Lender</span>
+            <span className="font-mono text-[11px] uppercase text-ink-3">{copy("Lender")}</span>
             <Input value={lender} onChange={(e) => setLender(e.target.value)} className="mt-2" />
           </label>
           <label className="block">
@@ -194,11 +199,11 @@ export function ErpModule({ store, api }: ErpModuleProps) {
             <Input type="number" value={principal} onChange={(e) => setPrincipal(e.target.value)} className="mt-2" />
           </label>
           <label className="block">
-            <span className="font-mono text-[11px] uppercase text-ink-3">Annual rate (%)</span>
+            <span className="font-mono text-[11px] uppercase text-ink-3">{copy("Annual rate (%)")}</span>
             <Input type="number" value={rate} onChange={(e) => setRate(e.target.value)} className="mt-2" />
           </label>
           <label className="block">
-            <span className="font-mono text-[11px] uppercase text-ink-3">Term (months)</span>
+            <span className="font-mono text-[11px] uppercase text-ink-3">{copy("Term (months)")}</span>
             <Input type="number" value={termMonths} onChange={(e) => setTermMonths(e.target.value)} className="mt-2" />
           </label>
           <label className="block">
@@ -209,25 +214,25 @@ export function ErpModule({ store, api }: ErpModuleProps) {
       </Modal>
 
       <div className="mb-6">
-        <SectionHead label="Revenue pipeline" meta={'Ikigai book · ' + store.projects.length + ' projects'} />
+        <SectionHead label={copy("Revenue pipeline")} meta={'Ikigai book · ' + store.projects.length + ' projects'} />
         <div className="grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-          <StatCell label="Received to date" value={money(f.receivedRevenue, f.cur)} sub="Cash in" />
-          <StatCell label="Contracted" value={money(f.contractedRevenue, f.cur)} sub={f.commissionedCount + ' commissioned'} />
-          <StatCell label="Outstanding" value={money(f.outstanding, f.cur)} sub="Contracted, unbilled" />
-          <StatCell label="Expected pipeline" value={money(f.expectedPipeline, f.cur)} sub="Tier-weighted" />
+          <StatCell label={copy("Received to date")} value={money(f.receivedRevenue, f.cur)} sub={copy("Cash in")} />
+          <StatCell label={copy("Contracted")} value={money(f.contractedRevenue, f.cur)} sub={f.commissionedCount + ' commissioned'} />
+          <StatCell label={copy("Outstanding")} value={money(f.outstanding, f.cur)} sub={copy("Contracted, unbilled")} />
+          <StatCell label={copy("Expected pipeline")} value={money(f.expectedPipeline, f.cur)} sub={copy("Tier-weighted")} />
         </div>
         <div className="mt-3">
           <StackBar tall segments={[{ pct: rPct, variant: 'ink' }, { pct: oPct, variant: 'amber' }, { pct: pPct, variant: 'muted' }]} />
           <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-3">
             <span>Received {Math.round(rPct)}%</span>
-            <span>Outstanding {Math.round(oPct)}%</span>
+            <span>{copy("Outstanding")}{Math.round(oPct)}%</span>
             <span>Pipeline {Math.round(pPct)}%</span>
           </div>
         </div>
       </div>
 
       <div className="mb-6">
-        <SectionHead label="Spend allocation this month" meta="CapEx vs OpEx" />
+        <SectionHead label={copy("Spend allocation this month")} meta={copy("CapEx vs OpEx")} />
         <StackBar tall segments={[{ pct: f.capexShare * 100, variant: 'ink' }, { pct: f.opexShare * 100, variant: 'amber' }]} />
         <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-3">
           <span>CapEx {money(f.monthCapex, f.cur)} · {Math.round(f.capexShare * 100)}%</span>
@@ -236,9 +241,9 @@ export function ErpModule({ store, api }: ErpModuleProps) {
       </div>
 
       <div className="mb-6">
-        <SectionHead label="Runway projection" meta={f.proj.length ? f.proj.length + ' months to depletion' : 'No burn'} />
+        <SectionHead label={copy("Runway projection")} meta={f.proj.length ? f.proj.length + ' months to depletion' : 'No burn'} />
         {!f.proj.length || f.monthlyBurn <= 0 ? (
-          <Empty>Record expenses to see the projection.</Empty>
+          <Empty>{copy("Record expenses to see the projection.")}</Empty>
         ) : (
           <>
             <div className="flex h-[90px] items-end gap-[3px]">
@@ -257,15 +262,15 @@ export function ErpModule({ store, api }: ErpModuleProps) {
               })}
             </div>
             <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-3">
-              <span>Now</span>
-              <span>Cash hits zero</span>
+              <span>{copy("Now")}</span>
+              <span>{copy("Cash hits zero")}</span>
             </div>
           </>
         )}
       </div>
 
       <div className="mb-6">
-        <SectionHead label="Benchmarks" meta="You vs seed-stage median" />
+        <SectionHead label={copy("Benchmarks")} meta={t('Illustrative reference values · source unverified', 'ค่าอ้างอิงตัวอย่าง · ยังไม่ยืนยันแหล่งข้อมูล')} />
         <div className="grid gap-px border border-line bg-line">
           {[
             ['Monthly burn', f.monthlyBurn, 35000, f.cur],
@@ -277,13 +282,13 @@ export function ErpModule({ store, api }: ErpModuleProps) {
             const mx = Math.max(y, m, 1)
             return (
               <div key={String(label)} className="flex flex-wrap items-center justify-between gap-3 bg-panel p-4">
-                <span className="text-[14px]">{label}</span>
+                <span className="text-[14px]">{copy(String(label))}</span>
                 <div className="flex items-center gap-3">
                   <div className="w-[90px]">
                     <ProgressBar pct={(y / mx) * 100} />
                   </div>
                   <span className="font-mono text-[14px]">{cur ? money(y, String(cur)) : y}</span>
-                  <span className="font-mono text-[11px] text-ink-3">med {cur ? money(m, String(cur)) : m}</span>
+                  <span className="font-mono text-[11px] text-ink-3">{t('example', 'ตัวอย่าง')} {cur ? money(m, String(cur)) : m}</span>
                 </div>
               </div>
             )
@@ -292,7 +297,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
       </div>
 
       <div className="mb-6">
-        <SectionHead label="Objectives & key results" meta="OKR · not KPI" />
+        <SectionHead label={copy("Objectives & key results")} meta={t('Example objectives until you create your own', 'เป้าหมายตัวอย่างจนกว่าจะเพิ่มของคุณเอง')} />
         <div className="grid gap-px border border-line bg-line">
           {objectives.map((o) => {
             const kr = o.keyResults || []
@@ -301,7 +306,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
             return (
               <div key={o.id} className="grid gap-px bg-line lg:grid-cols-[1.618fr_1fr]">
                 <div className="bg-panel p-4">
-                  <p className="font-mono text-[11px] uppercase text-ink-3">Objective</p>
+                  <p className="font-mono text-[11px] uppercase text-ink-3">{copy("Objective")}</p>
                   <p className="mt-1 text-[14px] font-semibold">{o.objective}</p>
                   <div className="mt-3 w-4/5">
                     <ProgressBar pct={pct} variant="amber" />

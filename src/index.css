@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "@fontsource/ibm-plex-sans-thai/400.css";
+@import "@fontsource/ibm-plex-sans-thai/600.css";
 @import "@fontsource/josefin-sans/600.css";
 @import "@fontsource/josefin-sans/700.css";
 @import "@fontsource/source-sans-3/400.css";
@@ -6,9 +8,9 @@
 @import "@fontsource/jetbrains-mono/500.css";
 
 @theme {
-  --font-display: "Josefin Sans", system-ui, sans-serif;
-  --font-body: "Source Sans 3", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-display: "Josefin Sans", "IBM Plex Sans Thai", system-ui, sans-serif;
+  --font-body: "Source Sans 3", "IBM Plex Sans Thai", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "IBM Plex Sans Thai", ui-monospace, monospace;
 
   --color-paper: #f6f5f2;
   --color-panel: #ffffff;
@@ -30,6 +32,7 @@
 
 * {
   box-sizing: border-box;
+  border-radius: 0;
 }
 
 html,
@@ -80,3 +83,7 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+:lang(th) { letter-spacing: normal; }
+button:active:not(:disabled) { transform: scale(.97); }
+@media (prefers-reduced-motion: reduce) { button:active:not(:disabled) { transform: none; } }

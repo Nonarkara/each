@@ -1,3 +1,7 @@
+import { WorkspaceRecovery } from './components/WorkspaceRecovery'
+import { MirrorsModule } from './modules/mirrors/MirrorsModule'
+import { IntakeModule } from './modules/intake/IntakeModule'
+import { useLanguage } from './lib/languageContext'
 import { useEffect, useMemo, useState } from 'react'
 import { calcFinance } from './lib/calc'
 import { Hero } from './components/Hero'
@@ -18,52 +22,60 @@ import {
   getAuthSession,
   setDemoSession,
 } from './lib/auth'
-import { loadAbcStore, loadAxiomStore, seedStore } from './lib/store'
+import { loadAbcStore, loadAxiomStore, seedStore, storeApi, getStoreRecoveryError } from './lib/store'
 import {
   exportJsonBackup,
   exportSheetCsvBundle,
   importCsvBundle,
   importJsonBackup,
-  loadFromSheets,
   sheetsSyncLabel,
   subscribeSheetsSyncStatus,
 } from './services/sheets'
 import type { SyncStatus } from './services/sheets'
 import { SheetsSettingsModal } from './components/SheetsSettingsModal'
+import {
+  backendStatusLabel,
+  startFrappeSync,
+  type BackendStatus,
+} from './services/frappeSync'
 
 type AppView = 'login' | 'landing' | 'onboarding' | 'app'
-type AppRoute = ModuleId | 'dossier'
+type AppRoute = ModuleId | 'dossier' | 'intake' | 'mirrors'
 
 
 function initialView(): AppView {
   const session = getAuthSession()
+  if (storeApi.get().onboarded && storeApi.get().dataTenant === 'custom') return 'app'
   if (session?.dataPath === 'axiom' && !session.demo) return 'app'
   if (session?.dataPath === 'abc' && session.demo) return 'app'
   return 'login'
 }
 
 export default function App() {
+  const { t } = useLanguage()
   const [store, api] = useStore()
   const [view, setView] = useState<AppView>(initialView)
   const [route, setRoute] = useState<AppRoute>('erp')
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('local')
   const [authError, setAuthError] = useState('')
   const [sheetsOpen, setSheetsOpen] = useState(false)
+  const [backendStatus, setBackendStatus] = useState<BackendStatus>('off')
 
   useEffect(() => {
     return subscribeSheetsSyncStatus(setSyncStatus)
   }, [])
 
   useEffect(() => {
-    if (!store.onboarded) return
-    void loadFromSheets().then((remote) => {
-      if (remote) api.load(remote)
-    })
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- load once on mount
+    if (view !== 'app' || getAuthSession()?.demo || store.dataTenant === 'abc') {
+      setBackendStatus('off')
+      return
+    }
+    return startFrappeSync(setBackendStatus)
+  }, [view, store.dataTenant])
 
   useEffect(() => {
     const session = getAuthSession()
-    if (!session || store.onboarded) return
+    if (getStoreRecoveryError() || !session || (store.onboarded && store.dataTenant === session.dataPath)) return
     if (session.dataPath === 'axiom') loadAxiomStore()
     else if (session.dataPath === 'abc') loadAbcStore()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps -- hydrate once from session
@@ -79,7 +91,7 @@ export default function App() {
 
   function handleGoogleAuth() {
     setAuthError('')
-    loadAxiomStore()
+    if (!store.onboarded || store.dataTenant !== 'axiom') loadAxiomStore()
     enterApp()
   }
 
@@ -88,19 +100,20 @@ export default function App() {
     setAuthError('')
     setDemoSession()
     const abc = loadAbcStore()
-    exportSheetCsvBundle(abc)
+    void abc // demo stays on screen; downloads are explicit
     enterApp()
   }
 
   function handleBlank() {
+    if (store.onboarded && !window.confirm(t('Starting a new workspace replaces this browser’s current data. Export a backup first. Continue?', 'เริ่มพื้นที่ใหม่จะแทนที่ข้อมูลปัจจุบันในเบราว์เซอร์ กรุณาสำรองก่อน ต้องการดำเนินการต่อหรือไม่?'))) return
     setAuthError('')
     clearAuthSession()
-    api.load(seedStore())
+    api.load({ ...seedStore(), dataTenant: 'custom' })
     setView('onboarding')
   }
 
   function handleReset() {
-    if (!window.confirm('Clear all prototype data and sign out?')) return
+    if (!window.confirm(t('Clear this browser’s workspace and sign out? Download a backup first to keep your records.', 'ล้างข้อมูลพื้นที่ทำงานในเบราว์เซอร์และออกจากระบบหรือไม่? ดาวน์โหลดข้อมูลสำรองก่อนเพื่อเก็บข้อมูล'))) return
     clearAuthSession()
     api.reset()
     setView('login')
@@ -128,6 +141,8 @@ export default function App() {
     importJsonBackup((obj) => api.load(obj))
   }
 
+
+  if (getStoreRecoveryError()) return <WorkspaceRecovery error={getStoreRecoveryError()} onRestore={() => importJsonBackup(remote => { api.load(remote); setView('app') })} onReset={handleReset} />
 
   if (view === 'login') {
     return (
@@ -184,9 +199,11 @@ export default function App() {
     <>
       <Shell
         companyName={companyName}
-        activeModule={route === 'dossier' ? undefined : route}
+        activeModule={['dossier', 'intake', 'mirrors'].includes(route) ? undefined : route}
         onNavigate={(id) => setRoute(id as AppRoute)}
         onReset={handleReset}
+        onIntake={() => setRoute('intake')}
+        onMirrors={() => setRoute('mirrors')}
         onDossier={() => setRoute('dossier')}
         onExport={() => exportJsonBackup(store)}
         onSheets={() => exportSheetCsvBundle(store)}
@@ -195,13 +212,17 @@ export default function App() {
         onSyncIndicatorClick={openSheetsSettings}
         syncLabel={sheetsSyncLabel(syncStatus)}
         syncStatus={syncStatus}
+        storageLabel={backendStatusLabel(backendStatus)}
         tenantLabel={tenantLabel}
         vitals={{
           cash: money(fin.cash, store.currency),
-          runway: (Number.isFinite(fin.runwayMonths) ? fin.runwayMonths : '∞') + ' mo',
+          runway: (Number.isFinite(fin.runwayMonths) ? fin.runwayMonths : '∞') + ' ' + t('mo', 'เดือน'),
           runwayRisk: !safeRunway,
         }}
       >
+        <p className="mb-4 border-l-2 border-amber bg-panel p-3">{t('Evaluation workspace · Local data is stored in this browser. Back up before switching devices. Configure Frappe for authenticated persistence.', 'พื้นที่ทดลอง · ข้อมูลอยู่ในเบราว์เซอร์นี้ สำรองข้อมูลก่อนเปลี่ยนอุปกรณ์ เชื่อมต่อ Frappe เพื่อบันทึกข้อมูลผ่านระบบยืนยันตัวตน')}</p>
+        {route === 'mirrors' ? <MirrorsModule store={store} onGoogle={openSheetsSettings} /> : null}
+        {route === 'intake' ? <IntakeModule store={store} /> : null}
         {route === 'erp' ? <ErpModule store={store} api={api} /> : null}
         {route === 'act' ? <ActModule store={store} api={api} /> : null}
         {route === 'crm' ? <CrmModule store={store} api={api} /> : null}

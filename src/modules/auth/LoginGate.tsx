@@ -1,3 +1,6 @@
+import { useCopy } from "../../lib/copy"
+import { useLanguage } from '../../lib/languageContext'
+import { LanguageSwitch } from '../../lib/language'
 import { useEffect, useRef, useState } from 'react'
 import {
   isGoogleConfigured,
@@ -37,6 +40,9 @@ function GoogleIcon() {
 
 
 export function LoginGate({ onGoogleSuccess, onDemo, onBlank, error }: LoginGateProps) {
+  const copy = useCopy()
+  const { t } = useLanguage()
+  const [signInError, setSignInError] = useState('')
   const googleRef = useRef<HTMLDivElement>(null)
   const [googleReady, setGoogleReady] = useState(false)
 
@@ -47,12 +53,13 @@ export function LoginGate({ onGoogleSuccess, onDemo, onBlank, error }: LoginGate
       if (!window.google?.accounts?.id || !googleRef.current) return
       window.google.accounts.id.initialize({
         client_id: clientId,
-        callback: (res) => {
+        callback: async (res) => {
           try {
-            verifyGoogleCredential(res.credential)
+            setSignInError('')
+            await verifyGoogleCredential(res.credential)
             onGoogleSuccess()
           } catch (e) {
-            console.error(e)
+            setSignInError(e instanceof Error ? e.message : 'Sign-in failed')
           }
         },
       })
@@ -78,8 +85,9 @@ export function LoginGate({ onGoogleSuccess, onDemo, onBlank, error }: LoginGate
   return (
     <div className="min-h-screen px-4 py-8 sm:px-[22px] sm:py-[22px]">
       <div className="mx-auto max-w-[520px]">
+        <div className="mb-5 flex justify-end"><LanguageSwitch /></div>
         <div className="mb-8 flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center border border-amber font-display text-lg font-bold text-amber">E</span>
+          <span className="flex h-11 w-11 items-center justify-center border border-amber font-display text-[14px] font-bold text-amber">E</span>
           <div>
             <p className="font-display text-[32px] font-bold leading-none">EACH</p>
             <p className="font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">ERP + ACT + CRM + HR</p>
@@ -87,20 +95,24 @@ export function LoginGate({ onGoogleSuccess, onDemo, onBlank, error }: LoginGate
         </div>
 
         <div className="border border-line bg-panel p-5 sm:p-6">
-          <p className="font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">Sign in</p>
-          <h1 className="mt-2 font-display text-[32px] font-bold leading-tight">Choose your workspace</h1>
+          <p className="font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">{copy("Sign in")}</p>
+          <h1 className="mt-2 font-display text-[32px] font-bold leading-tight">{t('Run your startup in one place', 'บริหารสตาร์ทอัปในที่เดียว')}</h1>
           <p className="mt-3 text-[14px] leading-relaxed text-ink-2">
-            Sign in to open <strong className="font-semibold text-ink">Axiom X Co., Ltd.</strong> — the Ikigai Finance Engine live tenant.
-            Or try the no-account demo with <strong className="font-semibold text-ink">ABC Company</strong>, the failing-startup case study.
+            {t('See your cash, record expenses, track customer work, and manage people. Start with your own company or explore a sample workspace first.', 'ดูเงินสด บันทึกรายจ่าย ติดตามงานลูกค้า และจัดการทีม เริ่มด้วยบริษัทของคุณ หรือทดลองพื้นที่ตัวอย่างก่อน')}
           </p>
 
-          {error ? (
+          {error || signInError ? (
             <p className="mt-4 border border-amber bg-paper p-3 text-[14px] text-ink" role="alert">
-              {error}
+              {error || signInError}
             </p>
           ) : null}
 
           <div className="mt-6 flex flex-col gap-3">
+            {import.meta.env.VITE_FRAPPE_URL ? <a
+              className="inline-flex min-h-[44px] items-center justify-center border border-line px-4 text-[14px]"
+              href={`${String(import.meta.env.VITE_FRAPPE_URL).replace(/\/$/, '')}/login`}
+              target="_blank" rel="noopener noreferrer"
+            >{copy("Sign in to the database")}</a> : null}
             {isGoogleConfigured() ? (
               <div ref={googleRef} className="min-h-[44px]" aria-label="Sign in with Google" />
             ) : (
@@ -108,16 +120,16 @@ export function LoginGate({ onGoogleSuccess, onDemo, onBlank, error }: LoginGate
                 type="button"
                 disabled
                 className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 border border-line bg-paper px-4 text-[14px] text-ink-3"
-                title="Set VITE_GOOGLE_CLIENT_ID in .env"
+                title={t('An administrator can configure company sign-in.', 'ผู้ดูแลระบบตั้งค่าการเข้าสู่ระบบบริษัทได้')}
               >
                 <GoogleIcon />
-                Sign in with Google (configure OAuth)
+                {t('Company sign-in is not configured', 'ยังไม่ตั้งค่าการเข้าสู่ระบบบริษัท')}
               </button>
             )}
 
 
             {!googleReady && isGoogleConfigured() ? (
-              <p className="font-mono text-[11px] text-ink-3">Loading Google sign-in…</p>
+              <p className="font-mono text-[11px] text-ink-3">{copy("Loading Google sign-in…")}</p>
             ) : null}
           </div>
 
@@ -128,10 +140,10 @@ export function LoginGate({ onGoogleSuccess, onDemo, onBlank, error }: LoginGate
             onClick={onDemo}
             className="inline-flex min-h-[44px] w-full items-center justify-center border border-amber bg-amber px-4 text-[14px] font-semibold text-ink hover:brightness-95"
           >
-            Try demo — ABC Company (no account)
+            {t('Explore sample workspace', 'ทดลองพื้นที่ตัวอย่าง')}
           </button>
           <p className="mt-2 text-[14px] text-ink-3">
-            Fictitious failing startup · ฿43K cash · ~฿351K/mo burn · negative equity. Sheets export included.
+            {t('ABC Company is fictional. Try every module with sample data; export only when you choose.', 'ABC Company เป็นบริษัทสมมติ ทดลองทุกโมดูลด้วยข้อมูลตัวอย่าง ส่งออกเมื่อคุณเลือกเท่านั้น')}
           </p>
 
           <button
@@ -139,12 +151,12 @@ export function LoginGate({ onGoogleSuccess, onDemo, onBlank, error }: LoginGate
             onClick={onBlank}
             className="mt-4 inline-flex min-h-[44px] w-full items-center justify-center border border-line bg-panel px-4 text-[14px] text-ink-2 hover:border-ink"
           >
-            Start blank — onboard your own company
+            {t('Set up my company', 'ตั้งค่าบริษัทของฉัน')}
           </button>
         </div>
 
         <p className="mt-6 font-mono text-[11px] leading-relaxed text-ink-3">
-          OAuth keys live in <code className="text-ink-2">.env</code> only — never committed.
+          {t('Your browser saves the evaluation workspace locally. For shared company use, connect an authenticated Frappe backend.', 'พื้นที่ทดลองบันทึกในเบราว์เซอร์ สำหรับใช้ร่วมกันในบริษัท ให้เชื่อมต่อ Frappe ที่มีระบบยืนยันตัวตน')}
         </p>
       </div>
     </div>

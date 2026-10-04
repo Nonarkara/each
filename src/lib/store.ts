@@ -2,31 +2,10 @@ import type { EachStore, Expense, RegistryHit } from './types'
 import { buildAbcDemoStore, buildAxiomDemoStore } from './demo'
 import { today, uid } from './format'
 import { scheduleSheetsSave } from '../services/sheets'
+import { migrateStore, validateStore } from './validation'
 
 const KEY = 'each-store-v1'
 const listeners = new Set<(s: EachStore) => void>()
-
-function seedAIEmployees() {
-  return [
-    { id: 'ai-1', name: 'Claude', vendor: 'Anthropic', role: 'Reasoning & writing', plan: 'Max 5x', cost: 200, currency: 'USD', efficiency: 92, started: '2025-01-12' },
-    { id: 'ai-2', name: 'Cursor', vendor: 'Anysphere', role: 'Engineering pair', plan: 'Pro', cost: 20, currency: 'USD', efficiency: 88, started: '2025-02-03' },
-    { id: 'ai-3', name: 'OpenAI', vendor: 'OpenAI', role: 'General & vision', plan: 'Plus/Team', cost: 150, currency: 'USD', efficiency: 85, started: '2025-01-20' },
-    { id: 'ai-4', name: 'Gemini', vendor: 'Google', role: 'Long-context research', plan: 'Advanced', cost: 20, currency: 'USD', efficiency: 79, started: '2025-03-15' },
-    { id: 'ai-5', name: 'Zed AI', vendor: 'Zed', role: 'Inline edits', plan: 'Pro', cost: 10, currency: 'USD', efficiency: 74, started: '2025-04-01' },
-    { id: 'ai-6', name: 'Kimi', vendor: 'Moonshot', role: 'Long-doc & CN market', plan: 'Pro', cost: 15, currency: 'USD', efficiency: 70, started: '2025-05-09' },
-  ]
-}
-
-function seedProjects() {
-  const d = today()
-  return [
-    { id: 'p1', title: 'Investor dossier Q1', status: 'doing' as const, owner: 'Founder', checklist: [{ k: 'Compile runway model', done: true }, { k: 'Write narrative', done: false }, { k: 'Export PDF', done: false }], notes: [{ t: 'Pitch angle: capital efficiency, not headcount.', at: d }], files: ['runway-model.xlsx'] },
-    { id: 'p2', title: 'Migrate ERP to Frappe', status: 'doing' as const, owner: 'Founder', checklist: [{ k: 'Provision MariaDB', done: true }, { k: 'Install ERPNext', done: false }, { k: 'Map chart of accounts', done: false }], notes: [], files: [] },
-    { id: 'p3', title: 'First customer pilot', status: 'backlog' as const, owner: 'Founder', checklist: [], notes: [], files: [] },
-    { id: 'p4', title: 'Brand mark final', status: 'review' as const, owner: 'Founder', checklist: [{ k: 'Disc construction on phi grid', done: true }], notes: [], files: [] },
-    { id: 'p5', title: 'Gmail receipt ingestion', status: 'done' as const, owner: 'Founder', checklist: [], notes: [], files: [] },
-  ]
-}
 
 export function seedStore(): EachStore {
   return {
@@ -40,35 +19,41 @@ export function seedStore(): EachStore {
     gmailConnected: false,
     gmailImported: 0,
     employees: [],
-    aiEmployees: seedAIEmployees(),
-    projects: seedProjects(),
+    aiEmployees: [],
+    projects: [],
+    recurringExpenses: [],
     objectives: [],
     actions: [],
     loans: [],
   }
 }
 
+let recoveryError = ''
 let state: EachStore = load()
+export function getStoreRecoveryError(): string { return recoveryError }
+export function preservedWorkspaceJson(): string { return localStorage.getItem(KEY) || '' }
 
 function load(): EachStore {
   try {
     const raw = localStorage.getItem(KEY)
     if (raw) {
-      const parsed = JSON.parse(raw) as Partial<EachStore>
-      return { ...seedStore(), ...parsed, loans: parsed.loans ?? [] }
+      return migrateStore(validateStore(JSON.parse(raw)))
     }
   } catch {
-    /* ignore */
+    recoveryError = 'Saved workspace could not be validated. The original data has been preserved. / ตรวจข้อมูลที่บันทึกไม่สำเร็จ ระบบเก็บข้อมูลเดิมไว้แล้ว'
   }
   return seedStore()
 }
 
-function persist() {
+function persist(previous: EachStore, reviewedReplacement = false) {
+  if (recoveryError && !reviewedReplacement) { state = previous; throw new Error(recoveryError) }
   try {
     localStorage.setItem(KEY, JSON.stringify(state))
   } catch {
-    /* ignore */
+    state = previous
+    throw new Error('Unable to save in this browser. Free storage or export a backup. / บันทึกในเบราว์เซอร์ไม่สำเร็จ กรุณาเพิ่มพื้นที่หรือสำรองข้อมูล')
   }
+  recoveryError = ''
   scheduleSheetsSave(state)
   listeners.forEach((fn) => fn(state))
 }
@@ -77,27 +62,31 @@ function persist() {
 export const storeApi = {
   get: (): EachStore => state,
   set: (patch: Partial<EachStore>): EachStore => {
-    state = { ...state, ...patch }
+    const previous = state
+    state = validateStore({ ...state, ...patch })
     if (patch.company?.legalName) state.companyName = patch.company.legalName
     else if (patch.company?.name) state.companyName = patch.company.name
-    persist()
+    persist(previous)
     return state
   },
   update: (fn: (s: EachStore) => EachStore): EachStore => {
-    state = fn(JSON.parse(JSON.stringify(state)))
+    const previous = state
+    state = validateStore(fn(JSON.parse(JSON.stringify(state))))
     if (state.company?.legalName) state.companyName = state.company.legalName
-    persist()
+    persist(previous)
     return state
   },
   load: (obj: EachStore): EachStore => {
-    state = obj
+    const previous = state
+    state = migrateStore(validateStore(obj))
     if (state.company?.legalName) state.companyName = state.company.legalName
-    persist()
+    persist(previous, true)
     return state
   },
   reset: (): EachStore => {
+    const previous = state
     state = seedStore()
-    persist()
+    persist(previous, true)
     return state
   },
   subscribe: (fn: (s: EachStore) => void): (() => void) => {

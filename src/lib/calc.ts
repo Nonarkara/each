@@ -1,5 +1,6 @@
 import type { EachStore, FinanceCalc } from './types'
-import { sum, today } from './format'
+import { today } from './format'
+import { convertMoney, sumMoney } from './money'
 
 /** Finance engine — deterministic. Phase 2 swaps data source, not this logic.
  *  Source of truth for static snapshot: cash = founding + received − totalExpenses;
@@ -8,6 +9,7 @@ import { sum, today } from './format'
  *  runway there can differ when pipeline cash is projected forward. */
 export function calcFinance(s: EachStore): FinanceCalc {
   const cur = s.currency
+  const sum = <T extends { currency?: string }>(rows: T[], key: keyof T) => sumMoney(rows, key, s)
   const founding = sum(s.foundingCapital, 'amount')
   const totalExpenses = sum(s.expenses, 'amount')
   const totalOpex = sum(s.expenses.filter((e) => e.type === 'opex'), 'amount')
@@ -20,7 +22,7 @@ export function calcFinance(s: EachStore): FinanceCalc {
   const pipelineRevenue = sum(pipeline, 'totalValue')
   const tierWeight: Record<number, number> = { 1: 1, 2: 0.5, 3: 0.25 }
   const expectedPipeline = pipeline.reduce(
-    (a, p) => a + (Number(p.totalValue) || 0) * (tierWeight[p.scenarioTier ?? 2] ?? 0.5),
+    (a, p) => a + convertMoney(Number(p.totalValue) || 0, p.currency, s) * (tierWeight[p.scenarioTier ?? 2] ?? 0.5),
     0,
   )
   const outstanding = Math.max(0, contractedRevenue - receivedRevenue)
@@ -28,7 +30,7 @@ export function calcFinance(s: EachStore): FinanceCalc {
 
   const aiMonthly = sum(s.aiEmployees, 'cost')
   const humanMonthly = sum(s.employees, 'salary')
-  const recurring = aiMonthly + humanMonthly
+  const recurring = aiMonthly + humanMonthly + sum(s.recurringExpenses || [], 'amount')
 
   const monthKey = (s.asOf || today()).slice(0, 7)
   const monthOpex = sum(
@@ -40,7 +42,13 @@ export function calcFinance(s: EachStore): FinanceCalc {
     'amount',
   )
 
-  const monthlyDebtService = sum(s.loans || [], 'installment')
+  const activeLoans = (s.loans || []).filter((loan) => {
+    if (!loan.startDate) return true
+    const start = new Date(loan.startDate + 'T00:00:00Z')
+    const elapsed = (Number(monthKey.slice(0, 4)) - start.getUTCFullYear()) * 12 + Number(monthKey.slice(5)) - start.getUTCMonth() - 1
+    return elapsed >= 0 && elapsed < loan.termMonths
+  })
+  const monthlyDebtService = sum(activeLoans, 'installment')
   const totalDebt = sum(s.loans || [], 'principal')
   const monthlyBurn = recurring + monthOpex + monthlyDebtService
   const runwayMonths = monthlyBurn > 0 ? Math.floor(cash / monthlyBurn) : Infinity

@@ -11,7 +11,7 @@
 | **GitHub** | https://github.com/nonarkara/each |
 | **Predecessor** | `/Users/nonarkara/Projects/CRM2` (AXIOM prototype, static HTML/JS) |
 | **Created** | 2026-06-27 |
-| **Phase** | 0.5 — CRM2 port complete; Sheets manual + sync shipped |
+| **Phase** | 1 — clone-and-run Frappe/MariaDB path added; production hardening pending |
 
 ## Ikigai mock data sources
 
@@ -89,12 +89,13 @@ Demo path (`ABC`) skips OAuth — session flagged `demo: true` in sessionStorage
 ## Architecture
 
 ```
-Phase 0.5: Vite/React + localStorage shim (storeApi in src/lib/store.ts)
-Phase 1:   Stub services — company lookup, Gmail OAuth, OCR scan
-Phase 2:   Frappe REST (ERPNext + Frappe HR + Frappe CRM) via src/services/api.ts
+Offline:   Vite/React + localStorage cache (storeApi in src/lib/store.ts)
+Local:     Frappe v15 + MariaDB persistence via src/services/frappeSync.ts
+Phase 1.5: Stub services — company lookup, Gmail OAuth, OCR scan
+Phase 2:   Native ERPNext + Frappe HR + Frappe CRM DocType mapping
 ```
 
-**Swap point:** `storeApi` in `src/lib/store.ts` and `frappeClient` in `src/services/api.ts`. UI modules call `useStore()` / `storeApi` only — no direct localStorage in components.
+**Swap point:** `storeApi` in `src/lib/store.ts` and `frappeClient` in `src/services/api.ts`. UI modules call `useStore()` / `storeApi` only — no direct localStorage in components. The current Frappe bridge stores one authenticated JSON workspace per user so the database path works before native DocType mapping is complete.
 
 ### Phase 2 Frappe plan
 
@@ -161,3 +162,15 @@ See `.env.example` for placeholders. Never commit `.env`.
 ## Secrets
 
 None configured. Reference `shared/.secrets-backup/` for workspace key locations when wiring Phase 1 live APIs.
+
+## Intake and mirrors design read (2026-10-04)
+A founder should be able to trace every proposed entry to a document, correct it, and file only what they approved. Reference: Braun ET66 for legible controls and Palette's Bauhaus Human Design for content-led composition. Document review is the dominant surface; connection details use progressive disclosure. Section boundaries use 2px rules; record relationships use 1px hairlines. English uses Josefin Sans / Source Sans 3; Thai uses non-looped IBM Plex Sans Thai; data uses JetBrains Mono. No accent added beyond amber. Fluent human Thai review is still needed.
+
+## Reviewed intake and mirror implementation (2026-10-05)
+- New routes: Add document and Data mirrors; ERP/ACT/CRM/HR/dossier remain.
+- Optional browser OCR downloads English/Thai language assets without sending document images to a service. AI uses a user-selected OpenAI-compatible endpoint; session-only API key never enters the store.
+- Explicit user request for local LLM integration authorizes the visible loopback endpoint preset in the public bundle. It is used only after the user chooses it and requests analysis.
+- Hippocampus is an approval/source ledger, not a vector database; approved records remain in their respective collections.
+- Excel export/import includes source receipts; Google Apps Script transfers are now explicit with optimistic conflict detection and read-back.
+- Authenticated Frappe Google Sheets/Graph connectors are configured per user; credentials are environment-only. Real provider-account transfer is not yet verified.
+- Pilot posture: no production/multi-tenant maturity claim.

@@ -11,6 +11,10 @@ dist
 dist-ssr
 *.local
 
+# Python
+__pycache__/
+*.py[cod]
+
 # Editor
 .vscode/*
 !.vscode/extensions.json
@@ -24,3 +28,9 @@ dist-ssr
 
 # TypeScript
 *.tsbuildinfo
+
+# Frappe local runtime and backups
+*.sql.gz
+*.tar
+sites/
+backups/

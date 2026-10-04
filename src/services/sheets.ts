@@ -1,18 +1,14 @@
+import { canonicalMirror } from '../lib/mirror'
 import type { EachStore } from '../lib/types'
 import { buildAxiomMockStore } from '../data/axiom-mock'
 import { seedStore } from '../lib/store'
+import { validateStore } from '../lib/validation'
 import APPS_SCRIPT_SOURCE from '../../sheets/apps-script.gs?raw'
 
 const WEB_APP_URL = import.meta.env.VITE_SHEETS_WEB_APP_URL as string | undefined
 const URL_STORAGE_KEY = 'each-sheets-web-app-url'
 const LAST_SAVE_KEY = 'each-sheets-last-saved'
-/**
- * Explicit user opt-in gate (Phase 0 — S1 mitigation).
- * Connecting Sheets triggers automatic background upload of plaintext payroll/tax IDs to Google on
- * every edit. Until Phase 2 Frappe REST replaces this bridge, we require the user to acknowledge
- * this risk in `SheetsSettingsModal` and store the ack separately from the URL — saving the URL
- * without ack does NOT activate sync.
- */
+/** Explicit consent for manual full-workspace transfer to the configured Google deployment. */
 const ACK_STORAGE_KEY = 'each-sheets-exfil-ack-v1'
 const ACK_VERSION = 1
 
@@ -20,6 +16,8 @@ type SyncStatus = 'local' | 'loading' | 'saving' | 'saved' | 'error'
 
 export type { SyncStatus }
 
+let remoteRevision: string | null = null
+let saveInFlight = false
 let status: SyncStatus = 'local'
 let saveTimer: ReturnType<typeof setTimeout> | null = null
 const statusListeners = new Set<(s: SyncStatus) => void>()
@@ -35,6 +33,9 @@ export function getSheetsWebAppUrl(): string {
 
 export function setSheetsWebAppUrl(url: string): void {
   const trimmed = url.trim()
+  if (trimmed && !/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(trimmed)) throw new Error('Use a Google Apps Script /exec URL')
+  if (saveTimer) clearTimeout(saveTimer)
+  remoteRevision = null
   if (trimmed) localStorage.setItem(URL_STORAGE_KEY, trimmed)
   else localStorage.removeItem(URL_STORAGE_KEY)
 }
@@ -78,20 +79,20 @@ export function getSheetsAppsScript(): string {
 export async function testSheetsUrl(url: string): Promise<{ ok: boolean; message: string }> {
   const target = (url || '').trim()
   if (!target) return { ok: false, message: 'No URL configured.' }
-  if (!/^https:\/\/script\.google\.com\/.*exec/.test(target)) {
+  if (!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(target)) {
     return {
       ok: false,
       message: 'That does not look like an Apps Script Web App URL. Expected https://script.google.com/.../exec',
     }
   }
   try {
-    const res = await fetch(target, { method: 'GET', redirect: 'follow' })
+    const res = await fetch(target, { method: 'GET', redirect: 'follow', credentials: 'include', signal: AbortSignal.timeout(15000) })
     const text = await res.text()
     let data: { error?: string } | null = null
     try {
       data = JSON.parse(text)
     } catch {
-      /* not JSON — still treat as reachable */
+      return { ok: false, message: 'Sign in to your Google account or check the authorized deployment.' }
     }
     if (data && data.error) return { ok: false, message: 'Apps Script error: ' + data.error }
     if (res.ok) return { ok: true, message: 'Connected.' }
@@ -114,15 +115,15 @@ export function subscribeSheetsSyncStatus(fn: (s: SyncStatus) => void): () => vo
 export function sheetsSyncLabel(s: SyncStatus = status): string {
   switch (s) {
     case 'local':
-      return 'Local only'
+      return 'Local copy / สำเนาในเครื่อง'
     case 'loading':
       return 'Loading from Sheet…'
     case 'saving':
       return 'Saving to Sheet…'
     case 'saved':
-      return 'Synced to Sheet'
+      return 'Sheet verified / ตรวจสำเนาแล้ว'
     case 'error':
-      return 'Sheet sync error'
+      return 'Sheet needs attention / ตรวจการเชื่อมต่อ'
     default:
       return ''
   }
@@ -130,7 +131,8 @@ export function sheetsSyncLabel(s: SyncStatus = status): string {
 
 function csvEscape(cell: unknown): string {
   if (cell === null || cell === undefined) return ''
-  const s = String(cell)
+  const raw = String(cell)
+  const s = typeof cell === 'string' && /^[\s]*[=+@-]/.test(raw) ? "'" + raw : raw
   if (s.includes(',') || s.includes('"') || s.includes('\n')) {
     return '"' + s.replace(/"/g, '""') + '"'
   }
@@ -167,6 +169,11 @@ export function exportJsonBackup(store: EachStore): void {
 /** One CSV per workbook tab — import into Google Sheets or merge into template. */
 export function exportSheetCsvBundle(store: EachStore): void {
   const prefix = filePrefix(store)
+  download(prefix + '-intakeReceipts.csv', toCsv([['id', 'name', 'sha256', 'approvedAt', 'provider', 'summary', 'records'], ...(store.intakeReceipts || []).map(r => [r.id, r.name, r.sha256, r.approvedAt, r.provider, r.summary, JSON.stringify(r.records)])]))
+  download(prefix + '-recurringExpenses.csv', toCsv([
+    ['id', 'name', 'amount', 'currency'],
+    ...(store.recurringExpenses || []).map((row) => [row.id, row.name, row.amount, row.currency]),
+  ]))
 
   const scalarRows: unknown[][] = [
     ['key', 'value'],
@@ -177,6 +184,9 @@ export function exportSheetCsvBundle(store: EachStore): void {
     ['gmailConnected', store.gmailConnected],
     ['gmailImported', store.gmailImported],
     ['company', JSON.stringify(store.company)],
+    ['dataTenant', store.dataTenant || 'custom'],
+    ['schemaVersion', store.schemaVersion || 0],
+    ['fxRates', JSON.stringify(store.fxRates || {})],
   ]
 
   download(prefix + '-Metadata.csv', toCsv(scalarRows))
@@ -322,10 +332,11 @@ export function importJsonBackup(onLoad: (store: EachStore) => void): void {
   input.onchange = () => {
     const file = input.files?.[0]
     if (!file) return
+    if (file.size > 2_000_000) { window.alert('Backup exceeds the 2 MB limit.'); return }
     const reader = new FileReader()
     reader.onload = () => {
       try {
-        const obj = JSON.parse(String(reader.result)) as EachStore
+        const obj = validateStore(JSON.parse(String(reader.result)))
         if (!window.confirm('Replace current data with this backup? This cannot be undone.')) return
         onLoad(obj)
       } catch {
@@ -347,6 +358,8 @@ const TAB_SUFFIXES = [
   'loans',
   'objectives',
   'actions',
+  'recurringExpenses',
+  'intakeReceipts',
 ] as const
 
 type TabSuffix = (typeof TAB_SUFFIXES)[number]
@@ -403,6 +416,7 @@ function tabFromFilename(name: string): TabSuffix | null {
 function rowsToObjects(rows: string[][]): Record<string, unknown>[] {
   if (rows.length < 2) return []
   const headers = rows[0]
+  if (headers.some((h) => ['__proto__', 'prototype', 'constructor'].includes(h))) throw new Error('Unsafe CSV header')
   const out: Record<string, unknown>[] = []
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i]
@@ -411,13 +425,15 @@ function rowsToObjects(rows: string[][]): Record<string, unknown>[] {
     headers.forEach((h, j) => {
       if (!h) return
       let val: unknown = row[j] ?? ''
+      if (h === 'done') val = val === 'true'
+      if (typeof val === 'string' && val.startsWith("'") && /^[\s]*[=+@-]/.test(val.slice(1))) val = val.slice(1)
       if (typeof val === 'string' && (val.startsWith('{') || val.startsWith('['))) {
         try {
           val = JSON.parse(val)
         } catch {
           /* keep string */
         }
-      } else if (val !== '' && !Number.isNaN(Number(val)) && h !== 'id' && !h.includes('Date') && h !== 'title' && h !== 'objective' && h !== 'label' && h !== 'note' && h !== 'source' && h !== 'vendor' && h !== 'lender' && h !== 'name' && h !== 'client' && h !== 'clientId' && h !== 'owner' && h !== 'category' && h !== 'type' && h !== 'module' && h !== 'priority' && h !== 'plan' && h !== 'role' && h !== 'taxId' && h !== 'quarter' && h !== 'currency') {
+      } else if (typeof val === 'string' && val !== '' && !Number.isNaN(Number(val)) && h !== 'id' && !h.includes('Date') && h !== 'title' && h !== 'objective' && h !== 'label' && h !== 'note' && h !== 'source' && h !== 'vendor' && h !== 'lender' && h !== 'name' && h !== 'client' && h !== 'clientId' && h !== 'owner' && h !== 'category' && h !== 'type' && h !== 'module' && h !== 'priority' && h !== 'plan' && h !== 'role' && h !== 'taxId' && h !== 'quarter' && h !== 'currency') {
         val = Number(val)
       }
       if (val !== '') empty = false
@@ -433,8 +449,8 @@ function applyMetadata(store: EachStore, rows: string[][]): void {
     const key = r[0]
     let val: unknown = r[1] ?? ''
     if (key === 'onboarded' || key === 'gmailConnected') val = val === 'true' || val === true
-    else if (key === 'gmailImported') val = Number(val) || 0
-    else if (key === 'company' && typeof val === 'string' && val.startsWith('{')) {
+    else if (key === 'gmailImported' || key === 'schemaVersion') val = Number(val) || 0
+    else if ((key === 'company' || key === 'fxRates') && typeof val === 'string' && val.startsWith('{')) {
       try {
         val = JSON.parse(val)
       } catch {
@@ -442,7 +458,7 @@ function applyMetadata(store: EachStore, rows: string[][]): void {
       }
     }
     if (key === 'company') store.company = val as EachStore['company']
-    else if (key in store) (store as unknown as Record<string, unknown>)[key] = val
+    else if (['onboarded', 'companyName', 'currency', 'asOf', 'gmailConnected', 'gmailImported', 'dataTenant', 'schemaVersion', 'fxRates'].includes(key)) (store as unknown as Record<string, unknown>)[key] = val
   })
 }
 
@@ -460,12 +476,13 @@ export function importCsvBundle(onLoad: (store: EachStore) => void): void {
     const store = normalizeStore({})
     const unmatched: string[] = []
 
-    await Promise.all(
+    try { await Promise.all(
       Array.from(files).map(
         (file) =>
-          new Promise<void>((resolve) => {
+          new Promise<void>((resolve, reject) => {
             const reader = new FileReader()
             reader.onload = () => {
+              try {
               const tab = tabFromFilename(file.name)
               const rows = parseCsv(String(reader.result))
               if (!tab) {
@@ -480,11 +497,13 @@ export function importCsvBundle(onLoad: (store: EachStore) => void): void {
                 ;(store as unknown as Record<string, unknown>)[tab] = arr
               }
               resolve()
+              } catch (e) { reject(e) }
             }
+            reader.onerror = () => reject(new Error('Unable to read CSV file'))
             reader.readAsText(file)
           }),
       ),
-    )
+    ) } catch (e) { window.alert(e instanceof Error ? e.message : 'Invalid CSV file.'); return }
 
     store.onboarded = true
     if (store.company?.legalName) store.companyName = store.company.legalName
@@ -493,7 +512,7 @@ export function importCsvBundle(onLoad: (store: EachStore) => void): void {
     if (unmatched.length) {
       window.alert('Skipped unrecognized files: ' + unmatched.join(', '))
     }
-    onLoad(store)
+    try { onLoad(validateStore(store)) } catch (e) { window.alert(e instanceof Error ? e.message : 'Invalid CSV workspace.') }
   }
   input.click()
 }
@@ -512,16 +531,20 @@ export async function loadFromSheets(): Promise<EachStore | null> {
   }
   setStatus('loading')
   try {
-    const res = await fetch(url)
+    const res = await fetch(url, { credentials: 'include', signal: AbortSignal.timeout(15000) })
     if (!res.ok) throw new Error(res.status + ' ' + res.statusText)
-    const data = (await res.json()) as EachStore & { error?: string }
+    const envelope = await res.json() as { state?: EachStore; revision?: string; error?: string }
+    const data = (envelope.state || envelope) as EachStore & { error?: string }
+    if (envelope.error) throw new Error(envelope.error)
     if (data.error) throw new Error(data.error)
     if (!data || Object.keys(data).length === 0) {
       setStatus('local')
       return null
     }
-    setStatus('saved')
-    return normalizeStore(data)
+    const validated = validateStore(normalizeStore(data))
+    remoteRevision = envelope.revision || null
+    setStatus('local')
+    return validated
   } catch (e) {
     console.error('Sheets load failed:', e)
     setStatus('error')
@@ -529,39 +552,39 @@ export async function loadFromSheets(): Promise<EachStore | null> {
   }
 }
 
-export async function saveToSheets(store: EachStore): Promise<void> {
+/** Conditional write plus read-back: opaque responses are never called successful. */
+export async function saveToSheets(store: EachStore): Promise<boolean> {
   const url = getSheetsWebAppUrl()
-  if (!url) return
-  if (!hasSheetsExfilAck()) {
-    setStatus('local')
-    return
-  }
+  if (!url || !hasSheetsExfilAck() || saveInFlight) return false
+  saveInFlight = true
   setStatus('saving')
   try {
-    await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(store),
-      mode: 'no-cors',
-    })
-    try {
-      localStorage.setItem(LAST_SAVE_KEY, String(Date.now()))
-    } catch {
-      /* ignore */
-    }
+    validateStore(store)
+    const preflight = await fetch(url, { credentials: 'include', signal: AbortSignal.timeout(15000) })
+    if (!preflight.ok) throw new Error('Unable to read the Sheet before saving')
+    const existing = await preflight.json() as { state?: EachStore; revision?: string; error?: string }
+    if (existing.error || !existing.revision || !existing.state) throw new Error('Update the Apps Script bridge before saving')
+    if (remoteRevision !== null && existing.revision !== remoteRevision) throw new Error('Sheet changed: pull and review its changes first')
+    if (remoteRevision === null && existing.state.onboarded && canonicalMirror(existing.state) !== canonicalMirror(store)) throw new Error('Sheet already contains data: pull and review first')
+    await fetch(url, { method: 'POST', body: JSON.stringify({ state: store, expectedRevision: existing.revision }), mode: 'no-cors', credentials: 'include', signal: AbortSignal.timeout(15000) })
+    const check = await fetch(url, { credentials: 'include', cache: 'no-store', signal: AbortSignal.timeout(15000) })
+    if (!check.ok) throw new Error('Write could not be verified')
+    const confirmed = await check.json() as { state?: EachStore; revision?: string; error?: string }
+    if (confirmed.error || !confirmed.state || !confirmed.revision || canonicalMirror(validateStore(normalizeStore(confirmed.state))) !== canonicalMirror(store)) throw new Error('Sheet write is unconfirmed or a conflict was detected')
+    remoteRevision = confirmed.revision
+    localStorage.setItem(LAST_SAVE_KEY, String(Date.now()))
     setStatus('saved')
-  } catch (e) {
-    console.error('Sheets save failed:', e)
+    return true
+  } catch {
     setStatus('error')
-  }
+    return false
+  } finally { saveInFlight = false }
 }
 
-export function scheduleSheetsSave(store: EachStore): void {
-  if (!getSheetsWebAppUrl() || !hasSheetsExfilAck()) return
+/** Edits mark the mirror stale. Sending requires an explicit user action. */
+export function scheduleSheetsSave(_store: EachStore): void {
   if (saveTimer) clearTimeout(saveTimer)
-  setStatus('saving')
-  saveTimer = setTimeout(() => {
-    void saveToSheets(store)
-  }, 1200)
+  if (isSheetsSyncEnabled()) setStatus('local')
 }
 
 function normalizeStore(raw: Partial<EachStore>): EachStore {

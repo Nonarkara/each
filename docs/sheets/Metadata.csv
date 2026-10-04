@@ -5,4 +5,7 @@ currency,THB
 asOf,2026-06-28
 gmailConnected,true
 gmailImported,3
+dataTenant,axiom
+schemaVersion,2
+fxRates,"{""USD"":35}"
 company,"{""legalName"":""AXIOM X CO., LTD."",""reg"":""0105569099335"",""name"":""Axiom X Co., Ltd."",""country"":""Thailand"",""industry"":""Technology · AI · Innovation consulting"",""founded"":""2026-05-28"",""address"":""16 Soi Phahonyothin 59 Yak 1, Anusawari, Bang Khen, Bangkok""}"

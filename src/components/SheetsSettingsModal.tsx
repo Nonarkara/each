@@ -1,3 +1,8 @@
+import { useCopy } from "../lib/copy"
+import { MirrorReview } from './MirrorReview'
+import { applyReviewedMirror } from '../lib/mirror'
+import { storeApi } from '../lib/store'
+import { useLanguage } from '../lib/languageContext'
 import { useEffect, useState } from 'react'
 import { Btn, Input, Modal } from './ui/Axiom'
 import {
@@ -26,6 +31,9 @@ interface SheetsSettingsModalProps {
 
 /** Sheets connect / pull / disconnect modal. Mirrors CRM2's cockpit affordance pass. */
 export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSettingsModalProps) {
+  const copy = useCopy()
+  const { t } = useLanguage()
+  const [review, setReview] = useState<{ before: EachStore; after: EachStore } | null>(null)
   const [url, setUrl] = useState('')
   const [testing, setTesting] = useState(false)
   const [pulling, setPulling] = useState(false)
@@ -39,13 +47,14 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
     setUrl(getSheetsWebAppUrl())
     setAck(hasSheetsExfilAck())
     setResult(null)
+    setReview(null)
     return subscribeSheetsSyncStatus(setSyncStatus)
   }, [open])
 
   const configured = isSheetsSyncEnabled()
   const lastSaved = lastSheetsSavedAt()
   const lastSavedText = lastSaved
-    ? 'Last successful save ' + new Date(lastSaved).toLocaleString()
+    ? 'Last verified save ' + new Date(lastSaved).toLocaleString()
     : 'Never saved to Sheet yet'
 
   async function runTest() {
@@ -54,7 +63,7 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
       setResult({
         tone: 'err',
         message:
-          '✕ Acknowledge the security notice below before connecting. Connecting Sheets triggers automatic background upload of unencrypted payroll/tax IDs to Google on every edit.',
+          '✕ Acknowledge the security notice below before connecting. Connecting Sheets triggers manual upload of unencrypted payroll/tax IDs to Google when you press Send local copy.',
       })
       return
     }
@@ -68,23 +77,22 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
     }
     setSheetsWebAppUrl(target)
     setSheetsExfilAck(true)
-    setResult({ tone: 'ok', message: '✓ Connected — first sync kicked off.' })
+    setResult({ tone: 'ok', message: t('Connected. Pull and review existing Sheet data, or send your local copy to an empty Sheet.', 'เชื่อมต่อแล้ว ดึงข้อมูลมาตรวจก่อน หรือส่งข้อมูลในเครื่องไปยังชีตว่าง') })
     try {
-      await saveToSheets(store)
+      /* Sending is a separate, explicit action. */
     } catch {
       /* error already logged inside saveToSheets */
     }
   }
 
   async function runPull() {
-    if (!window.confirm('Pull the latest data from your Google Sheet? Any local changes since the last sync will be lost.')) return
+    const before = structuredClone(storeApi.get())
     setPulling(true)
     setResult(null)
     const remote = await loadFromSheets()
     setPulling(false)
     if (remote) {
-      onPull(remote)
-      onClose()
+      setReview({ before, after: remote })
       return
     }
     setResult({ tone: 'err', message: '✕ Could not reach the Sheet. Open the URL in a browser to confirm it returns JSON.' })
@@ -116,34 +124,32 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
 
   return (
     <Modal
-      title="Connect to Google Sheet"
+      title={copy("Connect to Google Sheet")}
       open={open}
       onClose={onClose}
       actions={
         <>
-          <Btn variant="link" onClick={onClose}>
-            Close
-          </Btn>
+          <Btn variant="link" onClick={onClose}>{copy("Close")}</Btn>
           {configured ? (
             <>
               <Btn variant="ghost" onClick={runPull} disabled={pulling || testing}>
-                {pulling ? 'Pulling…' : 'Pull from Sheet'}
+                {pulling ? t('Pulling…', 'กำลังดึง…') : t('Pull from Sheet', 'ดึงข้อมูลจากชีต')}
               </Btn>
-              <Btn variant="ghost" onClick={runDisconnect}>
-                Disconnect
-              </Btn>
+              <Btn variant="ghost" onClick={runDisconnect}>{copy("Disconnect")}</Btn>
             </>
           ) : null}
           <Btn onClick={runTest} disabled={testing || pulling || !ack}>
-            {testing ? 'Testing…' : 'Test & Connect'}
+            {testing ? t('Testing…', 'กำลังทดสอบ…') : t('Test & Connect', 'ทดสอบและเชื่อมต่อ')}
           </Btn>
         </>
       }
     >
       <div className="space-y-5">
+        {review ? <MirrorReview {...review} onCancel={() => setReview(null)} onApprove={() => { try { onPull(applyReviewedMirror(storeApi.get(), review.before, review.after)); setReview(null); onClose() } catch (e) { setResult({ tone: 'err', message: e instanceof Error ? e.message : 'Import failed' }) } }} /> : null}
+        {configured ? <Btn disabled={testing || pulling} onClick={() => { setTesting(true); void saveToSheets(store).then(ok => { setTesting(false); setResult({ tone: ok ? 'ok' : 'err', message: ok ? t('Saved and verified by reading the Sheet back.', 'บันทึกและอ่านกลับมาตรวจแล้ว') : t('Could not verify the save. Pull and review changes, and check the Apps Script deployment.', 'ตรวจการบันทึกไม่สำเร็จ ดึงข้อมูลมาตรวจและตรวจการติดตั้ง Apps Script') }) }) }}>{t('Send local copy to Sheet', 'ส่งสำเนาในเครื่องไปยังชีต')}</Btn> : null}
         <div className="space-y-2">
           <label className="block">
-            <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">Sheet Web App URL</span>
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">{copy("Sheet Web App URL")}</span>
             <Input
               type="url"
               autoFocus
@@ -161,7 +167,7 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
               className="mt-2 font-mono"
             />
           </label>
-          <p className="font-mono text-[11px] text-ink-3">Stored locally. Never sent anywhere except script.google.com.</p>
+          <p className="font-mono text-[11px] text-ink-3">{t("The connection URL is stored in this browser. Transfers use your Google Apps Script deployment.", "ที่อยู่การเชื่อมต่อเก็บในเบราว์เซอร์ การรับส่งใช้ Apps Script ของคุณ")}</p>
         </div>
 
         {result ? (
@@ -170,7 +176,7 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
               'border-l-2 px-3 py-2 text-[14px] ' +
               (result.tone === 'ok'
                 ? 'border-amber bg-paper text-ink'
-                : 'border-red-600 bg-paper text-ink')
+                : 'border-amber bg-paper text-ink')
             }
           >
             {result.message}
@@ -178,10 +184,10 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
         ) : null}
 
         <div className="border-t border-line pt-4">
-          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">Status</p>
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">{copy("Status")}</p>
           <div className="mt-2 flex flex-wrap items-baseline gap-3 text-[14px]">
             <span className="font-mono text-[11px] uppercase text-ink-3">
-              {configured ? 'Sheet connected' : 'Not connected'}
+              {configured ? t('Sheet connected', 'เชื่อมต่อชีตแล้ว') : t('Not connected', 'ยังไม่เชื่อมต่อ')}
             </span>
             <span className="text-ink-2">{sheetsSyncLabel(syncStatus)}</span>
             <span className="font-mono text-[11px] text-ink-3">{lastSavedText}</span>
@@ -190,18 +196,18 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
 
         <div className="space-y-2 border-t border-line pt-4">
           <div className="flex items-baseline justify-between gap-3">
-            <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">Apps Script</p>
-            <Btn variant="ghost" className="!min-h-[36px] !px-3" onClick={copyScript}>
-              {copied ? 'Copied ✓' : 'Copy full script'}
+            <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">{copy("Apps Script")}</p>
+            <Btn variant="ghost" className="!min-h-[44px] !px-3" onClick={copyScript}>
+              {copied ? t('Copied ✓', 'คัดลอกแล้ว ✓') : t('Copy full script', 'คัดลอกสคริปต์ทั้งหมด')}
             </Btn>
           </div>
           <pre className="max-h-40 overflow-auto border border-line bg-paper p-3 font-mono text-[11px] leading-snug text-ink-2">
-{getSheetsAppsScript().slice(0, 1200) + '\n\n/* (snippet — full code copied via the button above) */'}
+{getSheetsAppsScript()}
           </pre>
         </div>
 
         <div className="space-y-4 border-t border-line pt-4">
-          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">Setup — three steps</p>
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">{copy("Setup — three steps")}</p>
 
           <div className="flex items-start gap-3">
             <span
@@ -214,7 +220,7 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
               {configured ? '✓' : '1'}
             </span>
             <div className="space-y-1">
-              <p className="font-display text-[14px] font-bold">Create a fresh Sheet</p>
+              <p className="font-display text-[14px] font-bold">{copy("Create a fresh Sheet")}</p>
               <p className="text-[14px] text-ink-2">
                 <a
                   href="https://sheets.new"
@@ -222,9 +228,9 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
                   rel="noreferrer noopener"
                   className="underline-offset-2 hover:underline"
                 >
-                  Open a new Google Sheet ↗
+                  {t("Open a new Google Sheet ↗", "เปิด Google Sheet ใหม่ ↗")}
                 </a>{' '}
-                (sheets.new works). Name it "EACH — [Your Company]".
+                {t("Name it “EACH — [Your Company]”.", "ตั้งชื่อ “EACH — [ชื่อบริษัท]”")}
               </p>
             </div>
           </div>
@@ -234,7 +240,7 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
               2
             </span>
             <div className="space-y-1">
-              <p className="font-display text-[14px] font-bold">Install the script</p>
+              <p className="font-display text-[14px] font-bold">{copy("Install the script")}</p>
               <p className="text-[14px] text-ink-2">
                 Extensions → Apps Script → delete any starter code → paste the script (Copy full script above) → Save.
                 Run <span className="font-mono">setupWorkbook</span> once (Run menu → function: setupWorkbook → Run). Authorize on first run.
@@ -247,20 +253,18 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
               3
             </span>
             <div className="space-y-1">
-              <p className="font-display text-[14px] font-bold">Deploy as Web App</p>
+              <p className="font-display text-[14px] font-bold">{copy("Deploy as Web App")}</p>
               <p className="text-[14px] text-ink-2">
-                Deploy → New deployment → type "Web app" → Execute as "Me" → Who has access "Anyone" → Deploy → copy the URL.
+                {t("Set Script Property EACH_ALLOWED_EMAILS to your Google email. Deploy as the accessing user, restrict access to your account, and copy the URL. Anonymous deployments are rejected.", "ตั้ง Script Property EACH_ALLOWED_EMAILS เป็นอีเมล Google ของคุณ ติดตั้งให้ทำงานในนามผู้เข้าถึง จำกัดสิทธิ์เฉพาะบัญชีคุณ แล้วคัดลอก URL ระบบไม่รับการติดตั้งแบบไม่ระบุตัวตน")}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="border-l-2 border-red-600 bg-paper px-3 py-3">
-          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-red-600">
-            Security Notice
-          </p>
+        <div className="border-l-2 border-amber bg-paper px-3 py-3">
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink">{copy("Security Notice")}</p>
           <p className="mt-2 text-[14px] text-ink-2">
-            Pasting an Apps Script URL enables automatic background upload of your full dataset—including unencrypted payroll salaries and tax IDs—to Google's servers on every edit. Proceed only if you trust the deployment environment.
+            {t("Pressing Send local copy transfers the full workspace, including salary and tax-ID fields, to your Google deployment. Review access permissions before connecting.", "เมื่อกดส่งสำเนาในเครื่อง ระบบส่งข้อมูลทั้งพื้นที่ รวมเงินเดือนและเลขประจำตัวผู้เสียภาษีไปยัง Google ของคุณ ตรวจสิทธิ์เข้าถึงก่อนเชื่อมต่อ")}
           </p>
           <label className="mt-3 flex min-h-[44px] cursor-pointer items-start gap-3 border-t border-line pt-3">
             <input
@@ -271,17 +275,15 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
               aria-describedby="exfil-ack-desc"
             />
             <span id="exfil-ack-desc" className="text-[14px] leading-relaxed text-ink-2">
-              <strong className="font-semibold text-ink">I understand</strong> that pasting an Apps Script URL enables automatic background upload of unencrypted payroll, tax IDs, and full business data to Google on every edit, and I trust the deployment environment.
+              <strong className="font-semibold text-ink">{copy("I understand")}</strong>{' '}{t('and authorize manual transfer of this workspace to my Google deployment when I press Send local copy.', 'และอนุญาตให้ส่งข้อมูลพื้นที่ทำงานไปยัง Google ของฉันเมื่อกดส่งสำเนาในเครื่อง')}
             </span>
           </label>
         </div>
 
         <div className="border-l-2 border-amber bg-paper px-3 py-3">
-          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">
-            Sheets is the engine. EACH is the lens.
-          </p>
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">{copy("Sheets is the engine. EACH is the lens.")}</p>
           <p className="mt-2 text-[14px] text-ink-2">
-            Every change in EACH writes to this Sheet within ~1.2s. You can edit tabs directly — click "Pull from Sheet" to overwrite local state with your manual edits.
+            {t("Send your local copy when ready. After editing the Sheet, pull and review additions, changes and deletions. EACH checks the remote revision and reads back each write to confirm it.", "ส่งสำเนาในเครื่องเมื่อพร้อม หลังแก้ไขชีตให้ดึงข้อมูลมาตรวจรายการเพิ่ม แก้ไข และลบ EACH ตรวจรุ่นข้อมูลปลายทางและอ่านกลับหลังบันทึกเพื่อยืนยัน")}
           </p>
         </div>
       </div>

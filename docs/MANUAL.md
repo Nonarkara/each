@@ -1,3 +1,8 @@
+> Updated workflow: [AI intake and data mirrors](INTEGRATIONS.md).
+> Sheets transfers are now explicit: send your local copy, or pull and review
+> before accepting spreadsheet edits. No automatic overwrite on startup.
+> สำหรับงานใหม่: เพิ่มเอกสาร → ให้ AI อ่าน → ตรวจและเลือก → อนุมัติและบันทึก
+
 # EACH — Human Manual
 
 **Every piece of your startup, unified.** This guide gets a founder from zero to understanding cash, burn, and runway in about fifteen minutes. The web app is the cockpit. **Google Sheets is the engine room** — connected tabs you can read, edit, and share without touching code.
@@ -63,8 +68,9 @@ Your numbers appear in the header: **Cash** and **Runway**.
 4. Delete the default code. Paste everything from **`sheets/apps-script.gs`** in this repo.
 5. **Save** (disk icon). Run **`setupWorkbook`** once (Run menu → select `setupWorkbook` → Run). Authorize when prompted.
 6. **Deploy → New deployment → Web app**:
-   - Execute as: **Me**
-   - Who has access: **Anyone**
+   - Set Script Property `EACH_ALLOWED_EMAILS` to your Google email.
+   - Execute as: **User accessing the web app**
+   - Who has access: restrict to your account; anonymous access is rejected.
 7. Copy the **Web App URL**.
 
 ### Step 3 · Connect the app (1 min)
@@ -146,7 +152,7 @@ Column definitions live in [`docs/sheets/tab-schema.json`](./sheets/tab-schema.j
 
 1. Paste `sheets/apps-script.gs` into Apps Script editor.
 2. Run `setupWorkbook` once.
-3. Deploy as Web app (Anyone).
+3. Deploy as an authenticated Web app with `EACH_ALLOWED_EMAILS` configured.
 4. Paste URL into EACH (**Sheet URL** button or `VITE_SHEETS_WEB_APP_URL` in `.env` for local dev).
 
 The hidden **RawData_Backup** tab stores full JSON — insurance if a tab gets corrupted.
@@ -199,7 +205,7 @@ Sync status:
 
 - **Local only** — no Sheet URL configured; data stays in browser
 - **Synced to Sheet** — last push succeeded
-- **Sheet sync error** — check URL, deployment access (“Anyone”), internet
+- **Sheet sync error** — check URL, Google sign-in, allowed email, and internet
 
 ---
 
@@ -236,7 +242,7 @@ Sync status:
 |---------|-----|
 | Runway looks wrong | Check `loans.installment`, `aiEmployees.cost`, `employees.salary`, and this month’s `opex` rows |
 | Cash does not match bank | Verify `foundingCapital.amount`, `projects.received`, and `expenses.amount` — cash ignores pipeline until received |
-| Sheet sync error | Redeploy Web app as **Anyone**; re-paste URL; run **Setup workbook** again |
+| Sheet sync error | Check your signed-in Google account and `EACH_ALLOWED_EMAILS`; redeploy the authenticated Web app |
 | Dashboard shows `#REF!` | EACH menu → **Refresh Dashboard formulas** |
 | Data gone after refresh | Private/incognito clears browser storage — use **Import** from JSON backup or reload from Sheet |
 | Edited Sheet but app unchanged | Refresh the page; app pulls from Sheet on load |

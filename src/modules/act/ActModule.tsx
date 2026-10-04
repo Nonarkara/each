@@ -1,3 +1,5 @@
+import { useLanguage } from '../../lib/languageContext'
+import { useCopy } from "../../lib/copy"
 import { useMemo, useState } from 'react'
 import { calcFinance } from '../../lib/calc'
 import { money, today, uid } from '../../lib/format'
@@ -67,7 +69,10 @@ function deriveActions(store: EachStore): ActionItem[] {
 }
 
 export function ActModule({ store, api }: ActModuleProps) {
+  const copy = useCopy()
+  const { t } = useLanguage()
   const f = calcFinance(store)
+  const [expenseError, setExpenseError] = useState('')
   const [expenseOpen, setExpenseOpen] = useState(false)
   const [vendor, setVendor] = useState('')
   const [amount, setAmount] = useState('')
@@ -86,7 +91,7 @@ export function ActModule({ store, api }: ActModuleProps) {
   )
 
   function addExpense() {
-    if (!vendor || !amount) return
+    if (!vendor.trim() || !Number.isFinite(Number(amount)) || Number(amount) <= 0) { setExpenseError(t('Enter a vendor and an amount above zero.', 'กรอกผู้ขายและจำนวนเงินมากกว่าศูนย์')); return }
     api.update((s) => {
       s.expenses.push({
         id: uid(),
@@ -135,16 +140,17 @@ export function ActModule({ store, api }: ActModuleProps) {
 
   return (
     <div>
-      <Station disc="A" kicker="MODULE 02 · ACCOUNTING & ACTIONS" title="Accounting & actions" meta={openActions.length + ' open actions'} />
+      <Station disc="A" kicker="MODULE 02 · ACCOUNTING & ACTIONS" title={copy("Accounting & actions")} meta={openActions.length + ' open actions'} />
+      <p className="mb-5 max-w-3xl text-[14px] leading-relaxed text-ink-2">{t("Record actual expenses here. Receivables are signed deal values still unpaid; Mark paid records full receipt, so use it only after confirming payment. The action queue points to unfinished work derived from your records.", "บันทึกรายจ่ายจริงที่นี่ ลูกหนี้คือยอดโครงการที่ตกลงแล้วแต่ยังไม่ได้รับเงิน ปุ่มบันทึกรับเงินครบใช้หลังตรวจว่าชำระครบแล้วเท่านั้น งานที่ต้องทำแสดงรายการค้างจากข้อมูลที่บันทึก")}</p>
 
       <div className="mb-6 grid gap-px border border-line bg-line sm:grid-cols-3">
-        <StatCell label="Outstanding AR" value={money(f.outstanding, f.cur)} sub={invoices.length + ' invoices due'} />
-        <StatCell label="Expense ledger" value={String(store.expenses.length)} sub={money(f.totalExpenses, f.cur) + ' recorded'} />
-        <StatCell label="Action queue" value={String(openActions.length)} sub="Derived + manual" />
+        <StatCell label={copy("Outstanding AR")} value={money(f.outstanding, f.cur)} sub={invoices.length + ' invoices due'} />
+        <StatCell label={copy("Expense ledger")} value={String(store.expenses.length)} sub={money(f.totalExpenses, f.cur) + ' recorded'} />
+        <StatCell label={copy("Action queue")} value={String(openActions.length)} sub={copy("Derived + manual")} />
       </div>
 
       <div className="mb-6">
-        <SectionHead label="Action queue" meta="What must happen next" />
+        <SectionHead label={copy("Action queue")} meta={copy("What must happen next")} />
         <div className="grid gap-px border border-line bg-line">
           {openActions.length ? openActions.map((a) => (
             <div key={a.id} className="flex flex-wrap items-center justify-between gap-3 bg-panel p-4">
@@ -157,19 +163,19 @@ export function ActModule({ store, api }: ActModuleProps) {
                 </div>
               </div>
             </div>
-          )) : <div className="bg-panel"><Empty>Queue clear.</Empty></div>}
+          )) : <div className="bg-panel"><Empty>{copy("Queue clear.")}</Empty></div>}
         </div>
       </div>
 
       <div className="mb-6">
-        <SectionHead label="Invoices & receivables" meta="Commissioned deals · tax-ready" />
+        <SectionHead label={copy("Invoices & receivables")} meta={copy("Commissioned deals · tax-ready")} />
         <DataTable>
           <thead>
             <tr className="border-b border-line bg-paper">
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">Project</th>
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">Client</th>
-              <th className="p-3 text-right font-mono text-[11px] uppercase text-ink-3">Outstanding</th>
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">Action</th>
+              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Project")}</th>
+              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Client")}</th>
+              <th className="p-3 text-right font-mono text-[11px] uppercase text-ink-3">{copy("Outstanding")}</th>
+              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Action")}</th>
             </tr>
           </thead>
           <tbody>
@@ -179,27 +185,27 @@ export function ActModule({ store, api }: ActModuleProps) {
                 <td className="p-3">{p.client || '—'}</td>
                 <td className="p-3 text-right font-mono">{money((p.totalValue || 0) - (p.received || 0), store.currency)}</td>
                 <td className="p-3">
-                  <Btn variant="ghost" onClick={() => recordPayment(p.id)}>Mark paid</Btn>
+                  <Btn variant="ghost" onClick={() => recordPayment(p.id)}>{copy("Mark paid")}</Btn>
                 </td>
               </tr>
             )) : (
-              <tr><td colSpan={4} className="p-6 text-center text-ink-3">No outstanding invoices.</td></tr>
+              <tr><td colSpan={4} className="p-6 text-center text-ink-3">{copy("No outstanding invoices.")}</td></tr>
             )}
           </tbody>
         </DataTable>
       </div>
 
       <div>
-        <SectionHead label="Expense ledger" meta="Transparent — all members" />
+        <SectionHead label={copy("Expense ledger")} meta={copy("Transparent — all members")} />
         <DataTable>
           <thead>
             <tr className="border-b border-line bg-paper">
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">Date</th>
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">Vendor</th>
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">Category</th>
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">Type</th>
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">Owner</th>
-              <th className="p-3 text-right font-mono text-[11px] uppercase text-ink-3">Amount</th>
+              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Date")}</th>
+              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Vendor")}</th>
+              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Category")}</th>
+              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Type")}</th>
+              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Owner")}</th>
+              <th className="p-3 text-right font-mono text-[11px] uppercase text-ink-3">{copy("Amount")}</th>
             </tr>
           </thead>
           <tbody>
@@ -213,19 +219,20 @@ export function ActModule({ store, api }: ActModuleProps) {
                 <td className="p-3 text-right font-mono">{money(e.amount, e.currency)}</td>
               </tr>
             )) : (
-              <tr><td colSpan={6} className="p-6 text-center text-ink-3">No expenses yet. Connect Gmail or add manually.</td></tr>
+              <tr><td colSpan={6} className="p-6 text-center text-ink-3">{copy("No expenses yet. Connect Gmail or add manually.")}</td></tr>
             )}
           </tbody>
         </DataTable>
-        <Btn variant="ghost" className="mt-4" onClick={() => setExpenseOpen(true)}>+ Add expense</Btn>
+        <Btn variant="ghost" className="mt-4" onClick={() => setExpenseOpen(true)}>{copy("+ Add expense")}</Btn>
       </div>
 
-      <Modal title="Add expense" open={expenseOpen} onClose={() => setExpenseOpen(false)} actions={<><Btn variant="ghost" onClick={() => setExpenseOpen(false)}>Cancel</Btn><Btn onClick={addExpense}>Record</Btn></>}>
+      {expenseError ? <p role="alert" className="border-l-2 border-amber p-3">{expenseError}</p> : null}
+      <Modal title={copy("Add expense")} open={expenseOpen} onClose={() => setExpenseOpen(false)} actions={<><Btn variant="ghost" onClick={() => setExpenseOpen(false)}>{copy("Cancel")}</Btn><Btn onClick={addExpense}>{copy("Record")}</Btn></>}>
         <div className="grid gap-4">
-          <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">Vendor</span><Input value={vendor} onChange={(e) => setVendor(e.target.value)} className="mt-2" /></label>
-          <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">Amount</span><Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-2" /></label>
-          <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">Category</span><Input value={category} onChange={(e) => setCategory(e.target.value)} className="mt-2" /></label>
-          <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">Type</span><Select value={expType} onChange={(e) => setExpType(e.target.value as 'opex' | 'capex')} className="mt-2"><option value="opex">OpEx</option><option value="capex">CapEx</option></Select></label>
+          <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Vendor")}</span><Input value={vendor} onChange={(e) => setVendor(e.target.value)} className="mt-2" /></label>
+          <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Amount")}</span><Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-2" /></label>
+          <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Category")}</span><Input value={category} onChange={(e) => setCategory(e.target.value)} className="mt-2" /></label>
+          <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Type")}</span><Select value={expType} onChange={(e) => setExpType(e.target.value as 'opex' | 'capex')} className="mt-2"><option value="opex">OpEx</option><option value="capex">CapEx</option></Select></label>
         </div>
       </Modal>
     </div>

@@ -1,8 +1,7 @@
 id,name,vendor,role,plan,cost,currency,efficiency,started
-ai-1,Claude,Anthropic,Reasoning & writing,Max 5x,7000,THB,92,2026-06-01
-ai-2,Cursor,Anysphere,Engineering pair,Pro Plus,2100,THB,88,2026-06-01
-ai-3,ChatGPT,OpenAI,General & vision,Pro,700,THB,85,2026-06-01
-ai-4,Gemini,Google,Long-context research,Advanced,700,THB,79,2026-06-01
-ai-5,Kimi,Moonshot,Long-doc & CN market,Pro,3500,THB,70,2026-06-01
-ai-6,ZAD.ai,ZAD.ai,GLM inline edits,GLM 5.2,2100,THB,74,2026-06-01
-ai-7,LLM tokens,Various,API variable spend,OpenRouter / others,3500,THB,65,2026-06-01
+ai-1,Claude,Anthropic,Reasoning & writing,$200/month · planning FX 35 THB/USD,7000,THB,0,
+ai-5,Kimi,Moonshot AI,Deep research,$99/month · planning FX 35 THB/USD,3465,THB,0,
+ai-6,GLM 2.5,Zhipu AI,Alternate reasoning,$60/month · planning FX 35 THB/USD,2100,THB,0,
+ai-3,ChatGPT,OpenAI,General & vision,$20/month · planning FX 35 THB/USD,700,THB,0,
+ai-4,Gemini,Google,Vision & OCR,$20/month · planning FX 35 THB/USD,700,THB,0,
+ai-minimax,Minimax,MiniMax,AI operations,$50/month · planning FX 35 THB/USD,1750,THB,0,

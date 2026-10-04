@@ -1,0 +1,26 @@
+# Security policy
+
+EACH is currently a development/pilot system. The public static app is an
+evaluation workspace. It is not a hosted multi-tenant ERP service.
+
+Browser records are stored in plaintext localStorage. A Frappe backend adds
+server-authorized persistence, but does not encrypt that offline browser cache.
+Provider API keys entered in document intake stay in memory and are sent only
+to the selected endpoint when the user requests analysis. Administrator/provider
+secrets belong in server environment variables, never in `VITE_*` or Git.
+
+Document text and spreadsheet rows are untrusted input. AI proposals require
+human approval and source evidence before filing. This reduces accidental
+writes; it does not guarantee AI accuracy or replace an accounting review.
+
+Report a vulnerability through this repository's private GitHub vulnerability
+reporting feature if enabled. If unavailable, contact the repository owner
+privately through the contact route on [nonarkara.org](https://nonarkara.org).
+Do not put keys, payroll, tax IDs, customer documents or exploit details into a
+public issue. Include affected version, reproduction with synthetic data,
+expected behavior and observed impact. Rotate any exposed credentials promptly.
+
+Before putting a startup on an internet-facing deployment, verify server
+sessions/CSRF, user/role isolation, TLS, backups and restores, provider access,
+retention, offline-cache policy and incident ownership. The laptop Docker
+profile's development passwords must not be exposed to the internet.

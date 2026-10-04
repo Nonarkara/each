@@ -1,0 +1,6 @@
+app_name = "each_backend"
+app_title = "EACH Backend"
+app_publisher = "EACH contributors"
+app_description = "Frappe persistence bridge for EACH"
+app_email = "opensource@each.local"
+app_license = "AGPL-3.0"

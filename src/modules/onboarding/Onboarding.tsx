@@ -1,3 +1,6 @@
+import { useCopy } from "../../lib/copy"
+import { useLanguage } from '../../lib/languageContext'
+import { LanguageSwitch } from '../../lib/language'
 import { useState } from 'react'
 import { companyLookup } from '../../services/companyLookup'
 import { gmailService } from '../../services/gmail'
@@ -22,6 +25,8 @@ interface OnboardingProps {
 }
 
 export function Onboarding({ api, onDone }: OnboardingProps) {
+  const copy = useCopy()
+  const { t } = useLanguage()
   const [step, setStep] = useState(0)
   const [company, setCompany] = useState<Company>({})
   const [lookupStatus, setLookupStatus] = useState('')
@@ -35,7 +40,7 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
   const [, bump] = useState(0)
   const store = readStore()
   const cur = company.currency || 'THB'
-  const labels = ['Company', 'Founding capital', 'Connect Gmail']
+  const labels = [t('Company', 'บริษัท'), t('Founding capital', 'เงินทุนเริ่มต้น'), t('Finish setup', 'เสร็จสิ้นการตั้งค่า')]
 
   async function doLookup() {
     setLookupBusy(true)
@@ -60,17 +65,18 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
       currency: cur,
       founded: company.founded,
     })
-    ocrService.recordCapital(result, company.founded)
-    bump((n) => n + 1)
+    setManualTax(result.taxId)
+    setManualAmt(String(result.amount))
     setScanBusy(false)
-    setScanMsg('Extracted Tax ID ' + result.taxId + ' and paid-in capital ' + money(result.amount, result.currency) + '.')
+    setScanMsg(t('Sample extraction only. Check and approve using Add entry. For your actual PDF, finish setup then use Add document.', 'นี่เป็นตัวอย่างการอ่านข้อมูล ตรวจแล้วกดเพิ่มรายการหากต้องการใช้ สำหรับ PDF จริง ให้ตั้งค่าเสร็จแล้วใช้เพิ่มเอกสาร'))
   }
 
   async function connectGmail() {
     setGmailBusy(true)
-    await gmailService.connect()
-    setGmailBusy(false)
-    finish()
+    try {
+      if (!gmailService.isConfigured()) { setScanMsg(t('Gmail import is not connected. Use Add document for reviewed receipt intake.', 'ยังไม่เชื่อมต่อนำเข้า Gmail ใช้เพิ่มเอกสารเพื่อตรวจและบันทึกใบเสร็จ')); return }
+      await gmailService.connect()
+    } finally { setGmailBusy(false) }
   }
 
   function finish() {
@@ -85,7 +91,7 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
   }
 
   function addManualCapital() {
-    if (!manualTax || !manualAmt) return
+    if (!manualTax || !manualAmt || !Number.isFinite(Number(manualAmt)) || Number(manualAmt) <= 0) { setScanMsg(t('Enter a tax ID and a positive capital amount.', 'กรอกเลขผู้เสียภาษีและจำนวนเงินทุนมากกว่าศูนย์')); return }
     api.update((s) => {
       s.foundingCapital.push({
         id: 'fc-' + Math.random().toString(36).slice(2, 7),
@@ -105,8 +111,9 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
 
   return (
     <div className="mx-auto max-w-[760px] px-4 py-8 sm:px-[22px]">
+      <div className="mb-4"><LanguageSwitch /></div>
       <div className="mb-7 flex items-center gap-3">
-        <span className="flex h-11 w-11 items-center justify-center border border-amber font-display text-lg font-bold text-amber">E</span>
+        <span className="flex h-11 w-11 items-center justify-center border border-amber font-display text-[14px] font-bold text-amber">E</span>
         <div>
           <p className="font-display text-[32px] font-bold leading-none">EACH</p>
           <p className="font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">ERP + ACT + CRM + HR · for the startup</p>
@@ -126,38 +133,38 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
 
       {step === 0 ? (
         <>
-          <Station disc="1" kicker="STEP 01" title="Register your company" meta="Put in a little. The system finds the rest." />
+          <Station disc="1" kicker="STEP 01" title={copy("Register your company")} meta={copy("Enter verified company details. Lookup is a sample registry.")} />
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className="font-mono text-[11px] uppercase text-ink-3">Company name</span>
+              <span className="font-mono text-[11px] uppercase text-ink-3">{copy("Company name")}</span>
               <Input value={company.name || ''} onChange={(e) => setCompany((c) => ({ ...c, name: e.target.value }))} placeholder="e.g. Axiom Systems" className="mt-2" />
             </label>
             <label className="block">
-              <span className="font-mono text-[11px] uppercase text-ink-3">Registration number</span>
+              <span className="font-mono text-[11px] uppercase text-ink-3">{copy("Registration number")}</span>
               <Input value={company.reg || ''} onChange={(e) => setCompany((c) => ({ ...c, reg: e.target.value }))} placeholder="Try 0105569099335" className="mt-2" />
             </label>
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <Btn onClick={doLookup} disabled={lookupBusy}>Search public records</Btn>
+            <Btn onClick={doLookup} disabled={lookupBusy}>{copy("Preview sample registry")}</Btn>
             <span className="text-[14px] text-ink-2">{lookupStatus}</span>
           </div>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">Legal name</span><Input value={company.legalName || ''} onChange={(e) => setCompany((c) => ({ ...c, legalName: e.target.value }))} className="mt-2" /></label>
-            <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">Country</span><Input value={company.country || ''} onChange={(e) => setCompany((c) => ({ ...c, country: e.target.value }))} className="mt-2" /></label>
-            <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">Industry</span><Input value={company.industry || ''} onChange={(e) => setCompany((c) => ({ ...c, industry: e.target.value }))} className="mt-2" /></label>
-            <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">Founded</span><Input value={company.founded || ''} onChange={(e) => setCompany((c) => ({ ...c, founded: e.target.value }))} className="mt-2" /></label>
-            <label className="block sm:col-span-2"><span className="font-mono text-[11px] uppercase text-ink-3">Registered address</span><Input value={company.address || ''} onChange={(e) => setCompany((c) => ({ ...c, address: e.target.value }))} className="mt-2" /></label>
+            <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Legal name")}</span><Input value={company.legalName || ''} onChange={(e) => setCompany((c) => ({ ...c, legalName: e.target.value }))} className="mt-2" /></label>
+            <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Country")}</span><Input value={company.country || ''} onChange={(e) => setCompany((c) => ({ ...c, country: e.target.value }))} className="mt-2" /></label>
+            <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Industry")}</span><Input value={company.industry || ''} onChange={(e) => setCompany((c) => ({ ...c, industry: e.target.value }))} className="mt-2" /></label>
+            <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Founded")}</span><Input value={company.founded || ''} onChange={(e) => setCompany((c) => ({ ...c, founded: e.target.value }))} className="mt-2" /></label>
+            <label className="block sm:col-span-2"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Registered address")}</span><Input value={company.address || ''} onChange={(e) => setCompany((c) => ({ ...c, address: e.target.value }))} className="mt-2" /></label>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <span className="text-[14px] text-ink-3">Tip: registration number 0105569099335 returns Axiom X from the registry stub.</span>
-            <Btn onClick={() => setStep(1)}>Continue</Btn>
+            <Btn onClick={() => setStep(1)}>{copy("Continue")}</Btn>
           </div>
         </>
       ) : null}
 
       {step === 1 ? (
         <>
-          <Station disc="2" kicker="STEP 02" title="Founding capital" meta="Scan the registration paperwork. Tax ID and funds enter the ledger." />
+          <Station disc="2" kicker="STEP 02" title={copy("Founding capital")} meta={copy("Enter paid-in funds. Registered capital is not always paid-in capital.")} />
           <button
             type="button"
             onClick={doScan}
@@ -168,27 +175,27 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
               <span className="flex items-center gap-2"><LiveDot /><span className="font-mono text-[11px] uppercase">OCRing document…</span></span>
             ) : (
               <>
-                <p className="font-mono text-[11px] uppercase text-ink-3">Scan or drop registration paperwork</p>
-                <p className="mt-2 text-[14px] text-ink-2">PDF or image · OCR reads Tax ID and paid-in capital</p>
+                <p className="font-mono text-[11px] uppercase text-ink-3">{copy("Preview sample extraction")}</p>
+                <p className="mt-2 text-[14px] text-ink-2">{copy("Example only. Upload actual PDFs from Add document after setup.")}</p>
               </>
             )}
           </button>
           {scanMsg ? <p className="mb-4 text-[14px] text-amber">{scanMsg}</p> : null}
           <div className="mb-4 flex flex-wrap items-center gap-3">
-            <span className="text-[14px] text-ink-3">or enter manually</span>
-            <Btn variant="ghost" onClick={addManualCapital}>Add entry</Btn>
+            <span className="text-[14px] text-ink-3">{copy("or enter manually")}</span>
+            <Btn variant="ghost" onClick={addManualCapital}>{copy("Add entry")}</Btn>
           </div>
           <div className="mb-4 grid gap-4 sm:grid-cols-2">
-            <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">Tax ID</span><Input value={manualTax} onChange={(e) => setManualTax(e.target.value)} className="mt-2" /></label>
-            <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">Capital amount</span><Input type="number" value={manualAmt} onChange={(e) => setManualAmt(e.target.value)} className="mt-2" /></label>
+            <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Tax ID")}</span><Input value={manualTax} onChange={(e) => setManualTax(e.target.value)} className="mt-2" /></label>
+            <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Capital amount")}</span><Input type="number" value={manualAmt} onChange={(e) => setManualAmt(e.target.value)} className="mt-2" /></label>
           </div>
-          <SectionHead label="Recorded capital" />
+          <SectionHead label={copy("Recorded capital")} />
           <DataTable>
             <thead>
               <tr className="border-b border-line bg-paper">
-                <th className="p-3 font-mono text-[11px] uppercase text-ink-3">Source</th>
-                <th className="p-3 font-mono text-[11px] uppercase text-ink-3">Tax ID</th>
-                <th className="p-3 text-right font-mono text-[11px] uppercase text-ink-3">Amount</th>
+                <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Source")}</th>
+                <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Tax ID")}</th>
+                <th className="p-3 text-right font-mono text-[11px] uppercase text-ink-3">{copy("Amount")}</th>
               </tr>
             </thead>
             <tbody>
@@ -199,31 +206,31 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
                   <td className="p-3 text-right font-mono">{money(x.amount, x.currency)}</td>
                 </tr>
               )) : (
-                <tr><td colSpan={3} className="p-6 text-center text-ink-3">No capital recorded yet.</td></tr>
+                <tr><td colSpan={3} className="p-6 text-center text-ink-3">{copy("No capital recorded yet.")}</td></tr>
               )}
             </tbody>
           </DataTable>
           <div className="mt-6 flex justify-between">
-            <Btn variant="link" onClick={() => setStep(0)}>Back</Btn>
-            <Btn onClick={() => setStep(2)}>Continue</Btn>
+            <Btn variant="link" onClick={() => setStep(0)}>{copy("Back")}</Btn>
+            <Btn onClick={() => setStep(2)}>{copy("Continue")}</Btn>
           </div>
         </>
       ) : null}
 
       {step === 2 ? (
         <>
-          <Station disc="3" kicker="STEP 03" title="Connect Gmail" meta="Receipts flow into expenses automatically." />
+          <Station disc="3" kicker="STEP 03" title={copy("Finish setup")} meta={copy("Your workspace starts with the entries you approved.")} />
           <div className="mb-4 border border-line bg-panel p-4">
             <TagChip tone="amber">GMAIL</TagChip>
-            <p className="mt-3 text-[14px] font-semibold">Connect your business inbox</p>
-            <p className="mt-1 text-[14px] text-ink-2">Receipts and invoices are detected and categorized.</p>
+            <p className="mt-3 text-[14px] font-semibold">{copy("Connect your business inbox")}</p>
+            <p className="mt-1 text-[14px] text-ink-2">{copy("Import receipts through Add document, review AI proposals, then approve.")}</p>
             {!gmailService.isConfigured() ? (
-              <p className="mt-2 font-mono text-[11px] text-ink-3">Stub mode — simulated import until VITE_GOOGLE_CLIENT_ID is set.</p>
+              <p className="mt-2 font-mono text-[11px] text-ink-3">{copy("Gmail is not connected. No receipts will be imported.")}</p>
             ) : null}
           </div>
           <div className="flex flex-wrap gap-3">
-            <Btn onClick={connectGmail} disabled={gmailBusy}>{gmailBusy ? 'Connecting…' : 'Connect Gmail'}</Btn>
-            <Btn variant="link" onClick={finish}>Skip for now</Btn>
+            <Btn variant="ghost" onClick={connectGmail} disabled={gmailBusy || !gmailService.isConfigured()}>{gmailBusy ? 'Connecting…' : 'Connect Gmail'}</Btn>
+            <Btn onClick={finish}>{t('Open my workspace', 'เปิดพื้นที่ทำงาน')}</Btn>
           </div>
         </>
       ) : null}

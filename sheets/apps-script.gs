@@ -7,7 +7,8 @@
  * 1. Create a new Google Sheet — name it "EACH — [Your Company]".
  * 2. Extensions → Apps Script → paste this file → Save.
  * 3. Run setupWorkbook once (Run menu) and authorize.
- * 4. Deploy → New deployment → Web app → Execute as Me → Anyone.
+ * 4. Set Script Property EACH_ALLOWED_EMAILS to your comma-separated Google emails.
+ * 5. Deploy as the accessing user with access limited to your Google account.
  * 5. Copy the Web App URL into EACH (.env VITE_SHEETS_WEB_APP_URL or app Settings).
  *
  * Sheet tabs mirror EACH store keys. Edit rows in the sheet; the app reads them back on sync.
@@ -15,9 +16,23 @@
 
 var SKIP_SHEETS = ['Dashboard', 'RawData_Backup'];
 
+function requireAuthorizedUser() {
+  var email = Session.getActiveUser().getEmail().toLowerCase();
+  var allowed = (PropertiesService.getScriptProperties().getProperty('EACH_ALLOWED_EMAILS') || '')
+    .split(',').map(function (item) { return item.trim().toLowerCase(); }).filter(Boolean);
+  if (!email || allowed.indexOf(email) === -1) throw new Error('Authentication required');
+}
+
 function doPost(e) {
   try {
-    var state = JSON.parse(e.postData.contents);
+    requireAuthorizedUser();
+    var request = JSON.parse(e.postData.contents);
+    var state = request.state;
+    if (!state || typeof state !== 'object' || Array.isArray(state)) throw new Error('Invalid workspace');
+    var lock = LockService.getScriptLock();
+    lock.waitLock(15000);
+    var current = readWorkbookState();
+    if (request.expectedRevision !== workspaceRevision(current)) throw new Error('Conflict: pull and review first');
     var ss = SpreadsheetApp.getActiveSpreadsheet();
 
     var metadataSheet = getOrCreateSheet(ss, 'Metadata');
@@ -36,13 +51,13 @@ function doPost(e) {
 
     metadataSheet.clear();
     if (metadata.length > 0) {
-      metadataSheet.getRange(1, 1, metadata.length, 2).setValues(metadata);
+      metadataSheet.getRange(1, 1, metadata.length, 2).setValues(metadata.map(function(row) { return row.map(safeSheetValue); }));
       metadataSheet.getRange(1, 1, 1, 2).setFontWeight('bold');
     }
 
     var backupSheet = getOrCreateSheet(ss, 'RawData_Backup');
     backupSheet.clear();
-    backupSheet.getRange(1, 1).setValue(e.postData.contents);
+    backupSheet.getRange(1, 1).setValue(JSON.stringify(state));
     if (!backupSheet.isSheetHidden()) {
       backupSheet.hideSheet();
     }
@@ -52,18 +67,35 @@ function doPost(e) {
     return response({ success: true });
   } catch (err) {
     return response({ error: err.toString() });
+  } finally {
+    if (lock && lock.hasLock()) lock.releaseLock();
   }
 }
 
 function doGet(e) {
   try {
+    requireAuthorizedUser();
+    var data = readWorkbookState();
+    return response({ state: data, revision: workspaceRevision(data) });
+  } catch (err) { return response({ error: err.toString() }); }
+}
+
+function canonicalWorkspace(value) {
+  if (Array.isArray(value)) return '[' + value.map(canonicalWorkspace).join(',') + ']';
+  if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(function (key) { return JSON.stringify(key) + ':' + canonicalWorkspace(value[key]); }).join(',') + '}';
+  return JSON.stringify(value);
+}
+function workspaceRevision(state) {
+  return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, canonicalWorkspace(state), Utilities.Charset.UTF_8).map(function (b) { return ('0' + ((b + 256) % 256).toString(16)).slice(-2); }).join('');
+}
+function readWorkbookState() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheets = ss.getSheets();
     var data = {};
 
     sheets.forEach(function (sheet) {
       var name = sheet.getName();
-      if (name === 'RawData_Backup' || name === 'Dashboard') return;
+      if (['Metadata', 'foundingCapital', 'expenses', 'employees', 'aiEmployees', 'projects', 'loans', 'objectives', 'actions', 'recurringExpenses', 'intakeReceipts'].indexOf(name) === -1) return;
 
       var vals = sheet.getDataRange().getValues();
       if (vals.length === 0) return;
@@ -72,7 +104,7 @@ function doGet(e) {
         vals.forEach(function (r) {
           var k = r[0];
           var v = r[1];
-          if (typeof v === 'string' && (v.startsWith('{') || v.startsWith('['))) {
+          if (typeof v === 'string' && (v.startsWith('{') || v.startsWith('[') || v === 'null')) {
             try {
               v = JSON.parse(v);
             } catch (err) {}
@@ -117,10 +149,7 @@ function doGet(e) {
       }
     }
 
-    return response(data);
-  } catch (err) {
-    return response({ error: err.toString() });
-  }
+    return data;
 }
 
 function setupWorkbook() {
@@ -136,6 +165,8 @@ function setupWorkbook() {
     'loans',
     'objectives',
     'actions',
+    'recurringExpenses',
+    'intakeReceipts',
   ];
   tabs.forEach(function (name) {
     getOrCreateSheet(ss, name);
@@ -157,7 +188,7 @@ function refreshDashboard(ss) {
     ['Human payroll / mo', '=SUM(employees!D2:D)', 'Monthly salaries'],
     ['Debt service / mo', '=SUM(loans!F2:F)', 'Loan installments due each month'],
     ['This month OpEx', '=SUMIFS(expenses!F:F,expenses!E:E,"opex",expenses!B:B,">="&EOMONTH(TODAY(),-1)+1,expenses!B:B,"<="&EOMONTH(TODAY(),0))', 'One-off operating spend this calendar month'],
-    ['Monthly burn', '=B6+B7+B8+B9', 'What leaves the bank each month at current pace'],
+    ['Monthly burn', '=B6+B7+B8+B9+SUM(recurringExpenses!C2:C)', 'Includes separate recurring operating costs'],
     ['Runway (months)', '=IF(B10>0,FLOOR(B5/B10),"")', 'Months until cash hits zero'],
     ['Contracted revenue', '=SUMIF(projects!K:K,"commissioned",projects!G:G)', 'Signed deals total value'],
     ['Outstanding AR', '=B12-B3', 'Contracted but not yet received'],
@@ -192,7 +223,7 @@ function writeArrayToSheet(ss, sheetName, arr) {
       var val = obj[h];
       if (typeof val === 'object') return JSON.stringify(val);
       if (val === undefined || val === null) return '';
-      return val;
+      return safeSheetValue(val);
     });
     rows.push(row);
   });
@@ -225,4 +256,8 @@ function onOpen() {
 
 function doOptions(e) {
   return ContentService.createTextOutput('OK').setMimeType(ContentService.MimeType.TEXT);
+}
+
+function safeSheetValue(value) {
+  return typeof value === 'string' && /^\s*[=+@-]/.test(value) ? "'" + value : value;
 }

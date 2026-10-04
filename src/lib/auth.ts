@@ -23,7 +23,7 @@ export function getAuthSession(): AuthSession | null {
     const raw = sessionStorage.getItem(SESSION_KEY)
     if (!raw) return null
     const session = JSON.parse(raw) as AuthSession
-    if (Date.now() - session.issuedAt > SESSION_TTL_MS) {
+    if (!Number.isFinite(session.issuedAt) || session.issuedAt > Date.now() || Date.now() - session.issuedAt > SESSION_TTL_MS) {
       clearAuthSession()
       return null
     }
@@ -54,7 +54,7 @@ export function consumeOAuthState(): string | null {
 }
 
 export function isGoogleConfigured(): boolean {
-  return Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID)
+  return Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID && import.meta.env.VITE_FRAPPE_URL)
 }
 
 
@@ -75,20 +75,29 @@ function decodeJwtPayload(token: string): GoogleJwtPayload {
   return JSON.parse(json) as GoogleJwtPayload
 }
 
-/** Client-side GIS credential check — aud/exp only; no secret in SPA. */
-export function verifyGoogleCredential(credential: string): AuthSession {
+/** Browser claims are untrusted; the server verifies signatures and entitlement. */
+export async function verifyGoogleCredential(credential: string): Promise<AuthSession> {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
   if (!clientId) throw new Error('VITE_GOOGLE_CLIENT_ID not set')
   const payload = decodeJwtPayload(credential)
   const now = Math.floor(Date.now() / 1000)
   if (payload.exp && payload.exp < now) throw new Error('Google token expired')
   if (payload.aud !== clientId) throw new Error('Google token audience mismatch')
-  const email = payload.email || payload.sub || 'google-user'
+  const backend = String(import.meta.env.VITE_FRAPPE_URL || '').replace(/\/$/, '')
+  if (!backend) throw new Error('Google sign-in requires a verification server')
+  const response = await fetch(`${backend}/api/method/each_backend.api.verify_google`, {
+    method: 'POST', credentials: 'omit', signal: AbortSignal.timeout(15000),
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+    body: new URLSearchParams({ credential }),
+  })
+  if (!response.ok) throw new Error('Google sign-in failed or workspace access was denied')
+  const result = await response.json() as { message?: { email?: string; name?: string; dataPath?: string } }
+  if (!result.message?.email || result.message.dataPath !== 'axiom') throw new Error('Invalid verification response')
+  const email = result.message.email
   return setAuthSession({
     provider: 'google',
     email,
-    name: payload.name || email,
-    picture: payload.picture,
+    name: result.message.name || email,
     dataPath: 'axiom',
   })
 }

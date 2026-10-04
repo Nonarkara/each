@@ -1,3 +1,4 @@
+import type { IntakeReceipt } from './intake'
 export type ModuleId = 'erp' | 'act' | 'crm' | 'hr'
 
 export type ExpenseType = 'capex' | 'opex'
@@ -132,6 +133,10 @@ export interface Loan {
 export type DataTenant = 'axiom' | 'abc' | 'custom'
 
 export interface EachStore {
+  intakeReceipts?: IntakeReceipt[]
+  schemaVersion?: number
+  fxRates?: Record<string, number>
+  recurringExpenses?: { id: string; name: string; amount: number; currency: string }[]
   onboarded: boolean
   /** Which curated dataset backs this workspace. */
   dataTenant?: DataTenant

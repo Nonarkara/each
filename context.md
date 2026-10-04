@@ -174,3 +174,13 @@ A founder should be able to trace every proposed entry to a document, correct it
 - Excel export/import includes source receipts; Google Apps Script transfers are now explicit with optimistic conflict detection and read-back.
 - Authenticated Frappe Google Sheets/Graph connectors are configured per user; credentials are environment-only. Real provider-account transfer is not yet verified.
 - Pilot posture: no production/multi-tenant maturity claim.
+
+## Verified hosting route (2026-10-05)
+
+GitHub Pages CI is green, but the custom domain actually routes to the existing
+Cloudflare Pages project `each` (`each-c3p.pages.dev`). The old deployment there
+continued serving July assets after new GitHub Pages builds succeeded. Deploy the
+same tested `dist/` with `wrangler pages deploy dist --project-name each --branch main`.
+Verify the custom-domain index asset names against `dist/index.html`; checking only
+GitHub Actions misses this split. GitHub's origin was independently checked over
+HTTP with the custom Host header; the public HTTPS route remains Cloudflare.

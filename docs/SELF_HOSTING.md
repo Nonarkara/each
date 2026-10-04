@@ -105,3 +105,21 @@ and custom local workspaces; Google access fails closed without a backend.
 
 The database is MariaDB (GPL-2.0). ERPNext and Frappe HR are GPL-3.0, Frappe CRM
 is AGPL-3.0, and the Frappe Docker tooling is MIT-licensed.
+
+## Public static frontend deployment
+
+The current `each.nonarkara.org` domain is assigned to Cloudflare Pages project
+`each` (`each-c3p.pages.dev`). GitHub Pages also builds on main, but its deployment
+alone does not update this custom-domain route. From an authenticated Cloudflare
+CLI session, publish the tested build:
+
+```bash
+npm run build
+wrangler pages deploy dist --project-name each --branch main
+```
+
+Check the public index references the same JavaScript and CSS assets as
+`dist/index.html`, then verify the language switch, document intake and mirrors in
+the browser. The public frontend does not deploy the Frappe backend or provider
+credentials. Automated Cloudflare deployment credentials are not stored in this
+repository.

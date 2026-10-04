@@ -9,7 +9,7 @@
 > Cash, expenses, customer work and people. Connected records, reviewed inputs.
 
 [Try EACH](https://each.nonarkara.org/) · [Founder manual](docs/MANUAL.md) ·
-[AI & spreadsheet setup](docs/INTEGRATIONS.md) · [Self-host](docs/SELF_HOSTING.md)
+[AI & spreadsheet setup](docs/INTEGRATIONS.md) · [Adapted patterns & security](docs/PRIOR_ART.md) · [Self-host](docs/SELF_HOSTING.md)
 
 **สำหรับสตาร์ทอัปและ SME:** ดูเงินสด บันทึกรายจ่าย ติดตามโครงการ และจัดการทีม
 ในพื้นที่เดียว รองรับไทย/อังกฤษ ตรวจข้อเสนอ AI ก่อนบันทึก และรับส่งข้อมูลกับ
@@ -40,6 +40,8 @@ flowchart LR
 | Finance, accounting, CRM, people | Cash/burn/runway, expense ledger, actions, kanban, roster | Evaluation data or your local workspace |
 | Thai / English | Language switch, script-aware type, explained workflows | Human Thai nuance review still pending |
 | Reviewed document intake | Searchable PDF, pasted notes, optional local OCR; editable proposals | Your local model or provider; no writes before approval |
+| Security Center | Observed controls, encrypted backup/restore, metadata activity, incident guidance | Backend checks require upgraded authenticated Frappe; browser cache remains plaintext |
+| Quick navigation | Thai/English tool search with Cmd/Ctrl+K | Find ERP, ACT, CRM, HR, documents, mirrors and security |
 | Hippocampus | Approved source quotes, fingerprint, timestamp and record IDs | Source trail; keep original PDFs separately |
 | Excel `.xlsx` | Export, edit, import, inspect additions/edits/deletions, approve | Explicit two-way file exchange |
 | Cloud spreadsheets | Authenticated Google Sheets API / Microsoft Graph read/write connectors | Frappe and your provider configuration; live account test required |

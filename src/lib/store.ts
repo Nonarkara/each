@@ -1,3 +1,4 @@
+import { recordSecurityActivity } from './securityActivity'
 import type { EachStore, Expense, RegistryHit } from './types'
 import { buildAbcDemoStore, buildAxiomDemoStore } from './demo'
 import { today, uid } from './format'
@@ -54,6 +55,7 @@ function persist(previous: EachStore, reviewedReplacement = false) {
     throw new Error('Unable to save in this browser. Free storage or export a backup. / บันทึกในเบราว์เซอร์ไม่สำเร็จ กรุณาเพิ่มพื้นที่หรือสำรองข้อมูล')
   }
   recoveryError = ''
+  recordSecurityActivity('workspace_saved')
   scheduleSheetsSave(state)
   listeners.forEach((fn) => fn(state))
 }

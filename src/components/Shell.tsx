@@ -1,3 +1,4 @@
+import { QuickNavigation } from './QuickNavigation'
 import { useLanguage } from '../lib/languageContext'
 import { LanguageSwitch } from '../lib/language'
 import type { ReactNode } from 'react'
@@ -11,6 +12,7 @@ interface ShellProps {
   onReset?: () => void
   onIntake?: () => void
   onMirrors?: () => void
+  onSecurity?: () => void
   onDossier?: () => void
   onExport?: () => void
   onSheets?: () => void
@@ -32,6 +34,7 @@ export function Shell({
   onReset,
   onIntake,
   onMirrors,
+  onSecurity,
   onDossier,
   onExport,
   onSheets,
@@ -112,11 +115,13 @@ export function Shell({
 
             <div className="flex flex-wrap gap-2 sm:ml-auto">
               <LanguageSwitch />
+              {onNavigate ? <QuickNavigation onNavigate={onNavigate} /> : null}
               {onIntake ? <Btn onClick={onIntake}>{t('Add document', 'เพิ่มเอกสาร')}</Btn> : null}
               {onMirrors ? <Btn variant="ghost" onClick={onMirrors}>{t('Data mirrors', 'สำเนาข้อมูล')}</Btn> : null}
               <details className="relative">
                 <summary className="inline-flex min-h-[44px] min-w-[44px] cursor-pointer list-none items-center justify-center border border-line bg-panel px-3" aria-label={t('Workspace tools', 'เครื่องมือพื้นที่ทำงาน')} title={t('Workspace tools', 'เครื่องมือพื้นที่ทำงาน')}><span aria-hidden>⋯</span></summary>
                 <div className="absolute right-0 top-full z-50 mt-px grid w-[min(340px,90vw)] grid-cols-2 gap-px border border-line-2 bg-line p-px">
+              {onSecurity ? <Btn variant="ghost" onClick={onSecurity}>{t('Security Center', 'ศูนย์ความปลอดภัย')}</Btn> : null}
               {onExport ? (
                 <Btn variant="ghost" onClick={onExport}>{t('Backup', 'สำรองข้อมูล')}</Btn>
               ) : null}

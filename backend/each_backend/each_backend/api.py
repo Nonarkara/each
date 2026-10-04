@@ -59,6 +59,8 @@ def put_state(state):
         )
         doc.insert(ignore_permissions=True)
 
+    from each_backend.security import record_workspace_save
+    record_workspace_save(doc)
     return parsed
 
 

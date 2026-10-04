@@ -1,3 +1,4 @@
+import { recordSecurityActivity } from '../../lib/securityActivity'
 import { useRef, useState } from 'react'
 import { Btn, Input, Select, Station } from '../../components/ui/Axiom'
 import { useLanguage } from '../../lib/languageContext'
@@ -9,6 +10,7 @@ import { readDocument, studyDocument, type AiConnection, type DocumentText } fro
 export function IntakeModule({ store }: { store: EachStore }) {
   const { t, language } = useLanguage()
   const [connection, setConnection] = useState<AiConnection>({ endpoint: '', model: '', key: '' })
+  const [sourceSearch, setSourceSearch] = useState('')
   const [pasteText, setPasteText] = useState('')
   const [filename, setFilename] = useState('')
   const [document, setDocument] = useState<DocumentText | null>(null)
@@ -44,6 +46,7 @@ export function IntakeModule({ store }: { store: EachStore }) {
     try {
       const next = approveDraft(storeApi.get(), draft, selected, { name: filename, sha256: document.sha256, provider: `${new URL(connection.endpoint).origin} / ${connection.model}`, summary: draft.summary })
       storeApi.load(next)
+      recordSecurityActivity('ai_records_approved', selected.length)
       setDraft(null); setSelected([]); setDocument(null); setConnection(c => ({ ...c, key: '' })); setAllowSend(false)
       setMessage(t('Approved records saved. Your source trail is below.', 'บันทึกรายการที่อนุมัติแล้ว ดูหลักฐานการบันทึกด้านล่าง'))
     } catch (e) { setMessage(e instanceof Error ? e.message : 'Approval failed') }
@@ -89,7 +92,9 @@ export function IntakeModule({ store }: { store: EachStore }) {
       <div className="flex flex-wrap gap-3"><Btn disabled={!selected.length} onClick={approve}>{t(`Approve & file ${selected.length} records`, `อนุมัติและบันทึก ${selected.length} รายการ`)}</Btn><Btn variant="ghost" onClick={() => { setDraft(null); setSelected([]) }}>{t('Discard proposal', 'ทิ้งข้อเสนอ')}</Btn></div>
     </div> : null}
     <section className="space-y-3 border-t border-line-2 pt-4"><h3 className="font-display text-[14px] font-bold">Hippocampus · {t('Approved source trail', 'หลักฐานที่อนุมัติแล้ว')}</h3><p>{t('A record of what you approved, where it came from, and when. Original PDF files stay on your device; this trail stores the fingerprint and quoted evidence.', 'ดูรายการที่อนุมัติ แหล่งที่มา และเวลาบันทึก ไฟล์ PDF ต้นฉบับอยู่ในอุปกรณ์ของคุณ ระบบเก็บลายนิ้วมือดิจิทัลและข้อความอ้างอิง')}</p>
-      {(store.intakeReceipts || []).slice().reverse().map(r => <details key={r.id} className="border border-line bg-panel p-4"><summary className="min-h-[44px] cursor-pointer break-words">{r.name} · {r.records.length} {t('records', 'รายการ')} · {new Date(r.approvedAt).toLocaleString()}</summary><p>{r.summary}</p><p className="break-all font-mono text-[11px]">SHA-256 {r.sha256}</p><p className="break-words">{r.provider}</p>{r.records.map(x => <p key={x.id} className="mt-2 break-words">{names[x.kind]}: {x.evidence}</p>)}</details>)}
+      <label className="block">{t('Search approved sources and evidence', 'ค้นหาเอกสารและหลักฐานที่อนุมัติ')}<Input type="search" value={sourceSearch} onChange={e => setSourceSearch(e.target.value)} /></label>
+      {(store.intakeReceipts || []).filter(r => [r.name, r.summary, ...r.records.map(x => x.evidence)].join(' ').toLocaleLowerCase().includes(sourceSearch.trim().toLocaleLowerCase())).slice().reverse().map(r => <details key={r.id} className="border border-line bg-panel p-4"><summary className="min-h-[44px] cursor-pointer break-words">{r.name} · {r.records.length} {t('records', 'รายการ')} · {new Date(r.approvedAt).toLocaleString()}</summary><p>{r.summary}</p><p className="break-all font-mono text-[11px]">SHA-256 {r.sha256}</p><p className="break-words">{r.provider}</p>{r.records.map(x => <p key={x.id} className="mt-2 break-words">{names[x.kind]}: {x.evidence}</p>)}</details>)}
+      {sourceSearch && !(store.intakeReceipts || []).some(r => [r.name, r.summary, ...r.records.map(x => x.evidence)].join(' ').toLocaleLowerCase().includes(sourceSearch.trim().toLocaleLowerCase())) ? <p>{t('No approved sources match this search.', 'ไม่พบหลักฐานที่ตรงกับคำค้น')}</p> : null}
       {!store.intakeReceipts?.length ? <p className="text-ink-2">{t('Your first approved document will appear here.', 'เอกสารแรกที่คุณอนุมัติจะปรากฏที่นี่')}</p> : null}
     </section>
   </section>

@@ -59,3 +59,19 @@ Shared generic Axiom audit reports display-weight and educational-arrow rules th
 from this project's explicit contract. `npm run check:design` enforces EACH's source rules;
 browser checks verify the rendered Thai type and mobile layout. Optional PDF/XLSX chunks
 are lazy-loaded and trigger Vite's size advisory.
+
+## SIC and cybersecurity component (2026-10-05)
+
+- [x] Study Twenty, Paperless-ngx, Wazuh, Frappe and OWASP primary documentation
+- [x] Record source → pattern → adaptation → boundary in docs/PRIOR_ART.md
+- [x] Bilingual command navigation and searchable approved source evidence
+- [x] Security Center with observed and unchecked controls, remediation and incident guidance
+- [x] AES-GCM encrypted exports and locally decrypted, explicitly reviewed restores
+- [x] Device metadata activity and server-generated owner-scoped save events
+- [x] Security headers, Gitleaks/CodeQL workflows, audit gate and Dependabot
+- [x] 19 frontend + 12 backend tests; lint, build, design and secret scans
+- [x] Real browser encrypted export and modified-backup review/approval verified
+- [ ] Verify security posture and server audit on an upgraded real Frappe site
+
+The app does not claim a security rating, network scan, immutable device logs, or
+individual MFA enrollment. Backup files are encrypted; the browser cache is not.

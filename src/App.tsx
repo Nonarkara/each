@@ -1,3 +1,4 @@
+import { SecurityModule } from './modules/security/SecurityModule'
 import { WorkspaceRecovery } from './components/WorkspaceRecovery'
 import { MirrorsModule } from './modules/mirrors/MirrorsModule'
 import { IntakeModule } from './modules/intake/IntakeModule'
@@ -40,7 +41,7 @@ import {
 } from './services/frappeSync'
 
 type AppView = 'login' | 'landing' | 'onboarding' | 'app'
-type AppRoute = ModuleId | 'dossier' | 'intake' | 'mirrors'
+type AppRoute = ModuleId | 'dossier' | 'intake' | 'mirrors' | 'security'
 
 
 function initialView(): AppView {
@@ -204,6 +205,7 @@ export default function App() {
         onReset={handleReset}
         onIntake={() => setRoute('intake')}
         onMirrors={() => setRoute('mirrors')}
+        onSecurity={() => setRoute('security')}
         onDossier={() => setRoute('dossier')}
         onExport={() => exportJsonBackup(store)}
         onSheets={() => exportSheetCsvBundle(store)}
@@ -221,6 +223,7 @@ export default function App() {
         }}
       >
         <p className="mb-4 border-l-2 border-amber bg-panel p-3">{t('Evaluation workspace · Local data is stored in this browser. Back up before switching devices. Configure Frappe for authenticated persistence.', 'พื้นที่ทดลอง · ข้อมูลอยู่ในเบราว์เซอร์นี้ สำรองข้อมูลก่อนเปลี่ยนอุปกรณ์ เชื่อมต่อ Frappe เพื่อบันทึกข้อมูลผ่านระบบยืนยันตัวตน')}</p>
+        {route === 'security' ? <SecurityModule store={store} onMirrors={() => setRoute('mirrors')} /> : null}
         {route === 'mirrors' ? <MirrorsModule store={store} onGoogle={openSheetsSettings} /> : null}
         {route === 'intake' ? <IntakeModule store={store} /> : null}
         {route === 'erp' ? <ErpModule store={store} api={api} /> : null}

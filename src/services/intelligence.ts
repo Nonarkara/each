@@ -1,3 +1,4 @@
+import { recordSecurityActivity } from '../lib/securityActivity'
 import { parseDraft, type IntakeDraft } from '../lib/intake'
 export interface AiConnection { endpoint: string; model: string; key: string }
 export interface DocumentText { text: string; sha256: string; pages: number }
@@ -50,6 +51,7 @@ export function validateEndpoint(raw: string): URL {
 export async function studyDocument(doc: DocumentText, connection: AiConnection, currency: string, language: 'th' | 'en' = 'en'): Promise<IntakeDraft> {
   const endpoint = validateEndpoint(connection.endpoint)
   if (!connection.model.trim()) throw new Error('Choose a model / ระบุชื่อโมเดล')
+  recordSecurityActivity('ai_document_sent')
   const response = await fetch(endpoint.toString().replace(/\/$/, '') + '/chat/completions', {
     method: 'POST', signal: AbortSignal.timeout(120000),
     headers: { 'Content-Type': 'application/json', ...(connection.key ? { Authorization: `Bearer ${connection.key}` } : {}) },

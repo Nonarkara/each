@@ -1,3 +1,7 @@
+![Mentor and founder binding four paper stacks into one spine at a Bangkok night desk — one closed Mac, rain on the river, no dashboard overlay.](docs/hero-banner.jpg)
+
+*สี่เสา หนึ่งสัน · Four stacks, one spine. Hand-drawn studio still; no HUD on the image.*
+
 # EACH · Run your startup in one workspace
 
 **Every piece of your startup, unified.**
@@ -174,3 +178,112 @@ EACH supersedes the CRM2 workspace prototype (`/Users/nonarkara/Projects/CRM2`),
 
 Beauty is what remains after everything that does not work is gone.
 # Touched 2026-07-03T05:56:54Z — checking deploy propagation
+
+---
+
+## Philosophy
+
+Studio tenets, applied to a founder desk:
+
+**Fork the method, not the secrets.** Take the four-module spine, the conservation laws in `calcFinance`, the Sheets-as-engine-room pattern, and the rule that mock tenants stay labelled mock. Leave OAuth client secrets, Apps Script Web App URLs, Frappe cookies, and real ledgers on *your* machine. They do not belong in issues, screenshots, or pull requests.
+
+**One Mac.** This app is meant to run in a browser on the computer in front of you — `npm run dev`, localStorage, optional Sheets. You do not need a cluster, a staging fleet, or a vendor ERP to learn the method. Phase 2 Frappe is a *swap of the data shim*, not a rewrite of the modules.
+
+**No black-box rankings.** Runway is cash divided by monthly burn, floored. There is no unpublished composite score of companies, people, or “AI efficiency” that the README pretends is a ranking. HR stores an `efficiency` field on mock AI operators; that is fixture chrome, not a league table. If two stories disagree (cash vs burn vs pipeline), the cockpit is supposed to make the disagreement visible — not hide it behind a grade.
+
+**Thai–English as the audience.** The studio writes for learners and operators who move between Thai and English. Currency in the mocks is THB. This README is English with a Thai lede and caption so a first glance is bilingual — the app now has a Thai/English language switch and workflow guidance; human language review remains pending.
+
+Company: **Axiom X Co., Ltd.** Author: **Non Arkaraprasertkul** (Nonarkara). Independent studio software, not a billed Axiom SKU and not an official depa, bank, or municipal system.
+
+---
+
+## Ethical use
+
+Treat this as a **teaching cockpit**, not a substitute for an accountant, an auditor, or a payroll provider.
+
+**Do**
+
+- Run the ABC demo as a *fictitious* distress UI. Figures in `src/data/abc-mock.ts` are not a real company.
+- Keep Axiom mock data mock. The sign-in tenant is a studio fixture for Axiom X Co., Ltd., not a public filing.
+- Put credentials in a local `.env` (see `.env.example`). `.gitignore` already ignores `.env` and `.env.*`.
+- Assume **unencrypted `localStorage`**. Salaries, tax IDs, and ledgers you type in the browser are plaintext on that machine. Do not put real PII here and call it production.
+- Attribute the method when you fork the spine or the finance arithmetic.
+
+**Do not**
+
+- Present EACH as audited software, a credit rating, investment advice, or a government ERP.
+- Ship mock data as live, or hide an empty Frappe URL behind a success state.
+- Commit API keys, OAuth secrets, Apps Script URLs, Cloudflare tokens, or client books.
+- Invent a live SaaS URL, an award, a user count, or a published ranking this tree does not contain.
+- Imply Frappe, ERPNext, depa, or a bank publishes or certifies this app.
+- Treat `efficiency` on AI operators, scenario-weighted pipeline, or runway months as a black-box score of people or firms.
+
+If a contribution only works by pasting a secret or a real company’s books, it does not belong here.
+
+---
+
+## How to use / learn
+
+Requires Node 22.13+ (CI uses Node 22). From the repo root:
+
+```bash
+npm install
+npm run dev
+```
+
+Open the URL Vite prints (default `http://localhost:5173`).
+
+| Path | What you get |
+|------|----------------|
+| **Try demo — ABC Company** | Fictitious startup fixture; exports are explicit |
+| **Start blank** | Onboarding → empty store |
+| **Sign in with Google** | Requires configured server verification and entitlement; loads the labelled Axiom fixture |
+
+Then:
+
+1. Read [`docs/MANUAL.md`](docs/MANUAL.md) — setup, formulas, troubleshooting; pair it with the new integration guide.
+2. Optional Sheets: paste `sheets/apps-script.gs` into a Google Sheet, deploy a Web App, paste the URL in the in-app Sheets settings. Schema: [`docs/sheets/tab-schema.json`](docs/sheets/tab-schema.json).
+3. Read `src/lib/calc.ts` — the conservation laws are short on purpose.
+4. Production build: `npm run build` then `npm run preview`. Lint: `npm run lint`.
+
+Env placeholders (empty in git): [`.env.example`](.env.example). Never commit a filled `.env`.
+
+---
+
+## System diagram
+
+Short labels so GitHub’s renderer does not clip.
+
+```mermaid
+flowchart LR
+  You[You] --> UI[React]
+  UI --> S[store.ts]
+  S --> LS[localStorage]
+  Sheet[Sheets] --> S
+  S --> F[calc.ts]
+```
+
+React modules **ERP · ACT · CRM · HR** all call `storeApi`. Sheets is optional.
+
+UI modules talk to `storeApi` / `useStore()` only. Phase 2 is meant to replace that shim with `frappeClient` in `src/services/api.ts` — the repository now includes an authenticated Frappe workspace app. Native ecosystem DocType mapping remains pending.
+
+```
+src/
+  components/     Shell, Hero, Sheets modal
+  lib/            types, store shim, calcFinance, auth
+  modules/        erp, act, crm, hr, onboarding, dossier, auth
+  services/       mirrors, AI intake, Frappe sync, legacy lookup/gmail stubs
+  data/           axiom-mock, abc-mock
+```
+
+---
+
+## License / contributing
+
+[MIT](LICENSE). Copyright © 2026 **Non Arkaraprasertkul / Axiom X Co., Ltd.**
+
+MIT covers this repository’s source, docs, and illustration. It does not relicense Frappe / ERPNext, Google APIs, or any private ledger that is not in this tree. The hero at `docs/hero-banner.jpg` is studio illustration for this README — not a screenshot and not a data product.
+
+Useful contributions: clearer prose, a Thai README pass that stays faithful to these English notes, accessibility fixes, and mermaid that still fits GitHub. Open a pull request against `main`. Do not add secrets, real PII, invented metrics, fake live URLs, or a stub that pretends Frappe is already live.
+
+If you build your own four-module spine from this method, the studio would like to see it.

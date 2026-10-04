@@ -66,7 +66,7 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    if (view !== 'app' || getAuthSession()?.demo || store.dataTenant === 'abc') {
+    if (getStoreRecoveryError() || view !== 'app' || getAuthSession()?.demo || store.dataTenant === 'abc') {
       setBackendStatus('off')
       return
     }

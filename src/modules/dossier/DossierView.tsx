@@ -57,10 +57,10 @@ export function DossierView({ store }: DossierViewProps) {
         <table className="w-full min-w-[480px] text-left text-[14px]">
           <thead>
             <tr className="border-b border-line bg-paper">
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Project")}</th>
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Status")}</th>
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Owner")}</th>
-              <th className="p-3 text-right font-mono text-[11px] uppercase text-ink-3">{copy("Tasks")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Project")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Status")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Owner")}</th>
+              <th className="p-3 text-right font-body text-[11px] text-ink-3">{copy("Tasks")}</th>
             </tr>
           </thead>
           <tbody>

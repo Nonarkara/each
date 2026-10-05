@@ -213,12 +213,12 @@ export function SecurityModule({
             className="grid gap-3 bg-panel p-4 md:grid-cols-[1fr_1fr_2fr]"
           >
             <h3 className="font-semibold">{title}</h3>
-            <p className="font-mono text-[11px] uppercase">{status}</p>
+            <p className="text-[14px] font-semibold">{status}</p>
             <p>{detail}</p>
           </article>
         ))}
       </div>
-      <section className="space-y-4 border border-line bg-panel p-4">
+      <section className="space-y-4 border-t-2 border-ink pt-5">
         <h3 className="font-display text-[14px] font-bold">
           {t(
             "Encrypted backup & reviewed restore",

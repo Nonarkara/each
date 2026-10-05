@@ -189,11 +189,11 @@ export default function App() {
   const session = getAuthSession()
   const tenantLabel =
     store.dataTenant === 'abc'
-      ? 'ABC demo'
+      ? t('ABC demo', 'ตัวอย่าง ABC')
       : store.dataTenant === 'axiom'
         ? 'Axiom'
         : session?.demo
-          ? 'Demo'
+          ? t('Demo', 'ตัวอย่าง')
           : undefined
 
   return (
@@ -214,7 +214,7 @@ export default function App() {
         onSyncIndicatorClick={openSheetsSettings}
         syncLabel={sheetsSyncLabel(syncStatus)}
         syncStatus={syncStatus}
-        storageLabel={backendStatusLabel(backendStatus)}
+        storageLabel={t(backendStatusLabel(backendStatus), backendStatus === 'connecting' ? 'กำลังเชื่อมต่อฐานข้อมูล…' : backendStatus === 'connected' ? 'MariaDB ผ่าน Frappe' : backendStatus === 'error' ? 'ฐานข้อมูลออฟไลน์ / ใช้ข้อมูลในเครื่อง' : 'บันทึกในเบราว์เซอร์')}
         tenantLabel={tenantLabel}
         vitals={{
           cash: money(fin.cash, store.currency),
@@ -232,8 +232,8 @@ export default function App() {
         {route === 'hr' ? <HrModule store={store} api={api} /> : null}
         {route === 'dossier' ? <DossierView store={store} /> : null}
         {activeModule ? (
-          <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">
-            Active: {activeModule.label} · as of {store.asOf}
+          <p className="mt-4 text-[11px] text-ink-3">
+            {activeModule.label} / {t('As of', 'ข้อมูล ณ')} {store.asOf}
             {tenantLabel ? ` · ${tenantLabel}` : ''}
           </p>
         ) : null}

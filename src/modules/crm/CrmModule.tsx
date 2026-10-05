@@ -130,13 +130,13 @@ export function CrmModule({ store, api }: CrmModuleProps) {
 
   return (
     <div>
-      <Station disc="C" kicker="MODULE 03 · PROJECTS" title={copy("Projects")} meta={'Kanban · ' + store.projects.length + ' · ' + compact(bookValue, store.currency) + ' book'} />
+      <Station disc="C" kicker="CRM" title={copy("Projects")} meta={store.projects.length + t(' projects / ', ' โครงการ / ') + compact(bookValue, store.currency) + t(' total project value', ' มูลค่าโครงการรวม')} />
       <p className="mb-5 max-w-3xl text-[14px] leading-relaxed text-ink-2">{t("Move work from Backlog to In progress, Review, then Done. Open a card to change its status on a phone, add tasks and notes, or log a file name. Pipeline value is a sales possibility; cash changes only when payment is recorded.", "ย้ายงานจากงานรอเริ่ม ไปกำลังทำ รอตรวจ แล้วเสร็จแล้ว บนมือถือเปิดการ์ดเพื่อเลือกสถานะ เพิ่มงาน บันทึก หรือชื่อไฟล์ มูลค่าโอกาสขายยังไม่ใช่เงินสด เงินสดจะเปลี่ยนเมื่อบันทึกการรับเงิน")}</p>
 
       <div className="mb-6 border border-line bg-paper p-4">
         <div className="mb-3 flex items-center gap-2">
           <span className="flex h-8 w-8 items-center justify-center border border-ink font-display text-[14px] font-bold">A</span>
-          <p className="font-mono text-[11px] uppercase text-ink-3">{copy("Operator reads")}</p>
+          <p className="font-body text-[11px] text-ink-3">{copy("Operator reads")}</p>
         </div>
         {ideas.slice(0, 4).map((t, i) => (
           <p key={i} className="mt-2 text-[14px] text-ink-2">{t}</p>
@@ -149,7 +149,7 @@ export function CrmModule({ store, api }: CrmModuleProps) {
           return (
             <div key={col.id} className="flex min-h-[200px] flex-col bg-panel">
               <div className="flex items-center justify-between border-b border-line px-3 py-2">
-                <span className="font-mono text-[11px] uppercase text-ink-3">{copy(col.label)}</span>
+                <span className="font-body text-[11px] text-ink-3">{copy(col.label)}</span>
                 <span className="font-mono text-[11px] text-ink-3">{cards.length}</span>
               </div>
               <div
@@ -208,7 +208,7 @@ export function CrmModule({ store, api }: CrmModuleProps) {
       </div>
 
       <Modal title={copy("New project")} open={newOpen} onClose={() => setNewOpen(false)} actions={<><Btn variant="ghost" onClick={() => setNewOpen(false)}>{copy("Cancel")}</Btn><Btn onClick={createProject}>{copy("Create")}</Btn></>}>
-        <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Title")}</span><Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} className="mt-2" /></label>
+        <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Title")}</span><Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} className="mt-2" /></label>
       </Modal>
 
       {detail ? (
@@ -226,7 +226,7 @@ export function CrmModule({ store, api }: CrmModuleProps) {
           <div className="space-y-6">
             <div>
               <label className="mb-4 block">{copy('Status')}<Select value={detail.status} onChange={e => api.update(s => { const p = s.projects.find(x => x.id === detail.id); if (p) p.status = e.target.value as ProjectStatus; return s })}>{COLS.map(c => <option key={c.id} value={c.id}>{copy(c.label)}</option>)}</Select></label>
-              <p className="font-mono text-[11px] uppercase text-ink-3">{copy("Checklist")}</p>
+              <p className="font-body text-[11px] text-ink-3">{copy("Checklist")}</p>
               <ul className="mt-2 space-y-2">
                 {(detail.checklist || []).map((c, i) => (
                   <li key={i} className="flex min-h-[44px] items-center gap-3">
@@ -239,14 +239,14 @@ export function CrmModule({ store, api }: CrmModuleProps) {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="font-mono text-[11px] uppercase text-ink-3">{copy("Files")}</p>
+                <p className="font-body text-[11px] text-ink-3">{copy("Files")}</p>
                 {(detail.files || []).length ? detail.files.map((f) => (
                   <div key={f} className="mt-2 flex justify-between text-[14px]"><span>{f}</span><span className="font-mono text-[11px] text-ink-3">{copy("uploaded")}</span></div>
                 )) : <Empty>{copy("No files.")}</Empty>}
                 <Btn variant="ghost" className="mt-2" onClick={() => addFile(detail.id)}>{copy("+ Upload file")}</Btn>
               </div>
               <div>
-                <p className="font-mono text-[11px] uppercase text-ink-3">{copy("Notes")}</p>
+                <p className="font-body text-[11px] text-ink-3">{copy("Notes")}</p>
                 {(detail.notes || []).map((n, i) => (
                   <div key={i} className="mt-2 border border-line bg-paper p-3">
                     <p className="font-mono text-[11px] text-ink-3">{n.at}</p>
@@ -258,7 +258,7 @@ export function CrmModule({ store, api }: CrmModuleProps) {
               </div>
             </div>
             <div className="border border-line bg-paper p-3">
-              <p className="font-mono text-[11px] uppercase text-ink-3">{copy("AI read")}</p>
+              <p className="font-body text-[11px] text-ink-3">{copy("AI read")}</p>
               <p className="mt-2 text-[14px] text-ink-2">{ideaFor(detail)}</p>
             </div>
           </div>

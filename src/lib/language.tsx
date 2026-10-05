@@ -10,7 +10,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 export function LanguageSwitch() {
   const { language, setLanguage } = useLanguage()
   return <div className="flex gap-px" aria-label="Language / ภาษา">
-    <button type="button" lang="th" aria-pressed={language === 'th'} onClick={() => setLanguage('th')} className={`min-h-[44px] min-w-[44px] border px-3 ${language === 'th' ? 'border-amber bg-amber' : 'border-line bg-panel'}`}>ไทย</button>
-    <button type="button" lang="en" aria-pressed={language === 'en'} onClick={() => setLanguage('en')} className={`min-h-[44px] min-w-[44px] border px-3 ${language === 'en' ? 'border-amber bg-amber' : 'border-line bg-panel'}`}>EN</button>
+    <button type="button" lang="th" aria-pressed={language === 'th'} onClick={() => setLanguage('th')} className={`min-h-[44px] min-w-[44px] border px-3 ${language === 'th' ? 'border-ink bg-panel font-semibold' : 'border-line bg-panel'}`}>ไทย</button>
+    <button type="button" lang="en" aria-pressed={language === 'en'} onClick={() => setLanguage('en')} className={`min-h-[44px] min-w-[44px] border px-3 ${language === 'en' ? 'border-ink bg-panel font-semibold' : 'border-line bg-panel'}`}>EN</button>
   </div>
 }

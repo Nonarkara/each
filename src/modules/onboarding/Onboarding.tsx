@@ -116,7 +116,7 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
         <span className="flex h-11 w-11 items-center justify-center border border-amber font-display text-[14px] font-bold text-amber">E</span>
         <div>
           <p className="font-display text-[32px] font-bold leading-none">EACH</p>
-          <p className="font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">ERP + ACT + CRM + HR · for the startup</p>
+          <p className="font-body text-[11px] text-ink-3">ERP + ACT + CRM + HR · for the startup</p>
         </div>
       </div>
 
@@ -126,7 +126,7 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
             <span className={`flex h-8 w-8 items-center justify-center border font-mono text-[11px] ${idx <= step ? 'border-amber text-ink' : 'border-line text-ink-3'}`}>
               {idx + 1}
             </span>
-            <span className={`font-mono text-[11px] uppercase ${idx === step ? 'text-ink' : 'text-ink-3'}`}>{l}</span>
+            <span className={`font-body text-[11px] ${idx === step ? 'text-ink' : 'text-ink-3'}`}>{l}</span>
           </div>
         ))}
       </div>
@@ -136,11 +136,11 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
           <Station disc="1" kicker="STEP 01" title={copy("Register your company")} meta={copy("Enter verified company details. Lookup is a sample registry.")} />
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className="font-mono text-[11px] uppercase text-ink-3">{copy("Company name")}</span>
+              <span className="font-body text-[11px] text-ink-3">{copy("Company name")}</span>
               <Input value={company.name || ''} onChange={(e) => setCompany((c) => ({ ...c, name: e.target.value }))} placeholder="e.g. Axiom Systems" className="mt-2" />
             </label>
             <label className="block">
-              <span className="font-mono text-[11px] uppercase text-ink-3">{copy("Registration number")}</span>
+              <span className="font-body text-[11px] text-ink-3">{copy("Registration number")}</span>
               <Input value={company.reg || ''} onChange={(e) => setCompany((c) => ({ ...c, reg: e.target.value }))} placeholder="Try 0105569099335" className="mt-2" />
             </label>
           </div>
@@ -149,11 +149,11 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
             <span className="text-[14px] text-ink-2">{lookupStatus}</span>
           </div>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Legal name")}</span><Input value={company.legalName || ''} onChange={(e) => setCompany((c) => ({ ...c, legalName: e.target.value }))} className="mt-2" /></label>
-            <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Country")}</span><Input value={company.country || ''} onChange={(e) => setCompany((c) => ({ ...c, country: e.target.value }))} className="mt-2" /></label>
-            <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Industry")}</span><Input value={company.industry || ''} onChange={(e) => setCompany((c) => ({ ...c, industry: e.target.value }))} className="mt-2" /></label>
-            <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Founded")}</span><Input value={company.founded || ''} onChange={(e) => setCompany((c) => ({ ...c, founded: e.target.value }))} className="mt-2" /></label>
-            <label className="block sm:col-span-2"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Registered address")}</span><Input value={company.address || ''} onChange={(e) => setCompany((c) => ({ ...c, address: e.target.value }))} className="mt-2" /></label>
+            <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Legal name")}</span><Input value={company.legalName || ''} onChange={(e) => setCompany((c) => ({ ...c, legalName: e.target.value }))} className="mt-2" /></label>
+            <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Country")}</span><Input value={company.country || ''} onChange={(e) => setCompany((c) => ({ ...c, country: e.target.value }))} className="mt-2" /></label>
+            <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Industry")}</span><Input value={company.industry || ''} onChange={(e) => setCompany((c) => ({ ...c, industry: e.target.value }))} className="mt-2" /></label>
+            <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Founded")}</span><Input value={company.founded || ''} onChange={(e) => setCompany((c) => ({ ...c, founded: e.target.value }))} className="mt-2" /></label>
+            <label className="block sm:col-span-2"><span className="font-body text-[11px] text-ink-3">{copy("Registered address")}</span><Input value={company.address || ''} onChange={(e) => setCompany((c) => ({ ...c, address: e.target.value }))} className="mt-2" /></label>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <span className="text-[14px] text-ink-3">Tip: registration number 0105569099335 returns Axiom X from the registry stub.</span>
@@ -172,10 +172,10 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
             className="mb-4 w-full border border-dashed border-line-2 bg-panel p-6 text-left hover:border-amber disabled:opacity-60"
           >
             {scanBusy ? (
-              <span className="flex items-center gap-2"><LiveDot /><span className="font-mono text-[11px] uppercase">OCRing document…</span></span>
+              <span className="flex items-center gap-2"><LiveDot /><span className="font-body text-[11px]">OCRing document…</span></span>
             ) : (
               <>
-                <p className="font-mono text-[11px] uppercase text-ink-3">{copy("Preview sample extraction")}</p>
+                <p className="font-body text-[11px] text-ink-3">{copy("Preview sample extraction")}</p>
                 <p className="mt-2 text-[14px] text-ink-2">{copy("Example only. Upload actual PDFs from Add document after setup.")}</p>
               </>
             )}
@@ -186,16 +186,16 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
             <Btn variant="ghost" onClick={addManualCapital}>{copy("Add entry")}</Btn>
           </div>
           <div className="mb-4 grid gap-4 sm:grid-cols-2">
-            <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Tax ID")}</span><Input value={manualTax} onChange={(e) => setManualTax(e.target.value)} className="mt-2" /></label>
-            <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Capital amount")}</span><Input type="number" value={manualAmt} onChange={(e) => setManualAmt(e.target.value)} className="mt-2" /></label>
+            <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Tax ID")}</span><Input value={manualTax} onChange={(e) => setManualTax(e.target.value)} className="mt-2" /></label>
+            <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Capital amount")}</span><Input type="number" value={manualAmt} onChange={(e) => setManualAmt(e.target.value)} className="mt-2" /></label>
           </div>
           <SectionHead label={copy("Recorded capital")} />
           <DataTable>
             <thead>
               <tr className="border-b border-line bg-paper">
-                <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Source")}</th>
-                <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Tax ID")}</th>
-                <th className="p-3 text-right font-mono text-[11px] uppercase text-ink-3">{copy("Amount")}</th>
+                <th className="p-3 font-body text-[11px] text-ink-3">{copy("Source")}</th>
+                <th className="p-3 font-body text-[11px] text-ink-3">{copy("Tax ID")}</th>
+                <th className="p-3 text-right font-body text-[11px] text-ink-3">{copy("Amount")}</th>
               </tr>
             </thead>
             <tbody>

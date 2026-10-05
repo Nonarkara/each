@@ -184,3 +184,40 @@ same tested `dist/` with `wrangler pages deploy dist --project-name each --branc
 Verify the custom-domain index asset names against `dist/index.html`; checking only
 GitHub Actions misses this split. GitHub's origin was independently checked over
 HTTP with the custom Host header; the public HTTPS route remains Cloudflare.
+
+
+## Palette design receipt (2026-10-05)
+
+DesignRead: a founder opens EACH on a phone to find the next cash decision or file
+an approved document; competing oversized figures and repeated coded labels slow
+that scan. The surface operates a company workspace. Palette's content-led
+Bauhaus composition and contextual typography inform hierarchy, not a new skin.
+Reference artifact: Palette's own skills and Braun ET66's distinction between
+operation labels and numeric readout. DESIGN_VARIANCE=3, MOTION_INTENSITY=1,
+VISUAL_DENSITY=5 (ten-point scales; working intentions, not quality scores).
+
+Chosen composition: one desktop navigation rail; company context and cash vitals
+remain visible in a separate scrolling summary; runway retains the main financial
+readout, supporting amounts form compact definition lists. Rejected alternative:
+an expanded sidebar and equally large metric tiles consume the phone's opening
+view without improving the cash decision. All modules, kanban, roster, charts,
+intake approval, mirror review, backups and security checks are conserved.
+
+Josefin remains the display voice, Source Sans 3 carries English labels and prose,
+IBM Plex Sans Thai carries Thai text, JetBrains Mono is reserved for numeric/data
+readouts. Section headings use body-size emphasis; a 2px rule marks the page and
+backup workflow, 1px rules mark peer records. Amber marks the primary action and
+selected module; risk remains legible in ink with a textual status. No new accent,
+font, animation library or decorative asset. Fluent Thai and uninstructed human
+usability review remain unverified.
+
+
+Mechanical proof: 19 TypeScript tests and 12 backend tests pass; lint, build and
+EACH's design contract pass. Browser proof at 390px (Thai) shows no horizontal
+page overflow; the desktop header measures 65px including its rule. Rendered
+controls have 0px corners and no box shadows. Search opens with focused input;
+Thai search for PDF followed by Enter reaches document intake and restores focus.
+The generic axiom-audit strict scan does not pass: it treats permitted display
+bold, explanatory arrows, Tailwind preflight variables and bundled PDF/Excel
+library colours as violations. These are recorded exceptions, not a claim of a
+clean generic audit; EACH's explicit contract and actual rendered geometry govern.

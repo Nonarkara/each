@@ -61,7 +61,7 @@ export function QuickNavigation({
   return (
     <>
       <Btn variant="ghost" onClick={open}>
-        {t("Find", "ค้นหา")} <span className="font-mono text-[11px]">⌘K</span>
+        {t("Find", "ค้นหา")} <span className="ml-2 hidden font-mono text-[11px] sm:inline">⌘K</span>
       </Btn>
       <dialog
         ref={dialog}

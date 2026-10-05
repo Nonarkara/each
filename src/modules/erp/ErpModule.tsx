@@ -99,13 +99,13 @@ export function ErpModule({ store, api }: ErpModuleProps) {
 
   return (
     <div>
-      <Station disc="E" kicker="MODULE 01 · FINANCES" title={copy("Finances")} meta={'As of ' + store.asOf} />
+      <Station disc="E" kicker="ERP" title={copy("Finances")} meta={t('As of ', 'ข้อมูล ณ ') + store.asOf} />
       <p className="mb-5 max-w-3xl text-[14px] leading-relaxed text-ink-2">{t("Cash is money already received minus recorded spending. Burn is monthly payroll, AI, recurring costs, debt service and this month\u2019s operating expenses. Runway estimates how long that cash lasts; unsigned deals do not count as cash.", "เงินสดคือเงินที่ได้รับแล้วหักรายจ่ายที่บันทึก รายจ่ายต่อเดือนรวมเงินเดือน AI ค่าใช้จ่ายประจำ เงินผ่อน และรายจ่ายดำเนินงานเดือนนี้ ระยะเวลาที่เงินพอใช้เป็นประมาณการ โครงการที่ยังไม่เซ็นสัญญาไม่ใช่เงินสด")}</p>
 
       <div className="mb-6 grid gap-px border border-line bg-line lg:grid-cols-[1.618fr_1fr]">
         <div className="bg-panel p-5">
-          <p className="font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">{copy("Runway at current burn")}</p>
-          <p className={`mt-2 font-display text-[32px] font-bold leading-none ${safe ? 'text-ink' : 'text-amber'}`}>
+          <p className="text-[14px] font-semibold text-ink">{copy("Runway at current burn")}</p>
+          <p className={`mt-2 font-display text-[32px] font-bold leading-none text-ink`}>
             {Number.isFinite(f.runwayMonths) ? f.runwayMonths + ' ' + t('mo', 'เดือน') : '∞'}
           </p>
           <p className="mt-2 text-[14px] text-ink-2">
@@ -118,7 +118,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
           ) : null}
         </div>
         <div className="bg-panel p-5">
-          <p className="font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">{copy("Status")}</p>
+          <p className="text-[14px] font-semibold text-ink">{copy("Status")}</p>
           <TagChip tone={safe ? 'amber' : 'default'}>{safe ? t('At least 6 months', 'อย่างน้อย 6 เดือน') : t('Below 6 months', 'ต่ำกว่า 6 เดือน')}</TagChip>
           <p className="mt-3 text-[14px] font-semibold text-ink">
             {safe ? t('Cash lasts at least six months at the recorded burn.', 'เงินสดพอใช้อย่างน้อยหกเดือนตามรายจ่ายที่บันทึก') : t('Review collections and spending this week.', 'ตรวจยอดรับเงินและรายจ่ายในสัปดาห์นี้')}
@@ -130,20 +130,20 @@ export function ErpModule({ store, api }: ErpModuleProps) {
       </div>
 
       <div className="mb-6 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-        <StatCell label={copy("Cash on hand")} value={money(f.cash, f.cur)} sub={'After ' + store.expenses.length + ' transactions'} />
-        <StatCell label={copy("Founding capital")} value={money(f.founding, f.cur)} sub={store.foundingCapital.length + ' entries'} />
+        <StatCell label={copy("Cash on hand")} value={money(f.cash, f.cur)} sub={t('After ', 'หลังบันทึก ') + store.expenses.length + t(' transactions', ' รายการ')} />
+        <StatCell label={copy("Founding capital")} value={money(f.founding, f.cur)} sub={store.foundingCapital.length + t(' entries', ' รายการ')} />
         <StatCell label={copy("Monthly burn")} value={money(f.monthlyBurn, f.cur)} sub={t(burnSub, f.monthlyDebtService ? 'ค่าใช้จ่ายประจำ + เงินผ่อน + เดือนนี้' : 'ค่าใช้จ่ายประจำ + เดือนนี้')} />
-        <StatCell label={copy("Recurring OpEx")} value={money(f.recurring, f.cur)} sub={store.aiEmployees.length + ' AI · ' + store.employees.length + ' human'} />
+        <StatCell label={copy("Recurring OpEx")} value={money(f.recurring, f.cur)} sub={store.aiEmployees.length + ' AI / ' + store.employees.length + t(' people', ' คน')} />
       </div>
 
       <div className="mb-6">
         <SectionHead
           label={copy("Credit & installments")}
-          meta={(store.loans?.length || 0) + ' loans · ' + money(f.totalDebt, f.cur) + ' owed · ' + money(f.monthlyDebtService, f.cur) + ' / mo'}
+          meta={(store.loans?.length || 0) + t(' loans / ', ' รายการ / ') + money(f.totalDebt, f.cur) + t(' owed / ', ' ยอดหนี้ / ') + money(f.monthlyDebtService, f.cur) + t(' per month', ' ต่อเดือน')}
         />
         <DataTable>
           <thead>
-            <tr className="border-b border-line font-mono text-[11px] uppercase text-ink-3">
+            <tr className="border-b border-line font-body text-[11px] text-ink-3">
               <th className="p-3 text-left">{copy("Lender")}</th>
               <th className="p-3 text-right">{copy("Principal")}</th>
               <th className="p-3 text-right">{copy("Rate")}</th>
@@ -159,7 +159,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
                   <td className="p-3 text-[14px]">{l.lender}</td>
                   <td className="p-3 text-right font-mono text-[14px]">{money(l.principal, l.currency || f.cur)}</td>
                   <td className="p-3 text-right font-mono text-[14px]">{l.rate}%</td>
-                  <td className="p-3 text-right font-mono text-[14px]">{l.termMonths} mo</td>
+                  <td className="p-3 text-right font-mono text-[14px]">{l.termMonths} {t('mo', 'เดือน')}</td>
                   <td className="p-3 text-right font-mono text-[14px]">{money(l.installment, l.currency || f.cur)}</td>
                   <td className="p-3 text-right">
                     <Btn variant="ghost" onClick={() => removeLoan(l.id)}>{copy("Remove")}</Btn>
@@ -169,7 +169,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
             ) : (
               <tr>
                 <td colSpan={6} className="p-6 text-center text-[14px] text-ink-3">
-                  No loans. Borrowed blocks appear here — and in your monthly burn.
+                  {t('No loans recorded. Loan installments also contribute to monthly burn.', 'ยังไม่มีสินเชื่อที่บันทึก เงินผ่อนจะรวมอยู่ในรายจ่ายต่อเดือนด้วย')}
                 </td>
               </tr>
             )}
@@ -191,42 +191,42 @@ export function ErpModule({ store, api }: ErpModuleProps) {
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block sm:col-span-2">
-            <span className="font-mono text-[11px] uppercase text-ink-3">{copy("Lender")}</span>
+            <span className="font-body text-[11px] text-ink-3">{copy("Lender")}</span>
             <Input value={lender} onChange={(e) => setLender(e.target.value)} className="mt-2" />
           </label>
           <label className="block">
-            <span className="font-mono text-[11px] uppercase text-ink-3">Remaining principal ({store.currency})</span>
+            <span className="font-body text-[11px] text-ink-3">Remaining principal ({store.currency})</span>
             <Input type="number" value={principal} onChange={(e) => setPrincipal(e.target.value)} className="mt-2" />
           </label>
           <label className="block">
-            <span className="font-mono text-[11px] uppercase text-ink-3">{copy("Annual rate (%)")}</span>
+            <span className="font-body text-[11px] text-ink-3">{copy("Annual rate (%)")}</span>
             <Input type="number" value={rate} onChange={(e) => setRate(e.target.value)} className="mt-2" />
           </label>
           <label className="block">
-            <span className="font-mono text-[11px] uppercase text-ink-3">{copy("Term (months)")}</span>
+            <span className="font-body text-[11px] text-ink-3">{copy("Term (months)")}</span>
             <Input type="number" value={termMonths} onChange={(e) => setTermMonths(e.target.value)} className="mt-2" />
           </label>
           <label className="block">
-            <span className="font-mono text-[11px] uppercase text-ink-3">Monthly installment ({store.currency})</span>
+            <span className="font-body text-[11px] text-ink-3">Monthly installment ({store.currency})</span>
             <Input type="number" value={installment} onChange={(e) => setInstallment(e.target.value)} className="mt-2" />
           </label>
         </div>
       </Modal>
 
       <div className="mb-6">
-        <SectionHead label={copy("Revenue pipeline")} meta={'Ikigai book · ' + store.projects.length + ' projects'} />
+        <SectionHead label={copy("Revenue pipeline")} meta={store.projects.length + t(' recorded projects', ' โครงการที่บันทึก')} />
         <div className="grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
           <StatCell label={copy("Received to date")} value={money(f.receivedRevenue, f.cur)} sub={copy("Cash in")} />
-          <StatCell label={copy("Contracted")} value={money(f.contractedRevenue, f.cur)} sub={f.commissionedCount + ' commissioned'} />
+          <StatCell label={copy("Contracted")} value={money(f.contractedRevenue, f.cur)} sub={f.commissionedCount + t(' commissioned', ' โครงการที่ตกลงแล้ว')} />
           <StatCell label={copy("Outstanding")} value={money(f.outstanding, f.cur)} sub={copy("Contracted, unbilled")} />
           <StatCell label={copy("Expected pipeline")} value={money(f.expectedPipeline, f.cur)} sub={copy("Tier-weighted")} />
         </div>
         <div className="mt-3">
           <StackBar tall segments={[{ pct: rPct, variant: 'ink' }, { pct: oPct, variant: 'amber' }, { pct: pPct, variant: 'muted' }]} />
           <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-3">
-            <span>Received {Math.round(rPct)}%</span>
-            <span>{copy("Outstanding")}{Math.round(oPct)}%</span>
-            <span>Pipeline {Math.round(pPct)}%</span>
+            <span>{t('Received', 'รับแล้ว')} {Math.round(rPct)}%</span>
+            <span>{copy("Outstanding")} {Math.round(oPct)}%</span>
+            <span>{t('Pipeline', 'โอกาสรายได้')} {Math.round(pPct)}%</span>
           </div>
         </div>
       </div>
@@ -241,7 +241,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
       </div>
 
       <div className="mb-6">
-        <SectionHead label={copy("Runway projection")} meta={f.proj.length ? f.proj.length + ' months to depletion' : 'No burn'} />
+        <SectionHead label={copy("Runway projection")} meta={f.proj.length ? f.proj.length + t(' months to depletion', ' เดือนจนเงินหมด') : t('No burn', 'ยังไม่มีรายจ่าย')} />
         {!f.proj.length || f.monthlyBurn <= 0 ? (
           <Empty>{copy("Record expenses to see the projection.")}</Empty>
         ) : (
@@ -306,7 +306,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
             return (
               <div key={o.id} className="grid gap-px bg-line lg:grid-cols-[1.618fr_1fr]">
                 <div className="bg-panel p-4">
-                  <p className="font-mono text-[11px] uppercase text-ink-3">{copy("Objective")}</p>
+                  <p className="font-body text-[11px] text-ink-3">{copy("Objective")}</p>
                   <p className="mt-1 text-[14px] font-semibold">{o.objective}</p>
                   <div className="mt-3 w-4/5">
                     <ProgressBar pct={pct} variant="amber" />

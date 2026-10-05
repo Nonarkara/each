@@ -140,7 +140,7 @@ export function ActModule({ store, api }: ActModuleProps) {
 
   return (
     <div>
-      <Station disc="A" kicker="MODULE 02 · ACCOUNTING & ACTIONS" title={copy("Accounting & actions")} meta={openActions.length + ' open actions'} />
+      <Station disc="A" kicker="ACT" title={copy("Accounting & actions")} meta={openActions.length + t(' open actions', ' งานที่ยังไม่เสร็จ')} />
       <p className="mb-5 max-w-3xl text-[14px] leading-relaxed text-ink-2">{t("Record actual expenses here. Receivables are signed deal values still unpaid; Mark paid records full receipt, so use it only after confirming payment. The action queue points to unfinished work derived from your records.", "บันทึกรายจ่ายจริงที่นี่ ลูกหนี้คือยอดโครงการที่ตกลงแล้วแต่ยังไม่ได้รับเงิน ปุ่มบันทึกรับเงินครบใช้หลังตรวจว่าชำระครบแล้วเท่านั้น งานที่ต้องทำแสดงรายการค้างจากข้อมูลที่บันทึก")}</p>
 
       <div className="mb-6 grid gap-px border border-line bg-line sm:grid-cols-3">
@@ -159,7 +159,7 @@ export function ActModule({ store, api }: ActModuleProps) {
                 <div>
                   <TagChip tone={a.priority === 'high' ? 'amber' : 'default'}>{a.priority}</TagChip>
                   <p className="mt-2 text-[14px]">{a.label}</p>
-                  <p className="mt-1 font-mono text-[11px] uppercase text-ink-3">{a.module}</p>
+                  <p className="mt-1 font-body text-[11px] text-ink-3">{a.module}</p>
                 </div>
               </div>
             </div>
@@ -172,10 +172,10 @@ export function ActModule({ store, api }: ActModuleProps) {
         <DataTable>
           <thead>
             <tr className="border-b border-line bg-paper">
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Project")}</th>
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Client")}</th>
-              <th className="p-3 text-right font-mono text-[11px] uppercase text-ink-3">{copy("Outstanding")}</th>
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Action")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Project")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Client")}</th>
+              <th className="p-3 text-right font-body text-[11px] text-ink-3">{copy("Outstanding")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Action")}</th>
             </tr>
           </thead>
           <tbody>
@@ -200,12 +200,12 @@ export function ActModule({ store, api }: ActModuleProps) {
         <DataTable>
           <thead>
             <tr className="border-b border-line bg-paper">
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Date")}</th>
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Vendor")}</th>
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Category")}</th>
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Type")}</th>
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Owner")}</th>
-              <th className="p-3 text-right font-mono text-[11px] uppercase text-ink-3">{copy("Amount")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Date")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Vendor")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Category")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Type")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Owner")}</th>
+              <th className="p-3 text-right font-body text-[11px] text-ink-3">{copy("Amount")}</th>
             </tr>
           </thead>
           <tbody>
@@ -229,10 +229,10 @@ export function ActModule({ store, api }: ActModuleProps) {
       {expenseError ? <p role="alert" className="border-l-2 border-amber p-3">{expenseError}</p> : null}
       <Modal title={copy("Add expense")} open={expenseOpen} onClose={() => setExpenseOpen(false)} actions={<><Btn variant="ghost" onClick={() => setExpenseOpen(false)}>{copy("Cancel")}</Btn><Btn onClick={addExpense}>{copy("Record")}</Btn></>}>
         <div className="grid gap-4">
-          <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Vendor")}</span><Input value={vendor} onChange={(e) => setVendor(e.target.value)} className="mt-2" /></label>
-          <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Amount")}</span><Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-2" /></label>
-          <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Category")}</span><Input value={category} onChange={(e) => setCategory(e.target.value)} className="mt-2" /></label>
-          <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Type")}</span><Select value={expType} onChange={(e) => setExpType(e.target.value as 'opex' | 'capex')} className="mt-2"><option value="opex">OpEx</option><option value="capex">CapEx</option></Select></label>
+          <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Vendor")}</span><Input value={vendor} onChange={(e) => setVendor(e.target.value)} className="mt-2" /></label>
+          <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Amount")}</span><Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-2" /></label>
+          <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Category")}</span><Input value={category} onChange={(e) => setCategory(e.target.value)} className="mt-2" /></label>
+          <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Type")}</span><Select value={expType} onChange={(e) => setExpType(e.target.value as 'opex' | 'capex')} className="mt-2"><option value="opex">OpEx</option><option value="capex">CapEx</option></Select></label>
         </div>
       </Modal>
     </div>

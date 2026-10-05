@@ -90,12 +90,12 @@ export function LoginGate({ onGoogleSuccess, onDemo, onBlank, error }: LoginGate
           <span className="flex h-11 w-11 items-center justify-center border border-amber font-display text-[14px] font-bold text-amber">E</span>
           <div>
             <p className="font-display text-[32px] font-bold leading-none">EACH</p>
-            <p className="font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">ERP + ACT + CRM + HR</p>
+            <p className="font-body text-[11px] text-ink-3">ERP + ACT + CRM + HR</p>
           </div>
         </div>
 
         <div className="border border-line bg-panel p-5 sm:p-6">
-          <p className="font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">{copy("Sign in")}</p>
+          <p className="font-body text-[11px] text-ink-3">{copy("Sign in")}</p>
           <h1 className="mt-2 font-display text-[32px] font-bold leading-tight">{t('Run your startup in one place', 'บริหารสตาร์ทอัปในที่เดียว')}</h1>
           <p className="mt-3 text-[14px] leading-relaxed text-ink-2">
             {t('See your cash, record expenses, track customer work, and manage people. Start with your own company or explore a sample workspace first.', 'ดูเงินสด บันทึกรายจ่าย ติดตามงานลูกค้า และจัดการทีม เริ่มด้วยบริษัทของคุณ หรือทดลองพื้นที่ตัวอย่างก่อน')}

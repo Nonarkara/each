@@ -9,18 +9,18 @@ interface StationProps {
 
 export function Station({ disc, kicker, title, meta }: StationProps) {
   return (
-    <header className="mb-5 flex flex-col gap-2 border-b border-ink pb-2 sm:flex-row sm:items-baseline sm:justify-between">
+    <header className="mb-5 flex flex-col gap-2 border-b-2 border-ink pb-4 sm:flex-row sm:items-baseline sm:justify-between">
       <div className="flex items-start gap-3">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-ink font-display text-[14px] font-bold">
+        <span className="sr-only">
           {disc}
         </span>
         <div>
-          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">{kicker}</p>
+          <p className="text-[11px] text-ink-3">{kicker}</p>
           <h2 className="font-display text-[32px] font-bold leading-tight">{title}</h2>
         </div>
       </div>
       {meta ? (
-        <p className="font-mono text-[11px] uppercase tracking-[0.11em] text-ink-3">{meta}</p>
+        <p className="text-[11px] text-ink-3">{meta}</p>
       ) : null}
     </header>
   )
@@ -34,11 +34,11 @@ interface StatCellProps {
 
 export function StatCell({ label, value, sub }: StatCellProps) {
   return (
-    <div className="border border-line bg-panel p-4">
-      <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.11em] text-ink-3">{label}</p>
-      <p className="mt-2 font-mono text-[32px] font-medium text-ink">{value}</p>
-      {sub ? <p className="mt-1 text-[14px] text-ink-2">{sub}</p> : null}
-    </div>
+    <dl className="bg-panel p-4">
+      <dt className="text-[14px] text-ink-2">{label}</dt>
+      <dd className="mt-2 font-mono text-[14px] font-medium text-ink">{value}</dd>
+      {sub ? <dd className="mt-1 text-[11px] text-ink-3">{sub}</dd> : null}
+    </dl>
   )
 }
 
@@ -50,8 +50,8 @@ interface SectionHeadProps {
 export function SectionHead({ label, meta }: SectionHeadProps) {
   return (
     <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-      <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.11em] text-ink-3">{label}</p>
-      {meta ? <p className="font-mono text-[11px] text-ink-3">{meta}</p> : null}
+      <h3 className="text-[14px] font-semibold text-ink">{label}</h3>
+      {meta ? <p className="text-[11px] text-ink-3">{meta}</p> : null}
     </div>
   )
 }
@@ -105,7 +105,7 @@ export function TagChip({ children, tone = 'default' }: TagChipProps) {
     opex: 'border-amber text-ink',
   }
   return (
-    <span className={`inline-flex min-h-[28px] items-center border px-2 font-mono text-[11px] uppercase ${tones[tone]}`}>
+    <span className={`inline-flex min-h-[28px] items-center border px-2 text-[11px] ${tones[tone]}`}>
       {children}
     </span>
   )

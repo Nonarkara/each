@@ -87,3 +87,19 @@ body {
 :lang(th) { letter-spacing: normal; }
 button:active:not(:disabled) { transform: scale(.97); }
 @media (prefers-reduced-motion: reduce) { button:active:not(:disabled) { transform: none; } }
+
+/* The workspace has one navigation rail. Financial context scrolls with its page. */
+.workspace-header { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.workspace-identity { grid-row: 1; }
+.workspace-actions { grid-row: 2; }
+.workspace-nav { grid-row: 3; }
+.workspace-identity > div { min-width: 0; }
+.workspace-identity p { overflow-wrap: anywhere; }
+.workspace-nav button { flex: 1; }
+@media (min-width: 1024px) {
+  .workspace-header { grid-template-columns: minmax(160px, 1fr) auto auto; align-items: center; gap: 20px; min-height: 64px; }
+  .workspace-identity, .workspace-nav, .workspace-actions { grid-row: 1; }
+  .workspace-identity { grid-column: 1; }
+  .workspace-nav { grid-column: 2; }
+  .workspace-actions { grid-column: 3; flex-wrap: nowrap; }
+}

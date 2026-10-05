@@ -54,7 +54,7 @@ export function IntakeModule({ store }: { store: EachStore }) {
   return <section className="space-y-5">
     <Station disc="IN" kicker={t('Human approval required', 'บันทึกเมื่อคุณอนุมัติเท่านั้น')} title={t('Document intake', 'รับข้อมูลจากเอกสาร')} />
     <p className="max-w-2xl text-[14px] leading-relaxed">{t('Upload a PDF or text file. AI reads it and proposes expenses, capital, people or deals. Check the source, edit the fields, select the records you trust, then approve. Nothing enters your workspace before that.', 'อัปโหลด PDF หรือไฟล์ข้อความ ให้ AI เสนอรายจ่าย เงินทุน พนักงาน หรือโครงการ ตรวจหลักฐาน แก้ข้อมูล เลือกรายการที่ถูกต้อง แล้วอนุมัติ ระบบจะยังไม่บันทึกข้อมูลจนกว่าคุณจะอนุมัติ')}</p>
-    <div className="grid gap-px border border-line bg-line md:grid-cols-[2fr_1fr]">
+    <div className="grid gap-px border border-line bg-line md:grid-cols-[1fr_2fr]">
       <div className="space-y-4 bg-panel p-4">
         <h3 className="font-display text-[14px] font-bold">{t('1. Choose your AI', '1. เลือก AI ที่ต้องการใช้')}</h3>
         <p>{t('Use an OpenAI-compatible /v1 endpoint from your provider or local server. Credentials stay in this tab’s memory and are cleared after filing or leaving this page.', 'ใช้ปลายทาง /v1 ที่รองรับรูปแบบ OpenAI จากผู้ให้บริการหรือเซิร์ฟเวอร์ในเครื่อง คีย์อยู่ในหน่วยความจำของแท็บเท่านั้น และจะล้างหลังบันทึกหรือออกจากหน้านี้')}</p>

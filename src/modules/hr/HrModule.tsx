@@ -96,7 +96,7 @@ export function HrModule({ store, api }: HrModuleProps) {
 
   return (
     <div>
-      <Station disc="H" kicker="MODULE 04 · PEOPLE" title={copy("People")} meta={ai.length + ' AI · ' + hum.length + ' human'} />
+      <Station disc="H" kicker="HR" title={copy("People")} meta={ai.length + ' AI / ' + hum.length + t(' people', ' คน')} />
       <p className="mb-5 max-w-3xl text-[14px] leading-relaxed text-ink-2">{t("Add the people and AI subscriptions you actually pay for. Monthly salaries and subscription costs flow into ERP burn. Efficiency scores are your own assessments, and an unrated operator is shown without a score.", "เพิ่มพนักงานและบริการ AI ที่จ่ายจริง เงินเดือนและค่าสมัครต่อเดือนรวมอยู่ในรายจ่ายของ ERP คะแนนประสิทธิภาพเป็นการประเมินของคุณเอง ผู้ช่วยที่ยังไม่ได้ประเมินจะแสดงว่าไม่มีคะแนน")}</p>
 
       <div className="mb-6 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
@@ -148,7 +148,7 @@ export function HrModule({ store, api }: HrModuleProps) {
         </div>
         {best ? (
           <div className="mt-4 border border-line bg-paper p-4">
-            <p className="font-mono text-[11px] uppercase text-ink-3">{copy("Operator read")}</p>
+            <p className="font-body text-[11px] text-ink-3">{copy("Operator read")}</p>
             <p className="mt-2 text-[14px] text-ink-2">
               {t(`${best.name} has the highest self-reported efficiency per cost; ${worst.name} has the lowest. These scores are estimates you entered.`, `${best.name} มีคะแนนประสิทธิภาพต่อค่าใช้จ่ายสูงสุด ส่วน ${worst.name} ต่ำสุด คะแนนเหล่านี้เป็นค่าประเมินที่คุณกรอก`)}
             </p>
@@ -162,11 +162,11 @@ export function HrModule({ store, api }: HrModuleProps) {
         <DataTable>
           <thead>
             <tr className="border-b border-line bg-paper">
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Name")}</th>
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Role")}</th>
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Type")}</th>
-              <th className="p-3 font-mono text-[11px] uppercase text-ink-3">{copy("Started")}</th>
-              <th className="p-3 text-right font-mono text-[11px] uppercase text-ink-3">{copy("Salary / mo")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Name")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Role")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Type")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Started")}</th>
+              <th className="p-3 text-right font-body text-[11px] text-ink-3">{copy("Salary / mo")}</th>
             </tr>
           </thead>
           <tbody>
@@ -188,18 +188,18 @@ export function HrModule({ store, api }: HrModuleProps) {
 
       <Modal title={copy("Add AI operator")} open={aiOpen} onClose={() => setAiOpen(false)} actions={<><Btn variant="ghost" onClick={() => setAiOpen(false)}>{copy("Cancel")}</Btn><Btn onClick={addAi}>{copy("Add")}</Btn></>}>
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Name")}</span><Input value={aiName} onChange={(e) => setAiName(e.target.value)} className="mt-2" /></label>
-          <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Vendor")}</span><Input value={aiVendor} onChange={(e) => setAiVendor(e.target.value)} className="mt-2" /></label>
-          <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Monthly cost")}</span><Input type="number" value={aiCostIn} onChange={(e) => setAiCostIn(e.target.value)} className="mt-2" /></label>
-          <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Efficiency %")}</span><Input type="number" value={aiEff} onChange={(e) => setAiEff(e.target.value)} className="mt-2" /></label>
+          <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Name")}</span><Input value={aiName} onChange={(e) => setAiName(e.target.value)} className="mt-2" /></label>
+          <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Vendor")}</span><Input value={aiVendor} onChange={(e) => setAiVendor(e.target.value)} className="mt-2" /></label>
+          <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Monthly cost")}</span><Input type="number" value={aiCostIn} onChange={(e) => setAiCostIn(e.target.value)} className="mt-2" /></label>
+          <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Efficiency %")}</span><Input type="number" value={aiEff} onChange={(e) => setAiEff(e.target.value)} className="mt-2" /></label>
         </div>
       </Modal>
 
       <Modal title={copy("Add human employee")} open={humOpen} onClose={() => setHumOpen(false)} actions={<><Btn variant="ghost" onClick={() => setHumOpen(false)}>{copy("Cancel")}</Btn><Btn onClick={addHuman}>{copy("Add")}</Btn></>}>
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Name")}</span><Input value={humName} onChange={(e) => setHumName(e.target.value)} className="mt-2" /></label>
-          <label className="block"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Role")}</span><Input value={humRole} onChange={(e) => setHumRole(e.target.value)} className="mt-2" /></label>
-          <label className="block sm:col-span-2"><span className="font-mono text-[11px] uppercase text-ink-3">{copy("Monthly salary")}</span><Input type="number" value={humSal} onChange={(e) => setHumSal(e.target.value)} className="mt-2" /></label>
+          <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Name")}</span><Input value={humName} onChange={(e) => setHumName(e.target.value)} className="mt-2" /></label>
+          <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Role")}</span><Input value={humRole} onChange={(e) => setHumRole(e.target.value)} className="mt-2" /></label>
+          <label className="block sm:col-span-2"><span className="font-body text-[11px] text-ink-3">{copy("Monthly salary")}</span><Input type="number" value={humSal} onChange={(e) => setHumSal(e.target.value)} className="mt-2" /></label>
         </div>
       </Modal>
     </div>

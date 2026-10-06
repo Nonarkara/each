@@ -54,7 +54,7 @@ Axiom CSV templates: **`docs/sheets/*.csv`**
 
 ### Step 1 · Open the app (2 min)
 
-1. Go to **https://each.nonarkara.org** (or run locally: `npm install && npm run dev`).
+1. Go to **https://each.nonarkara.org** (or run locally: `npm install && npm start`).
 2. **Sign in** for Axiom, **Try demo** for ABC, or **Start blank** for your own company.
 3. If blank: complete onboarding — company name → registry lookup → founding capital → Gmail.
 

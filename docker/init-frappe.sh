@@ -64,7 +64,7 @@ bench --site "$site_name" set-config mute_emails 1
 bench --site "$site_name" set-config server_script_enabled 0
 # Use authenticated session cookies plus X-Frappe-CSRF-Token for writes.
 bench --site "$site_name" set-config ignore_csrf 0
-bench --site "$site_name" set-config allow_cors '["http://each.localhost:5173"]' --parse
+bench --site "$site_name" set-config allow_cors '["http://each.localhost:5173","http://127.0.0.1:5173","http://localhost:5173"]' --parse
 bench --site "$site_name" enable-scheduler
 bench use "$site_name"
 bench start

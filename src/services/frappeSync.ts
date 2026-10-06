@@ -26,7 +26,15 @@ export function startFrappeSync(
 
   onStatus('connecting')
   void frappeClient
-    .login()
+    .health()
+    .then((health) => {
+      if (!health.ok) {
+        // Backend URL may be set while Docker is off — stay on localStorage.
+        onStatus('off')
+        return Promise.reject(new Error('frappe-optional-offline'))
+      }
+      return frappeClient.login()
+    })
     .then(() => frappeClient.getStore())
     .then(async (remote) => {
       if (stopped) return
@@ -50,8 +58,10 @@ export function startFrappeSync(
       })
       onStatus('connected')
     })
-    .catch(() => {
-      if (!stopped) onStatus('error')
+    .catch((err) => {
+      if (stopped) return
+      const optional = err instanceof Error && err.message === 'frappe-optional-offline'
+      onStatus(optional ? 'off' : 'error')
     })
 
   return () => {

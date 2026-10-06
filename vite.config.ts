@@ -8,6 +8,13 @@ export default defineConfig({
   base: './',
   server: {
     host: '127.0.0.1',
-    allowedHosts: ['each.localhost'],
+    port: 5173,
+    strictPort: true,
+    allowedHosts: ['127.0.0.1', 'localhost', 'each.localhost'],
+  },
+  preview: {
+    host: '127.0.0.1',
+    port: 4173,
+    allowedHosts: ['127.0.0.1', 'localhost', 'each.localhost'],
   },
 })

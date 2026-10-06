@@ -13,7 +13,14 @@ export function CloudMirrors({ store }: { store: EachStore }) {
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [review, setReview] = useState<{ before: EachStore; after: EachStore; local: EachStore; revision: string; provider: MirrorProvider; direction: 'pull' | 'push' } | null>(null)
-  useEffect(() => { let active = true; void cloudMirrorStatus().then(status => { if (active) setConnections(status) }).catch(() => { if (active) setMessage(t('Cloud mirrors require an authenticated backend connection.', 'สำเนาบนคลาวด์ต้องเชื่อมต่อฐานข้อมูลที่ยืนยันตัวตนแล้ว')) }); return () => { active = false } }, [t])
+  useEffect(() => {
+    if (!import.meta.env.VITE_FRAPPE_URL) return
+    let active = true
+    void cloudMirrorStatus()
+      .then((status) => { if (active) setConnections(status) })
+      .catch(() => { if (active) setMessage(t('Cloud mirrors require an authenticated backend connection.', 'สำเนาบนคลาวด์ต้องเชื่อมต่อฐานข้อมูลที่ยืนยันตัวตนแล้ว')) })
+    return () => { active = false }
+  }, [t])
   async function start(provider: MirrorProvider, direction: 'pull' | 'push') {
     setBusy(true); setMessage(''); setReview(null)
     try {

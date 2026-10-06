@@ -86,15 +86,18 @@ The frontend still works by itself for a quick evaluation:
 git clone https://github.com/Nonarkara/each.git
 cd each
 npm install
-npm run dev
+npm start
 ```
 
-Open the URL Vite prints (default `http://localhost:5173`).
+The browser opens the **ABC sample workspace** at `http://127.0.0.1:5173/?workspace=demo`. No `.env`, Docker, or OAuth. Reset from the shell returns you to the door.
+
+Do **not** copy `.env.example` unless you want the optional Frappe stack — a filled `VITE_FRAPPE_URL` looks for Docker.
 
 For the complete self-hosted path with an open-source MariaDB database:
 
 ```bash
 cp .env.example .env
+# Uncomment VITE_FRAPPE_URL=http://each.localhost:8000 in .env
 npm run stack:up
 npm run stack:logs
 ```
@@ -230,16 +233,16 @@ Requires Node 22.13+ (CI uses Node 22). From the repo root:
 
 ```bash
 npm install
-npm run dev
+npm start
 ```
 
-Open the URL Vite prints (default `http://localhost:5173`).
+`npm start` opens `/?workspace=demo` (ABC fixture). `npm run dev` starts the same server without forcing a tab.
 
 | Path | What you get |
 |------|----------------|
-| **Try demo — ABC Company** | Fictitious startup fixture; exports are explicit |
-| **Start blank** | Onboarding → empty store |
-| **Sign in with Google** | Requires configured server verification and entitlement; loads the labelled Axiom fixture |
+| **Explore sample workspace** | Fictitious ABC fixture — also `/?workspace=demo` |
+| **Set up my company** | Onboarding → empty store — also `/?workspace=blank` |
+| **Company / database sign-in** | Only if you configured Google + Frappe; loads the labelled Axiom fixture |
 
 Then:
 

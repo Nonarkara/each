@@ -17,7 +17,7 @@ raise first-run memory and disk requirements.
 ## Requirements
 
 - Git
-- Node.js 20 or newer
+- Node.js 22.13 or newer
 - Docker Desktop (or Docker Engine + Compose v2)
 - About 8 GB free disk space; the first Frappe setup downloads and builds several apps
 
@@ -31,6 +31,7 @@ run natively.
 git clone https://github.com/Nonarkara/each.git
 cd each
 cp .env.example .env
+# Uncomment VITE_FRAPPE_URL=http://each.localhost:8000
 npm install
 npm run stack:up
 npm run stack:logs
@@ -44,8 +45,10 @@ web process listening on port 8000, then stop following logs with `Ctrl+C`.
 2. Sign in at `http://each.localhost:8000/login` using your local Frappe account.
 3. Open `http://each.localhost:5173` and reload after signing in.
 
-Use the `each.localhost` address, not `localhost`, for the database-backed mode.
-Both ports need the same hostname so the browser sends the Frappe session cookie.
+Prefer `http://each.localhost:5173` with `http://each.localhost:8000` so the
+Frappe session cookie is sent. Vite also accepts `127.0.0.1` and `localhost`
+for the browser-only path (`npm start`, no `.env`). The laptop CORS list
+includes all three origins.
 
 EACH will hydrate from MariaDB after the Frappe session is available. The header
 shows `MariaDB via Frappe` when connected. If the backend is stopped, the app

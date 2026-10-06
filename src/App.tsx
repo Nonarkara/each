@@ -23,6 +23,7 @@ import {
   getAuthSession,
   setDemoSession,
 } from './lib/auth'
+import { parseWorkspaceIntent, stripWorkspaceIntent } from './lib/boot'
 import { loadAbcStore, loadAxiomStore, seedStore, storeApi, getStoreRecoveryError } from './lib/store'
 import {
   exportJsonBackup,
@@ -44,7 +45,24 @@ type AppView = 'login' | 'landing' | 'onboarding' | 'app'
 type AppRoute = ModuleId | 'dossier' | 'intake' | 'mirrors' | 'security'
 
 
+function applyWorkspaceIntent(): AppView | null {
+  if (typeof window === 'undefined') return null
+  const intent = parseWorkspaceIntent(window.location.search)
+  if (!intent) return null
+  window.history.replaceState({}, '', stripWorkspaceIntent(window.location.href))
+  if (intent === 'demo') {
+    setDemoSession()
+    loadAbcStore()
+    return 'app'
+  }
+  clearAuthSession()
+  storeApi.load({ ...seedStore(), dataTenant: 'custom' })
+  return 'onboarding'
+}
+
 function initialView(): AppView {
+  const fromUrl = applyWorkspaceIntent()
+  if (fromUrl) return fromUrl
   const session = getAuthSession()
   if (storeApi.get().onboarded && storeApi.get().dataTenant === 'custom') return 'app'
   if (session?.dataPath === 'axiom' && !session.demo) return 'app'

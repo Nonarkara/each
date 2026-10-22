@@ -1,0 +1,29 @@
+name: each-product
+
+services:
+  account:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      EACH_PORT: 8080
+      EACH_DB_PATH: /data/each.sqlite
+      EACH_STATIC_DIR: /app/dist
+      EACH_SESSION_DAYS: 30
+      # Set to 1 behind HTTPS.
+      EACH_SECURE_COOKIES: "0"
+      # Absolute origin of the public URL, e.g. https://each.nonarkara.org
+      EACH_ORIGIN: ${EACH_ORIGIN:-}
+    ports:
+      - "127.0.0.1:${EACH_ACCOUNT_PORT:-8080}:8080"
+    volumes:
+      - each-account-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/api/method/each_backend.api.health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  each-account-data:

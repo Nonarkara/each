@@ -105,6 +105,48 @@ loopback-only Frappe API with the matching local credentials from `.env`.
 
 **Full setup, backups, reset, and security notes:** [`docs/SELF_HOSTING.md`](docs/SELF_HOSTING.md)
 
+## Run as a product
+
+This is the path a startup actually uses: one account, one workspace, the numbers
+following you across devices, and a sign-out that means something.
+
+```bash
+npm install
+npm run product          # builds the app, then serves app + API on one origin
+```
+
+Open `http://127.0.0.1:8080`, create an account with a work email, and set up the
+company. The account service (`server/`) holds the accounts, the server-side
+sessions, and the per-account workspace; the browser keeps only an offline copy.
+
+Containerised:
+
+```bash
+docker compose -f docker-compose.product.yml up -d --build
+```
+
+| Variable | Meaning |
+|----------|---------|
+| `EACH_PORT` | Port the app and API listen on (default `8080`) |
+| `EACH_DB_PATH` | SQLite file holding accounts and workspaces (default `./data/each.sqlite`) |
+| `EACH_STATIC_DIR` | Built frontend to serve (default `./dist`) |
+| `EACH_SESSION_DAYS` | Session lifetime (default `30`) |
+| `EACH_SECURE_COOKIES` | `1` when the service is served over HTTPS |
+| `EACH_ORIGIN` | Absolute origin allowed to call the API with credentials |
+| `VITE_ACCOUNT_URL` | Only when the API is hosted away from the app (same origin by default) |
+
+The account service implements the same `each_backend.api.*` method contract as the
+Frappe app (`get_state`, `put_state`, `session_info`, `health`), so moving to
+Frappe/ERPNext later is a URL change, not a rewrite: point `VITE_FRAPPE_URL` at the
+Frappe site and the UI keeps working.
+
+**Development:** run the API and the dev server together —
+
+```bash
+node server/index.mjs      # API + static on :8080
+npm run dev                # app on :5173, /api proxied to :8080
+```
+
 ## Human manual
 
 New workflows: [Document intake and two-way mirrors](docs/INTEGRATIONS.md).
@@ -121,6 +163,7 @@ Google Sheets template: [`sheets/apps-script.gs`](sheets/apps-script.gs) + tab s
 | **0.5** | Port CRM2 prototype logic (onboarding, ERP calc, HR roster, CRM kanban) into React modules |
 | **1 — local backend** | Clone-and-run Frappe v15 + ERPNext + MariaDB stack, authenticated workspace persistence |
 | **1.5 — reviewed intake** | Real PDF/text extraction, optional browser OCR, local/API AI proposals, source trail, Excel round trips and configured cloud mirror connectors |
+| **1.7 — product tier** | Account service (email + password, server sessions, per-account workspace) serving the app and API on one origin |
 | **2** | Frappe backend — swap data shim for ERPNext + Frappe HR + Frappe CRM REST |
 | **3** | Multi-tenant role isolation, native payroll/invoicing/tax workflows, managed provider OAuth and production operations |
 
@@ -128,31 +171,43 @@ Google Sheets template: [`sheets/apps-script.gs`](sheets/apps-script.gs) + tab s
 
 - **Vite** + **React 19** + **TypeScript** (strict)
 - **Tailwind CSS v4** with Dr Non design tokens
-- **Typography:** Josefin Sans (display) · Source Sans 3 (body) · JetBrains Mono (data)
-- **Persistence:** `localStorage` offline cache, with optional Frappe v15 + MariaDB sync
-- **Deployment:** GitHub Pages for evaluation; self-hosted Frappe/MariaDB for authenticated persistence
+- **Typography:** Jost (display) · Source Sans 3 (body) · IBM Plex Sans Thai (Thai) · JetBrains Mono (data)
+- **Persistence:** account service (SQLite) as the product tier, `localStorage` as the offline cache, optional Frappe v15 + MariaDB sync
+- **Deployment:** one Node process (or one container) serving the app and the API on a single origin; GitHub Pages remains the static evaluation build
 
 ## Security notice
 
-As a Phase 0.5 static client application, EACH currently employs two architectural trade-offs that must be understood before storing real business data:
-1. **Unencrypted Local Storage:** Sensitive PII (such as employee salaries and tax IDs) is persisted in plaintext within the browser's `localStorage`. Any malicious script running on the page (e.g., via a compromised dependency or browser extension) could read this data.
-2. **Client-Side Authorization:** OAuth sign-in only authenticates identity client-side to gate mock data sets. There is currently no server-side enforcement of authorization limits.
+EACH runs in three tiers, and the difference matters before you store real business data:
 
-The laptop stack adds authenticated Frappe/MariaDB persistence, but keeps
-`localStorage` as an offline cache. It is a development profile, not a hardened
-internet deployment; see [`docs/SELF_HOSTING.md`](docs/SELF_HOSTING.md) before
-using real business data.
+1. **Static evaluation (GitHub Pages).** No server: the workspace lives in the
+   browser's `localStorage` in plaintext, and there is no server-side
+   authorization. Fine for a sample workspace, not for payroll data.
+2. **Account service (the product tier).** Accounts use scrypt-hashed passwords,
+   sessions live on the server in an `HttpOnly` cookie, writes require a CSRF
+   token, and each workspace is stored per account. The browser copy is still an
+   offline cache, so a shared device should sign out (Tools → Sign out).
+3. **Frappe stack (self-hosted ERP).** Adds ERPNext, Frappe HR and Frappe CRM with
+   its own role model. This is the long-term target.
+
+Remaining gaps before an internet-facing multi-tenant deployment: email
+verification and password reset, team roles and invitations, and a privacy
+policy for the jurisdictions you sell into. Until then, run the product tier on
+your own infrastructure and keep the volume modest.
+
+See [`docs/SELF_HOSTING.md`](docs/SELF_HOSTING.md) before using real business data.
 
 ## Project layout
 
 ```
 src/
   components/     Shell, Hero, module cards
-  lib/            types, store shim
+  lib/            types, store shim, storage status
   modules/        erp/, act/, crm/, hr/ (phase 0.5)
+server/            account service: accounts, sessions, per-account workspace
 backend/           EACH Frappe persistence app
 docker/            reproducible laptop bootstrap
 docker-compose.yml Frappe + MariaDB + Redis local stack
+docker-compose.product.yml  account service container
 context.md        live metadata
 CLAUDE.md         build rules + anti-regression
 tasks/            todo + lessons

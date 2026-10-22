@@ -77,12 +77,16 @@ Demo path (`ABC`) skips OAuth — session flagged `demo: true` in sessionStorage
 
 | Token | Value |
 |-------|-------|
-| Display font | Josefin Sans |
+| Display font | Jost |
 | Body font | Source Sans 3 |
+| Thai font | IBM Plex Sans Thai |
 | Mono font | JetBrains Mono |
-| Accent | `#f59e0b` (amber — one accent only) |
+| Accent | `#f59e0b` (amber — one accent only, never body text) |
 | Paper | `#f6f5f2` |
-| Ink | `#191712` |
+| Panel | `#ffffff` |
+| Ink | `#191712` (16.43:1 on paper) |
+| Ink 2 | `#5f5b52` (6.20:1 on paper) — one secondary tone |
+| Rule / hairline | `#cfcbc0` (2px boundary) / `#e4e1d8` (1px peer) |
 | Corners | `0` — no border-radius except true circles |
 | Layout | Mobile-first, 44px tap targets, hairline grids |
 
@@ -90,7 +94,9 @@ Demo path (`ABC`) skips OAuth — session flagged `demo: true` in sessionStorage
 
 ```
 Offline:   Vite/React + localStorage cache (storeApi in src/lib/store.ts)
-Local:     Frappe v15 + MariaDB persistence via src/services/frappeSync.ts
+Product:   account service in server/ — accounts, server sessions, per-account workspace
+           (src/services/account.ts + src/services/workspaceSync.ts, same each_backend.api.* contract)
+Local:     Frappe v15 + MariaDB persistence via the same client, VITE_FRAPPE_URL
 Phase 1.5: Stub services — company lookup, Gmail OAuth, OCR scan
 Phase 2:   Native ERPNext + Frappe HR + Frappe CRM DocType mapping
 ```
@@ -221,3 +227,45 @@ The generic axiom-audit strict scan does not pass: it treats permitted display
 bold, explanatory arrows, Tailwind preflight variables and bundled PDF/Excel
 library colours as violations. These are recorded exceptions, not a claim of a
 clean generic audit; EACH's explicit contract and actual rendered geometry govern.
+
+
+## Product tier and spatial audit (2026-10-23)
+
+**Shipability audit — found.** No account system: only an admin-configured Google
+allowlist or a browser-only workspace; data lived in `localStorage`; sessions were
+client-state only; nothing served an API, so there was no URL a startup could sign
+up at. **Changed.** `server/` (account service): email + password with scrypt
+hashing, server-side sessions in an `HttpOnly` cookie, CSRF on writes, per-account
+workspace rows, rate limits that count failed attempts only, and one process that
+serves the built app and the API on one origin. The client speaks the same
+`each_backend.api.*` contract as the Frappe app, so `VITE_FRAPPE_URL` still swaps
+the backend without touching the UI. **Verified.** 23 server tests pass; a browser
+run created an account, completed onboarding, recorded an expense, confirmed the
+server held `onboarded: true` and the expense, signed out, signed back in, and saw
+the expense again — no console errors.
+
+**MSH pass.** Measured at 390, 1024 and 1440 across login and all eight routes.
+Found: a three-band mobile header (155px, 18% of the viewport), a repeated
+three-line evaluation banner on every page, redundant storage and Sheets status
+lines, 18px checkboxes, 40px link buttons. Changed: two bands (identity + actions,
+then module navigation with the language switch), 111px header (13%), the
+workspace notice reduced to one status line, 44px tap targets. Verified: no
+horizontal overflow, no element outside the viewport outside a deliberate scroll
+container, no tap target under 44px, text sizes only 11/14/32, no console errors
+across 24 route × viewport combinations.
+
+**Palette × Dieter Rams.** Tokens renamed by role, not by hue: `paper`, `panel`,
+`ink`, `ink-2`, `rule`, `hairline`, `amber` — seven, no more. The two near
+identical greys (`ink-2`, `ink-3`) collapsed into one secondary ink at 6.20:1 on
+paper; the two line tokens became `rule` (2px boundary) and `hairline` (1px peer);
+amber is now a surface and an edge only, and the three places that printed amber
+body text were corrected. `scripts/check-design.mjs` enforces the token count, the
+role names, the single accent, and the no-amber-as-text rule.
+
+**Type.** Jost replaces Josefin Sans as the display voice; Source Sans 3 still
+carries English prose, IBM Plex Sans Thai still carries Thai, JetBrains Mono still
+carries data. Josefin Sans was removed from the bundle and from the contract.
+
+**Unverified.** Fluent Thai review of the new account screens; real provider
+OAuth for the account service; a multi-user team model; email verification and
+password reset; internet-facing deployment hardening (TLS, backups, monitoring).

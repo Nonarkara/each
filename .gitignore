@@ -34,3 +34,9 @@ __pycache__/
 *.tar
 sites/
 backups/
+
+# Account service local state
+data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm

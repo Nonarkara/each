@@ -30,11 +30,15 @@ EACH has **two curated workspaces** plus a blank onboarding path:
 
 | Path | How you enter | Company | Data source |
 |------|---------------|---------|-------------|
+| **Create an account** | Email + password on the login screen | **Yours** | Your workspace, saved to your account |
 | **Sign in** | Google or GitHub OAuth on the login screen | **Axiom X Co., Ltd.** | `dashboards/ikigai and co/data/tenant_ikigai.json` |
-| **Try demo** | “Try demo — ABC Company (no account)” | **ABC Company Limited** | `dashboards/ikigai and co/data/tenant_sic.json` |
-| **Start blank** | “Start blank — onboard your own company” | Yours | Empty store → onboarding |
+| **Try demo** | “Explore sample workspace” | **ABC Company Limited** | `dashboards/ikigai and co/data/tenant_sic.json` |
+| **Continue on this device** | No account | Yours | Empty store → onboarding, kept in this browser only |
 
-OAuth opens **Axiom** (healthy pre-seed consultancy: ฿800K called capital, TKC + EDA pipeline).  
+An account is the real path: your workspace is stored on the server under your
+account, so you can open it on another device and sign out on a shared laptop
+(Tools → Sign out). Company sign-in (OAuth) opens **Axiom** (healthy pre-seed
+consultancy: ฿800K called capital, TKC + EDA pipeline).  
 Demo opens **ABC** (failing startup case study: ฿43K cash, ~฿351K/mo burn, negative equity).
 
 ---
@@ -44,9 +48,10 @@ Demo opens **ABC** (failing startup case study: ฿43K cash, ~฿351K/mo burn, n
 ### Step 0 · Choose your path (1 min)
 
 1. Open **https://each.nonarkara.org**
-2. **Sign in with Google** or **Sign in with GitHub** → Axiom X workspace (requires OAuth keys — see `.env.example`)
-3. Or **Try demo — ABC Company** → immediate access, no account; nine CSV files download for Google Sheets
-4. Or **Start blank** → three-step onboarding for your own company
+2. **Create account** — work email, name, company, password (10+ characters). This is the path that keeps your workspace with you.
+3. Or **Sign in with Google** → Axiom X workspace (requires OAuth keys — see `.env.example`)
+4. Or **Explore sample workspace** → ABC Company, no account
+5. Or **Continue on this device** → three-step onboarding, stored only in this browser
 
 ABC CSV templates (same data as the demo button): **`docs/sheets/abc-demo/*.csv`**
 
@@ -54,11 +59,10 @@ Axiom CSV templates: **`docs/sheets/*.csv`**
 
 ### Step 1 · Open the app (2 min)
 
-1. Go to **https://each.nonarkara.org** (or run locally: `npm install && npm run dev`).
-2. **Sign in** for Axiom, **Try demo** for ABC, or **Start blank** for your own company.
-3. If blank: complete onboarding — company name → registry lookup → founding capital → Gmail.
-
-Your numbers appear in the header: **Cash** and **Runway**.
+1. Go to **https://each.nonarkara.org** (or run locally: `npm install && npm run product` for the account tier, `npm run dev` for the browser-only tier).
+2. **Create account** / **Sign in** / **Explore sample workspace** / **Continue on this device**.
+3. If you are new: complete onboarding — company name → founding capital → finish.
+4. The header tells you where your numbers live: **Saved to your account**, or **Saved on this device only**. Trust that line — it never claims a server save that did not happen.
 
 ### Step 2 · Create your Google Sheet (5 min)
 

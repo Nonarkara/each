@@ -17,23 +17,26 @@ npm run preview
 1. **Never collapse a file by more than 30%** in one edit.
 2. **Never delete interactive surfaces** — module nav, cockpit vitals, onboarding flow (when ported), kanban (when ported).
 3. **Never introduce rounded corners, gradients, drop shadows, or a second accent colour.** One amber (`#f59e0b`). `border-radius: 0` site-wide.
-4. **Never use banned template fonts:** Roboto, Inter, Poppins, Montserrat, Open Sans, Lato as primary UI fonts. Use Josefin Sans + Source Sans 3.
+4. **Never use banned template fonts:** Roboto, Inter, Poppins, Montserrat, Open Sans, Lato as primary UI fonts. Use Jost (display) + Source Sans 3 (body) + IBM Plex Sans Thai (Thai) + JetBrains Mono (data).
 5. **Never replace earned CRM2 logic with placeholder cards** when porting — port the real calc/kanban/roster, do not stub forever.
 6. **Never commit `.env` or secrets.**
+7. **Never let the UI claim a save it did not make.** The storage label comes from `backendStatusLabel(status, kind)` and must match the real backend state.
 
 ## Design rules (project-specific)
 
 - **Mobile-first** — base styles for ≤480px; scale up with `@media (min-width: …)`.
 - **Three text sizes per page:** display 32px, body 14px, micro 11px.
 - **Tap targets ≥ 44×44px.**
-- **Hairline grids:** `gap: 1px; background: var(--color-line)` with white/panel cells.
+- **Hairline grids:** `gap: 1px; background: var(--color-hairline)` with white/panel cells.
 - **One bold move per surface** — runway hero in ERP, not four competing heroes.
+- **Palette by role, not by hue:** `paper`, `panel`, `ink`, `ink-2`, `rule`, `hairline`, `amber`. Seven tokens, no more. Amber is a surface and an edge — never body text on a light ground (1.97:1).
 
 ## Architecture rules
 
 - `src/lib/store.ts` is the **data shim**. Phase 2 swaps it for Frappe REST without changing UI components.
 - Module code lives in `src/modules/{erp,act,crm,hr}/`.
 - ACT is first-class — do not fold accounting-only features back into ERP.
+- `server/` is the **account service**: accounts, server-side sessions, per-account workspace, one origin with the app. It speaks the Frappe method contract (`each_backend.api.get_state` / `put_state` / `session_info` / `health`), so the Frappe app replaces it by pointing `VITE_FRAPPE_URL` at a Frappe site. The UI never talks to the service directly — only through `src/services/account.ts` and `src/services/workspaceSync.ts`.
 
 ## Backend decision (locked)
 

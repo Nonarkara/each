@@ -133,24 +133,24 @@ export function CrmModule({ store, api }: CrmModuleProps) {
       <Station disc="C" kicker="CRM" title={copy("Projects")} meta={store.projects.length + t(' projects / ', ' โครงการ / ') + compact(bookValue, store.currency) + t(' total project value', ' มูลค่าโครงการรวม')} />
       <p className="mb-5 max-w-3xl text-[14px] leading-relaxed text-ink-2">{t("Move work from Backlog to In progress, Review, then Done. Open a card to change its status on a phone, add tasks and notes, or log a file name. Pipeline value is a sales possibility; cash changes only when payment is recorded.", "ย้ายงานจากงานรอเริ่ม ไปกำลังทำ รอตรวจ แล้วเสร็จแล้ว บนมือถือเปิดการ์ดเพื่อเลือกสถานะ เพิ่มงาน บันทึก หรือชื่อไฟล์ มูลค่าโอกาสขายยังไม่ใช่เงินสด เงินสดจะเปลี่ยนเมื่อบันทึกการรับเงิน")}</p>
 
-      <div className="mb-6 border border-line bg-paper p-4">
+      <div className="mb-6 border border-hairline bg-paper p-4">
         <div className="mb-3 flex items-center gap-2">
           <span className="flex h-8 w-8 items-center justify-center border border-ink font-display text-[14px] font-bold">A</span>
-          <p className="font-body text-[11px] text-ink-3">{copy("Operator reads")}</p>
+          <p className="font-body text-[11px] text-ink-2">{copy("Operator reads")}</p>
         </div>
         {ideas.slice(0, 4).map((t, i) => (
           <p key={i} className="mt-2 text-[14px] text-ink-2">{t}</p>
         ))}
       </div>
 
-      <div className="mb-4 grid gap-px border border-line bg-line lg:grid-cols-4">
+      <div className="mb-4 grid gap-px border border-hairline bg-hairline lg:grid-cols-4">
         {COLS.map((col) => {
           const cards = store.projects.filter((p) => p.status === col.id)
           return (
             <div key={col.id} className="flex min-h-[200px] flex-col bg-panel">
-              <div className="flex items-center justify-between border-b border-line px-3 py-2">
-                <span className="font-body text-[11px] text-ink-3">{copy(col.label)}</span>
-                <span className="font-mono text-[11px] text-ink-3">{cards.length}</span>
+              <div className="flex items-center justify-between border-b border-hairline px-3 py-2">
+                <span className="font-body text-[11px] text-ink-2">{copy(col.label)}</span>
+                <span className="font-mono text-[11px] text-ink-2">{cards.length}</span>
               </div>
               <div
                 className="flex flex-1 flex-col gap-2 p-2"
@@ -169,26 +169,26 @@ export function CrmModule({ store, api }: CrmModuleProps) {
                       onDragStart={() => setDragId(p.id)}
                       onDragEnd={() => setDragId(null)}
                       onClick={() => setDetailId(p.id)}
-                      className="cursor-pointer border border-line bg-paper p-3 hover:border-line-2"
+                      className="cursor-pointer border border-hairline bg-paper p-3 hover:border-rule"
                     >
                       <div className="flex justify-between gap-2">
                         <p className="text-[14px] font-semibold">{p.title}</p>
                         {p.totalValue ? <span className="font-mono text-[14px]">{compact(p.totalValue, store.currency)}</span> : null}
                       </div>
-                      {p.client ? <p className="mt-1 font-mono text-[11px] text-ink-3">{p.client}</p> : null}
+                      {p.client ? <p className="mt-1 font-mono text-[11px] text-ink-2">{p.client}</p> : null}
                       <div className="mt-2 flex flex-wrap gap-2">
                         {p.dealStatus ? (
                           <TagChip tone={deal ? 'amber' : 'human'}>
                             {deal ? 'Commissioned' : 'Pipeline · T' + (p.scenarioTier || '?')}
                           </TagChip>
                         ) : null}
-                        <span className="font-mono text-[11px] text-ink-3">{tot ? done + '/' + tot + ' tasks' : 'No tasks'}</span>
-                        {p.files?.length ? <span className="font-mono text-[11px] text-ink-3">{p.files.length} files</span> : null}
+                        <span className="font-mono text-[11px] text-ink-2">{tot ? done + '/' + tot + ' tasks' : 'No tasks'}</span>
+                        {p.files?.length ? <span className="font-mono text-[11px] text-ink-2">{p.files.length} files</span> : null}
                       </div>
                       {deal && p.totalValue ? (
                         <div className="mt-2">
                           <ProgressBar pct={collectPct} variant="amber" />
-                          <p className="mt-1 font-mono text-[11px] text-ink-3">
+                          <p className="mt-1 font-mono text-[11px] text-ink-2">
                             {money(p.received || 0, store.currency)} of {money(p.totalValue, store.currency)} collected
                           </p>
                         </div>
@@ -204,11 +204,11 @@ export function CrmModule({ store, api }: CrmModuleProps) {
 
       <div className="flex flex-wrap items-center gap-3">
         <Btn variant="ghost" onClick={() => setNewOpen(true)}>{copy("+ New project")}</Btn>
-        <span className="text-[14px] text-ink-3">{copy("Drag cards between columns.")}</span>
+        <span className="text-[14px] text-ink-2">{copy("Drag cards between columns.")}</span>
       </div>
 
       <Modal title={copy("New project")} open={newOpen} onClose={() => setNewOpen(false)} actions={<><Btn variant="ghost" onClick={() => setNewOpen(false)}>{copy("Cancel")}</Btn><Btn onClick={createProject}>{copy("Create")}</Btn></>}>
-        <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Title")}</span><Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} className="mt-2" /></label>
+        <label className="block"><span className="font-body text-[11px] text-ink-2">{copy("Title")}</span><Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} className="mt-2" /></label>
       </Modal>
 
       {detail ? (
@@ -226,12 +226,14 @@ export function CrmModule({ store, api }: CrmModuleProps) {
           <div className="space-y-6">
             <div>
               <label className="mb-4 block">{copy('Status')}<Select value={detail.status} onChange={e => api.update(s => { const p = s.projects.find(x => x.id === detail.id); if (p) p.status = e.target.value as ProjectStatus; return s })}>{COLS.map(c => <option key={c.id} value={c.id}>{copy(c.label)}</option>)}</Select></label>
-              <p className="font-body text-[11px] text-ink-3">{copy("Checklist")}</p>
+              <p className="font-body text-[11px] text-ink-2">{copy("Checklist")}</p>
               <ul className="mt-2 space-y-2">
                 {(detail.checklist || []).map((c, i) => (
                   <li key={i} className="flex min-h-[44px] items-center gap-3">
-                    <input type="checkbox" checked={c.done} onChange={(e) => toggleCheck(detail.id, i, e.target.checked)} className="h-[18px] w-[18px] accent-amber" />
-                    <span className={c.done ? 'text-ink-3 line-through' : ''}>{c.k}</span>
+                    <label className="-ml-2 flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center">
+                      <input type="checkbox" checked={c.done} onChange={(e) => toggleCheck(detail.id, i, e.target.checked)} className="h-[20px] w-[20px] accent-amber" />
+                    </label>
+                    <span className={c.done ? 'text-ink-2 line-through' : ''}>{c.k}</span>
                   </li>
                 ))}
               </ul>
@@ -239,17 +241,17 @@ export function CrmModule({ store, api }: CrmModuleProps) {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="font-body text-[11px] text-ink-3">{copy("Files")}</p>
+                <p className="font-body text-[11px] text-ink-2">{copy("Files")}</p>
                 {(detail.files || []).length ? detail.files.map((f) => (
-                  <div key={f} className="mt-2 flex justify-between text-[14px]"><span>{f}</span><span className="font-mono text-[11px] text-ink-3">{copy("uploaded")}</span></div>
+                  <div key={f} className="mt-2 flex justify-between text-[14px]"><span>{f}</span><span className="font-mono text-[11px] text-ink-2">{copy("uploaded")}</span></div>
                 )) : <Empty>{copy("No files.")}</Empty>}
                 <Btn variant="ghost" className="mt-2" onClick={() => addFile(detail.id)}>{copy("+ Upload file")}</Btn>
               </div>
               <div>
-                <p className="font-body text-[11px] text-ink-3">{copy("Notes")}</p>
+                <p className="font-body text-[11px] text-ink-2">{copy("Notes")}</p>
                 {(detail.notes || []).map((n, i) => (
-                  <div key={i} className="mt-2 border border-line bg-paper p-3">
-                    <p className="font-mono text-[11px] text-ink-3">{n.at}</p>
+                  <div key={i} className="mt-2 border border-hairline bg-paper p-3">
+                    <p className="font-mono text-[11px] text-ink-2">{n.at}</p>
                     <p className="mt-1 text-[14px]">{n.t}</p>
                   </div>
                 ))}
@@ -257,8 +259,8 @@ export function CrmModule({ store, api }: CrmModuleProps) {
                 <Input placeholder={copy("Log a note")} value={newNote} onKeyDown={(e) => { if (e.key === 'Enter') addNote(detail.id, newNote) }} onChange={(e) => setNewNote(e.target.value)} className="mt-2" />
               </div>
             </div>
-            <div className="border border-line bg-paper p-3">
-              <p className="font-body text-[11px] text-ink-3">{copy("AI read")}</p>
+            <div className="border border-hairline bg-paper p-3">
+              <p className="font-body text-[11px] text-ink-2">{copy("AI read")}</p>
               <p className="mt-2 text-[14px] text-ink-2">{ideaFor(detail)}</p>
             </div>
           </div>

@@ -1,26 +1,35 @@
 @import "tailwindcss";
 @import "@fontsource/ibm-plex-sans-thai/400.css";
 @import "@fontsource/ibm-plex-sans-thai/600.css";
-@import "@fontsource/josefin-sans/600.css";
-@import "@fontsource/josefin-sans/700.css";
+@import "@fontsource/jost/500.css";
+@import "@fontsource/jost/600.css";
+@import "@fontsource/jost/700.css";
 @import "@fontsource/source-sans-3/400.css";
 @import "@fontsource/source-sans-3/600.css";
 @import "@fontsource/jetbrains-mono/500.css";
 
 @theme {
-  --font-display: "Josefin Sans", "IBM Plex Sans Thai", system-ui, sans-serif;
+  /* Type voice. Jost is the display voice (geometric, modern); Source Sans 3 carries
+     English prose; IBM Plex Sans Thai carries Thai because Jost has no Thai glyphs;
+     JetBrains Mono is reserved for numeric and data readouts. */
+  --font-display: "Jost", "IBM Plex Sans Thai", system-ui, sans-serif;
   --font-body: "Source Sans 3", "IBM Plex Sans Thai", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "IBM Plex Sans Thai", ui-monospace, monospace;
 
+  /* Palette, by role rather than by hue (Dieter Rams: less but better; every colour
+     does one job; nothing decorative).
+     Measured contrast on paper #f6f5f2 / panel #ffffff:
+       ink    #191712 → 16.43 / 17.91
+       ink-2  #5f5b52 →  6.20 /  6.76   (one secondary tone; AA at 11px)
+       amber  #f59e0b →  1.97 /  2.15 on light — surface and edge only, never body
+              text on paper; ink on amber → 8.34 */
   --color-paper: #f6f5f2;
   --color-panel: #ffffff;
   --color-ink: #191712;
-  --color-ink-2: #6f6c63;
-  /* ink-3 darkened from #7a766c → #65615a to clear WCAG AA (≥4.5:1) on both #f6f5f2 paper (5.65:1)
-     and #ffffff panel (6.16:1). Used for 11px micro labels — AA body-text requirement applies. */
-  --color-ink-3: #65615a;
-  --color-line: #e7e5dd;
-  --color-line-2: #d2cfc5;
+  --color-ink-2: #5f5b52;
+  /* rule = 2px boundary that separates a workflow; hairline = 1px between peers */
+  --color-rule: #cfcbc0;
+  --color-hairline: #e4e1d8;
   --color-amber: #f59e0b;
 
   --text-display: 32px;
@@ -88,18 +97,25 @@ body {
 button:active:not(:disabled) { transform: scale(.97); }
 @media (prefers-reduced-motion: reduce) { button:active:not(:disabled) { transform: none; } }
 
-/* The workspace has one navigation rail. Financial context scrolls with its page. */
-.workspace-header { display: grid; grid-template-columns: 1fr; gap: 8px; }
-.workspace-identity { grid-row: 1; }
-.workspace-actions { grid-row: 2; }
-.workspace-nav { grid-row: 3; }
+/* The workspace has one navigation rail and two bands: identity + primary actions,
+   then module navigation. Financial context scrolls with its page. */
+.workspace-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px 12px; }
+.workspace-identity { grid-row: 1; grid-column: 1; }
+.workspace-actions { grid-row: 1; grid-column: 2; justify-self: end; flex-wrap: nowrap; }
+.workspace-nav { grid-row: 2; grid-column: 1 / -1; }
 .workspace-identity > div { min-width: 0; }
 .workspace-identity p { overflow-wrap: anywhere; }
-.workspace-nav button { flex: 1; }
+.workspace-nav > button { flex: 1; }
+/* Language belongs to the navigation row on small screens, so the top band carries
+   only the workspace identity and the two actions that start work. */
+.workspace-language { display: none; }
+.workspace-nav .workspace-language { display: inline-flex; }
 @media (min-width: 1024px) {
   .workspace-header { grid-template-columns: minmax(160px, 1fr) auto auto; align-items: center; gap: 20px; min-height: 64px; }
   .workspace-identity, .workspace-nav, .workspace-actions { grid-row: 1; }
   .workspace-identity { grid-column: 1; }
   .workspace-nav { grid-column: 2; }
   .workspace-actions { grid-column: 3; flex-wrap: nowrap; }
+  .workspace-language { display: inline-flex; }
+  .workspace-nav .workspace-language { display: none; }
 }

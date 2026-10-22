@@ -102,7 +102,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
       <Station disc="E" kicker="ERP" title={copy("Finances")} meta={t('As of ', 'ข้อมูล ณ ') + store.asOf} />
       <p className="mb-5 max-w-3xl text-[14px] leading-relaxed text-ink-2">{t("Cash is money already received minus recorded spending. Burn is monthly payroll, AI, recurring costs, debt service and this month\u2019s operating expenses. Runway estimates how long that cash lasts; unsigned deals do not count as cash.", "เงินสดคือเงินที่ได้รับแล้วหักรายจ่ายที่บันทึก รายจ่ายต่อเดือนรวมเงินเดือน AI ค่าใช้จ่ายประจำ เงินผ่อน และรายจ่ายดำเนินงานเดือนนี้ ระยะเวลาที่เงินพอใช้เป็นประมาณการ โครงการที่ยังไม่เซ็นสัญญาไม่ใช่เงินสด")}</p>
 
-      <div className="mb-6 grid gap-px border border-line bg-line lg:grid-cols-[1.618fr_1fr]">
+      <div className="mb-6 grid gap-px border border-hairline bg-hairline lg:grid-cols-[1.618fr_1fr]">
         <div className="bg-panel p-5">
           <p className="text-[14px] font-semibold text-ink">{copy("Runway at current burn")}</p>
           <p className={`mt-2 font-display text-[32px] font-bold leading-none text-ink`}>
@@ -112,7 +112,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
             {f.monthlyBurn > 0 ? money(f.monthlyBurn, f.cur) + ' / ' + t('month', 'เดือน') : t('No burn recorded', 'ยังไม่มีรายจ่าย')}
           </p>
           {f.monthlyDebtService > 0 ? (
-            <p className="mt-1 font-mono text-[11px] text-ink-3">
+            <p className="mt-1 font-mono text-[11px] text-ink-2">
               {t('Includes', 'รวมเงินผ่อน')} {money(f.monthlyDebtService, f.cur)}
             </p>
           ) : null}
@@ -129,7 +129,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
         </div>
       </div>
 
-      <div className="mb-6 grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-4">
         <StatCell label={copy("Cash on hand")} value={money(f.cash, f.cur)} sub={t('After ', 'หลังบันทึก ') + store.expenses.length + t(' transactions', ' รายการ')} />
         <StatCell label={copy("Founding capital")} value={money(f.founding, f.cur)} sub={store.foundingCapital.length + t(' entries', ' รายการ')} />
         <StatCell label={copy("Monthly burn")} value={money(f.monthlyBurn, f.cur)} sub={t(burnSub, f.monthlyDebtService ? 'ค่าใช้จ่ายประจำ + เงินผ่อน + เดือนนี้' : 'ค่าใช้จ่ายประจำ + เดือนนี้')} />
@@ -143,7 +143,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
         />
         <DataTable>
           <thead>
-            <tr className="border-b border-line font-body text-[11px] text-ink-3">
+            <tr className="border-b border-hairline font-body text-[11px] text-ink-2">
               <th className="p-3 text-left">{copy("Lender")}</th>
               <th className="p-3 text-right">{copy("Principal")}</th>
               <th className="p-3 text-right">{copy("Rate")}</th>
@@ -155,7 +155,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
           <tbody>
             {(store.loans || []).length ? (
               store.loans.map((l) => (
-                <tr key={l.id} className="border-b border-line">
+                <tr key={l.id} className="border-b border-hairline">
                   <td className="p-3 text-[14px]">{l.lender}</td>
                   <td className="p-3 text-right font-mono text-[14px]">{money(l.principal, l.currency || f.cur)}</td>
                   <td className="p-3 text-right font-mono text-[14px]">{l.rate}%</td>
@@ -168,7 +168,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="p-6 text-center text-[14px] text-ink-3">
+                <td colSpan={6} className="p-6 text-center text-[14px] text-ink-2">
                   {t('No loans recorded. Loan installments also contribute to monthly burn.', 'ยังไม่มีสินเชื่อที่บันทึก เงินผ่อนจะรวมอยู่ในรายจ่ายต่อเดือนด้วย')}
                 </td>
               </tr>
@@ -191,23 +191,23 @@ export function ErpModule({ store, api }: ErpModuleProps) {
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block sm:col-span-2">
-            <span className="font-body text-[11px] text-ink-3">{copy("Lender")}</span>
+            <span className="font-body text-[11px] text-ink-2">{copy("Lender")}</span>
             <Input value={lender} onChange={(e) => setLender(e.target.value)} className="mt-2" />
           </label>
           <label className="block">
-            <span className="font-body text-[11px] text-ink-3">Remaining principal ({store.currency})</span>
+            <span className="font-body text-[11px] text-ink-2">Remaining principal ({store.currency})</span>
             <Input type="number" value={principal} onChange={(e) => setPrincipal(e.target.value)} className="mt-2" />
           </label>
           <label className="block">
-            <span className="font-body text-[11px] text-ink-3">{copy("Annual rate (%)")}</span>
+            <span className="font-body text-[11px] text-ink-2">{copy("Annual rate (%)")}</span>
             <Input type="number" value={rate} onChange={(e) => setRate(e.target.value)} className="mt-2" />
           </label>
           <label className="block">
-            <span className="font-body text-[11px] text-ink-3">{copy("Term (months)")}</span>
+            <span className="font-body text-[11px] text-ink-2">{copy("Term (months)")}</span>
             <Input type="number" value={termMonths} onChange={(e) => setTermMonths(e.target.value)} className="mt-2" />
           </label>
           <label className="block">
-            <span className="font-body text-[11px] text-ink-3">Monthly installment ({store.currency})</span>
+            <span className="font-body text-[11px] text-ink-2">Monthly installment ({store.currency})</span>
             <Input type="number" value={installment} onChange={(e) => setInstallment(e.target.value)} className="mt-2" />
           </label>
         </div>
@@ -215,7 +215,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
 
       <div className="mb-6">
         <SectionHead label={copy("Revenue pipeline")} meta={store.projects.length + t(' recorded projects', ' โครงการที่บันทึก')} />
-        <div className="grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-4">
           <StatCell label={copy("Received to date")} value={money(f.receivedRevenue, f.cur)} sub={copy("Cash in")} />
           <StatCell label={copy("Contracted")} value={money(f.contractedRevenue, f.cur)} sub={f.commissionedCount + t(' commissioned', ' โครงการที่ตกลงแล้ว')} />
           <StatCell label={copy("Outstanding")} value={money(f.outstanding, f.cur)} sub={copy("Contracted, unbilled")} />
@@ -223,7 +223,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
         </div>
         <div className="mt-3">
           <StackBar tall segments={[{ pct: rPct, variant: 'ink' }, { pct: oPct, variant: 'amber' }, { pct: pPct, variant: 'muted' }]} />
-          <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-3">
+          <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-2">
             <span>{t('Received', 'รับแล้ว')} {Math.round(rPct)}%</span>
             <span>{copy("Outstanding")} {Math.round(oPct)}%</span>
             <span>{t('Pipeline', 'โอกาสรายได้')} {Math.round(pPct)}%</span>
@@ -234,7 +234,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
       <div className="mb-6">
         <SectionHead label={copy("Spend allocation this month")} meta={copy("CapEx vs OpEx")} />
         <StackBar tall segments={[{ pct: f.capexShare * 100, variant: 'ink' }, { pct: f.opexShare * 100, variant: 'amber' }]} />
-        <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-3">
+        <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-2">
           <span>CapEx {money(f.monthCapex, f.cur)} · {Math.round(f.capexShare * 100)}%</span>
           <span>OpEx {money(f.recurring + f.monthOpex, f.cur)} · {Math.round(f.opexShare * 100)}%</span>
         </div>
@@ -261,7 +261,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
                 )
               })}
             </div>
-            <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-3">
+            <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-2">
               <span>{copy("Now")}</span>
               <span>{copy("Cash hits zero")}</span>
             </div>
@@ -271,7 +271,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
 
       <div className="mb-6">
         <SectionHead label={copy("Benchmarks")} meta={t('Illustrative reference values · source unverified', 'ค่าอ้างอิงตัวอย่าง · ยังไม่ยืนยันแหล่งข้อมูล')} />
-        <div className="grid gap-px border border-line bg-line">
+        <div className="grid gap-px border border-hairline bg-hairline">
           {[
             ['Monthly burn', f.monthlyBurn, 35000, f.cur],
             ['AI operator spend', f.aiMonthly, 300, f.cur],
@@ -288,7 +288,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
                     <ProgressBar pct={(y / mx) * 100} />
                   </div>
                   <span className="font-mono text-[14px]">{cur ? money(y, String(cur)) : y}</span>
-                  <span className="font-mono text-[11px] text-ink-3">{t('example', 'ตัวอย่าง')} {cur ? money(m, String(cur)) : m}</span>
+                  <span className="font-mono text-[11px] text-ink-2">{t('example', 'ตัวอย่าง')} {cur ? money(m, String(cur)) : m}</span>
                 </div>
               </div>
             )
@@ -298,15 +298,15 @@ export function ErpModule({ store, api }: ErpModuleProps) {
 
       <div className="mb-6">
         <SectionHead label={copy("Objectives & key results")} meta={t('Example objectives until you create your own', 'เป้าหมายตัวอย่างจนกว่าจะเพิ่มของคุณเอง')} />
-        <div className="grid gap-px border border-line bg-line">
+        <div className="grid gap-px border border-hairline bg-hairline">
           {objectives.map((o) => {
             const kr = o.keyResults || []
             const done = kr.filter((k) => k.done).length
             const pct = kr.length ? (done / kr.length) * 100 : 0
             return (
-              <div key={o.id} className="grid gap-px bg-line lg:grid-cols-[1.618fr_1fr]">
+              <div key={o.id} className="grid gap-px bg-hairline lg:grid-cols-[1.618fr_1fr]">
                 <div className="bg-panel p-4">
-                  <p className="font-body text-[11px] text-ink-3">{copy("Objective")}</p>
+                  <p className="font-body text-[11px] text-ink-2">{copy("Objective")}</p>
                   <p className="mt-1 text-[14px] font-semibold">{o.objective}</p>
                   <div className="mt-3 w-4/5">
                     <ProgressBar pct={pct} variant="amber" />
@@ -316,13 +316,15 @@ export function ErpModule({ store, api }: ErpModuleProps) {
                   <ul className="space-y-2">
                     {kr.map((k, i) => (
                       <li key={i} className="flex min-h-[44px] items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={k.done}
-                          onChange={(e) => toggleKr(o.id, i, e.target.checked)}
-                          className="h-[18px] w-[18px] accent-amber"
-                        />
-                        <span className={`text-[14px] ${k.done ? 'text-ink-3 line-through' : ''}`}>{k.k}</span>
+                        <label className="-ml-2 flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center">
+                          <input
+                            type="checkbox"
+                            checked={k.done}
+                            onChange={(e) => toggleKr(o.id, i, e.target.checked)}
+                            className="h-[20px] w-[20px] accent-amber"
+                          />
+                        </label>
+                        <span className={`text-[14px] ${k.done ? 'text-ink-2 line-through' : ''}`}>{k.k}</span>
                       </li>
                     ))}
                   </ul>

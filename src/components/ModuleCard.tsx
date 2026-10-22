@@ -12,22 +12,22 @@ export function ModuleCard({ module, active, onSelect }: ModuleCardProps) {
       type="button"
       onClick={onSelect}
       className={[
-        'min-h-[44px] w-full border border-line bg-panel p-4 text-left transition-colors',
-        active ? 'border-amber' : 'hover:border-line-2',
+        'min-h-[44px] w-full border border-hairline bg-panel p-4 text-left transition-colors',
+        active ? 'border-amber' : 'hover:border-rule',
       ].join(' ')}
     >
       <div className="flex items-start gap-3">
         <span
           className={[
             'flex h-11 w-11 shrink-0 items-center justify-center border font-display text-[14px] font-semibold',
-            active ? 'border-amber text-amber' : 'border-line-2 text-ink',
+            active ? 'border-amber text-ink' : 'border-rule text-ink',
           ].join(' ')}
           aria-hidden
         >
           {module.letter}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink-3">
+          <p className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink-2">
             {module.kicker}
           </p>
           <h3 className="font-display text-[14px] font-bold leading-tight text-ink">

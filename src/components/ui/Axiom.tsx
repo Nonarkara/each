@@ -15,12 +15,12 @@ export function Station({ disc, kicker, title, meta }: StationProps) {
           {disc}
         </span>
         <div>
-          <p className="text-[11px] text-ink-3">{kicker}</p>
+          <p className="text-[11px] text-ink-2">{kicker}</p>
           <h2 className="font-display text-[32px] font-bold leading-tight">{title}</h2>
         </div>
       </div>
       {meta ? (
-        <p className="text-[11px] text-ink-3">{meta}</p>
+        <p className="text-[11px] text-ink-2">{meta}</p>
       ) : null}
     </header>
   )
@@ -37,7 +37,7 @@ export function StatCell({ label, value, sub }: StatCellProps) {
     <dl className="bg-panel p-4">
       <dt className="text-[14px] text-ink-2">{label}</dt>
       <dd className="mt-2 font-mono text-[14px] font-medium text-ink">{value}</dd>
-      {sub ? <dd className="mt-1 text-[11px] text-ink-3">{sub}</dd> : null}
+      {sub ? <dd className="mt-1 text-[11px] text-ink-2">{sub}</dd> : null}
     </dl>
   )
 }
@@ -51,7 +51,7 @@ export function SectionHead({ label, meta }: SectionHeadProps) {
   return (
     <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
       <h3 className="text-[14px] font-semibold text-ink">{label}</h3>
-      {meta ? <p className="text-[11px] text-ink-3">{meta}</p> : null}
+      {meta ? <p className="text-[11px] text-ink-2">{meta}</p> : null}
     </div>
   )
 }
@@ -63,9 +63,9 @@ interface ProgressBarProps {
 }
 
 export function ProgressBar({ pct, tall, variant = 'amber' }: ProgressBarProps) {
-  const bg = variant === 'ink' ? 'bg-ink' : variant === 'muted' ? 'bg-ink-3' : 'bg-amber'
+  const bg = variant === 'ink' ? 'bg-ink' : variant === 'muted' ? 'bg-ink-2' : 'bg-amber'
   return (
-    <div className={`w-full bg-line ${tall ? 'h-3' : 'h-1'}`}>
+    <div className={`w-full bg-hairline ${tall ? 'h-3' : 'h-1'}`}>
       <div className={`${bg} h-full`} style={{ width: `${Math.min(100, Math.max(0, pct))}%` }} />
     </div>
   )
@@ -78,11 +78,11 @@ interface StackBarProps {
 
 export function StackBar({ segments, tall }: StackBarProps) {
   return (
-    <div className={`flex w-full overflow-hidden bg-line ${tall ? 'h-3' : 'h-1'}`}>
+    <div className={`flex w-full overflow-hidden bg-hairline ${tall ? 'h-3' : 'h-1'}`}>
       {segments.map((s, i) => (
         <div
           key={i}
-          className={`h-full ${s.variant === 'ink' ? 'bg-ink' : s.variant === 'muted' ? 'bg-ink-3' : 'bg-amber'}`}
+          className={`h-full ${s.variant === 'ink' ? 'bg-ink' : s.variant === 'muted' ? 'bg-ink-2' : 'bg-amber'}`}
           style={{ width: `${s.pct}%` }}
         />
       ))}
@@ -97,7 +97,7 @@ interface TagChipProps {
 
 export function TagChip({ children, tone = 'default' }: TagChipProps) {
   const tones = {
-    default: 'border-line text-ink-2',
+    default: 'border-hairline text-ink-2',
     amber: 'border-amber text-ink',
     human: 'border-ink text-ink',
     ai: 'border-amber bg-paper text-ink',
@@ -143,15 +143,15 @@ export function Modal({ title, open, onClose, children, actions }: ModalProps) {
   if (!open) return null
   return (
     <div className="fixed inset-0 z-[100] flex items-end justify-center overflow-y-auto overscroll-contain bg-ink/40 p-4 sm:items-center" role="dialog" aria-modal="true">
-      <div className="max-h-[90vh] w-full max-w-lg overflow-auto border border-line-2 bg-panel">
-        <div className="flex items-center justify-between border-b border-line px-4 py-3">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-auto border border-rule bg-panel">
+        <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
           <h3 className="font-display text-[14px] font-bold">{title}</h3>
-          <button type="button" onClick={onClose} className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center border border-line px-3 text-[14px]">
+          <button type="button" onClick={onClose} className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center border border-hairline px-3 text-[14px]">
             Close
           </button>
         </div>
         <div className="p-4">{children}</div>
-        {actions ? <div className="flex flex-wrap gap-2 border-t border-line p-4">{actions}</div> : null}
+        {actions ? <div className="flex flex-wrap gap-2 border-t border-hairline p-4">{actions}</div> : null}
       </div>
     </div>
   )
@@ -172,7 +172,7 @@ export function Btn({
 }) {
   const styles = {
     primary: 'border-amber bg-amber text-ink hover:brightness-95',
-    ghost: 'border-line bg-panel text-ink-2 hover:border-line-2',
+    ghost: 'border-hairline bg-panel text-ink-2 hover:border-rule',
     link: 'border-transparent text-ink-2 underline-offset-2 hover:underline',
   }
   return (
@@ -193,7 +193,7 @@ export function Input({
 }: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
-      className={`min-h-[44px] w-full border border-line bg-panel px-3 text-[14px] text-ink outline-none focus:border-amber ${className}`}
+      className={`min-h-[44px] w-full border border-hairline bg-panel px-3 text-[14px] text-ink outline-none focus:border-amber ${className}`}
       {...props}
     />
   )
@@ -206,7 +206,7 @@ export function Select({
 }: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select
-      className={`min-h-[44px] w-full border border-line bg-panel px-3 text-[14px] text-ink outline-none focus:border-amber ${className}`}
+      className={`min-h-[44px] w-full border border-hairline bg-panel px-3 text-[14px] text-ink outline-none focus:border-amber ${className}`}
       {...props}
     >
       {children}
@@ -216,14 +216,14 @@ export function Select({
 
 export function DataTable({ children }: { children: ReactNode }) {
   return (
-    <div className="overflow-x-auto border border-line">
+    <div className="overflow-x-auto border border-hairline">
       <table className="w-full min-w-[480px] border-collapse text-left text-[14px]">{children}</table>
     </div>
   )
 }
 
 export function Empty({ children }: { children: ReactNode }) {
-  return <p className="py-6 text-center text-[14px] text-ink-3">{children}</p>
+  return <p className="py-6 text-center text-[14px] text-ink-2">{children}</p>
 }
 
 export function LiveDot() {

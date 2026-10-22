@@ -206,7 +206,7 @@ export function SecurityModule({
           {new Date(server.checkedAt).toLocaleString()}
         </p>
       ) : null}
-      <div className="grid gap-px border border-line bg-line">
+      <div className="grid gap-px border border-hairline bg-hairline">
         {checks.map(([title, status, detail]) => (
           <article
             key={title}
@@ -268,7 +268,7 @@ export function SecurityModule({
               type="file"
               accept=".eachlock,application/json"
               disabled={busy || pass.length < 12}
-              className="block min-h-[44px] max-w-full border border-line p-2"
+              className="block min-h-[44px] max-w-full border border-hairline p-2"
               onChange={(e) => {
                 void restore(e.target.files?.[0]);
                 e.target.value = "";
@@ -309,7 +309,7 @@ export function SecurityModule({
           }}
         />
       ) : null}
-      <details className="border border-line p-4">
+      <details className="border border-hairline p-4">
         <summary className="min-h-[44px] cursor-pointer font-semibold">
           {t("If you suspect a leak", "หากสงสัยว่าข้อมูลรั่วไหล")}
         </summary>
@@ -345,7 +345,7 @@ export function SecurityModule({
           )}
         </p>
         {events.length ? (
-          <ul className="divide-y divide-line border border-line">
+          <ul className="divide-y divide-hairline border border-hairline">
             {events.map((e, i) => (
               <li
                 key={i}

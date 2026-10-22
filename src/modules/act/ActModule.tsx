@@ -143,7 +143,7 @@ export function ActModule({ store, api }: ActModuleProps) {
       <Station disc="A" kicker="ACT" title={copy("Accounting & actions")} meta={openActions.length + t(' open actions', ' งานที่ยังไม่เสร็จ')} />
       <p className="mb-5 max-w-3xl text-[14px] leading-relaxed text-ink-2">{t("Record actual expenses here. Receivables are signed deal values still unpaid; Mark paid records full receipt, so use it only after confirming payment. The action queue points to unfinished work derived from your records.", "บันทึกรายจ่ายจริงที่นี่ ลูกหนี้คือยอดโครงการที่ตกลงแล้วแต่ยังไม่ได้รับเงิน ปุ่มบันทึกรับเงินครบใช้หลังตรวจว่าชำระครบแล้วเท่านั้น งานที่ต้องทำแสดงรายการค้างจากข้อมูลที่บันทึก")}</p>
 
-      <div className="mb-6 grid gap-px border border-line bg-line sm:grid-cols-3">
+      <div className="mb-6 grid gap-px border border-hairline bg-hairline sm:grid-cols-3">
         <StatCell label={copy("Outstanding AR")} value={money(f.outstanding, f.cur)} sub={invoices.length + ' invoices due'} />
         <StatCell label={copy("Expense ledger")} value={String(store.expenses.length)} sub={money(f.totalExpenses, f.cur) + ' recorded'} />
         <StatCell label={copy("Action queue")} value={String(openActions.length)} sub={copy("Derived + manual")} />
@@ -151,15 +151,17 @@ export function ActModule({ store, api }: ActModuleProps) {
 
       <div className="mb-6">
         <SectionHead label={copy("Action queue")} meta={copy("What must happen next")} />
-        <div className="grid gap-px border border-line bg-line">
+        <div className="grid gap-px border border-hairline bg-hairline">
           {openActions.length ? openActions.map((a) => (
             <div key={a.id} className="flex flex-wrap items-center justify-between gap-3 bg-panel p-4">
               <div className="flex items-start gap-3">
-                <input type="checkbox" checked={a.done} onChange={() => toggleAction(a.id)} className="mt-1 h-[18px] w-[18px] accent-amber" />
+                <label className="-ml-2 flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center">
+                  <input type="checkbox" checked={a.done} onChange={() => toggleAction(a.id)} className="h-[20px] w-[20px] accent-amber" />
+                </label>
                 <div>
                   <TagChip tone={a.priority === 'high' ? 'amber' : 'default'}>{a.priority}</TagChip>
                   <p className="mt-2 text-[14px]">{a.label}</p>
-                  <p className="mt-1 font-body text-[11px] text-ink-3">{a.module}</p>
+                  <p className="mt-1 font-body text-[11px] text-ink-2">{a.module}</p>
                 </div>
               </div>
             </div>
@@ -171,16 +173,16 @@ export function ActModule({ store, api }: ActModuleProps) {
         <SectionHead label={copy("Invoices & receivables")} meta={copy("Commissioned deals · tax-ready")} />
         <DataTable>
           <thead>
-            <tr className="border-b border-line bg-paper">
-              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Project")}</th>
-              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Client")}</th>
-              <th className="p-3 text-right font-body text-[11px] text-ink-3">{copy("Outstanding")}</th>
-              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Action")}</th>
+            <tr className="border-b border-hairline bg-paper">
+              <th className="p-3 font-body text-[11px] text-ink-2">{copy("Project")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-2">{copy("Client")}</th>
+              <th className="p-3 text-right font-body text-[11px] text-ink-2">{copy("Outstanding")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-2">{copy("Action")}</th>
             </tr>
           </thead>
           <tbody>
             {invoices.length ? invoices.map((p) => (
-              <tr key={p.id} className="border-b border-line">
+              <tr key={p.id} className="border-b border-hairline">
                 <td className="p-3">{p.title}</td>
                 <td className="p-3">{p.client || '—'}</td>
                 <td className="p-3 text-right font-mono">{money((p.totalValue || 0) - (p.received || 0), store.currency)}</td>
@@ -189,7 +191,7 @@ export function ActModule({ store, api }: ActModuleProps) {
                 </td>
               </tr>
             )) : (
-              <tr><td colSpan={4} className="p-6 text-center text-ink-3">{copy("No outstanding invoices.")}</td></tr>
+              <tr><td colSpan={4} className="p-6 text-center text-ink-2">{copy("No outstanding invoices.")}</td></tr>
             )}
           </tbody>
         </DataTable>
@@ -199,18 +201,18 @@ export function ActModule({ store, api }: ActModuleProps) {
         <SectionHead label={copy("Expense ledger")} meta={copy("Transparent — all members")} />
         <DataTable>
           <thead>
-            <tr className="border-b border-line bg-paper">
-              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Date")}</th>
-              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Vendor")}</th>
-              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Category")}</th>
-              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Type")}</th>
-              <th className="p-3 font-body text-[11px] text-ink-3">{copy("Owner")}</th>
-              <th className="p-3 text-right font-body text-[11px] text-ink-3">{copy("Amount")}</th>
+            <tr className="border-b border-hairline bg-paper">
+              <th className="p-3 font-body text-[11px] text-ink-2">{copy("Date")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-2">{copy("Vendor")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-2">{copy("Category")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-2">{copy("Type")}</th>
+              <th className="p-3 font-body text-[11px] text-ink-2">{copy("Owner")}</th>
+              <th className="p-3 text-right font-body text-[11px] text-ink-2">{copy("Amount")}</th>
             </tr>
           </thead>
           <tbody>
             {store.expenses.length ? store.expenses.slice().reverse().map((e) => (
-              <tr key={e.id} className="border-b border-line">
+              <tr key={e.id} className="border-b border-hairline">
                 <td className="p-3">{e.date}</td>
                 <td className="p-3">{e.vendor}</td>
                 <td className="p-3">{e.category}</td>
@@ -219,7 +221,7 @@ export function ActModule({ store, api }: ActModuleProps) {
                 <td className="p-3 text-right font-mono">{money(e.amount, e.currency)}</td>
               </tr>
             )) : (
-              <tr><td colSpan={6} className="p-6 text-center text-ink-3">{copy("No expenses yet. Connect Gmail or add manually.")}</td></tr>
+              <tr><td colSpan={6} className="p-6 text-center text-ink-2">{copy("No expenses yet. Connect Gmail or add manually.")}</td></tr>
             )}
           </tbody>
         </DataTable>
@@ -229,10 +231,10 @@ export function ActModule({ store, api }: ActModuleProps) {
       {expenseError ? <p role="alert" className="border-l-2 border-amber p-3">{expenseError}</p> : null}
       <Modal title={copy("Add expense")} open={expenseOpen} onClose={() => setExpenseOpen(false)} actions={<><Btn variant="ghost" onClick={() => setExpenseOpen(false)}>{copy("Cancel")}</Btn><Btn onClick={addExpense}>{copy("Record")}</Btn></>}>
         <div className="grid gap-4">
-          <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Vendor")}</span><Input value={vendor} onChange={(e) => setVendor(e.target.value)} className="mt-2" /></label>
-          <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Amount")}</span><Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-2" /></label>
-          <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Category")}</span><Input value={category} onChange={(e) => setCategory(e.target.value)} className="mt-2" /></label>
-          <label className="block"><span className="font-body text-[11px] text-ink-3">{copy("Type")}</span><Select value={expType} onChange={(e) => setExpType(e.target.value as 'opex' | 'capex')} className="mt-2"><option value="opex">OpEx</option><option value="capex">CapEx</option></Select></label>
+          <label className="block"><span className="font-body text-[11px] text-ink-2">{copy("Vendor")}</span><Input value={vendor} onChange={(e) => setVendor(e.target.value)} className="mt-2" /></label>
+          <label className="block"><span className="font-body text-[11px] text-ink-2">{copy("Amount")}</span><Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-2" /></label>
+          <label className="block"><span className="font-body text-[11px] text-ink-2">{copy("Category")}</span><Input value={category} onChange={(e) => setCategory(e.target.value)} className="mt-2" /></label>
+          <label className="block"><span className="font-body text-[11px] text-ink-2">{copy("Type")}</span><Select value={expType} onChange={(e) => setExpType(e.target.value as 'opex' | 'capex')} className="mt-2"><option value="opex">OpEx</option><option value="capex">CapEx</option></Select></label>
         </div>
       </Modal>
     </div>

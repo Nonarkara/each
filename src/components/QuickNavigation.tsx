@@ -60,13 +60,18 @@ export function QuickNavigation({
   }
   return (
     <>
-      <Btn variant="ghost" onClick={open}>
-        {t("Find", "ค้นหา")} <span className="ml-2 hidden font-mono text-[11px] sm:inline">⌘K</span>
+      <Btn variant="ghost" onClick={open} className="min-w-[44px] justify-center px-2 sm:px-4" aria-label={t("Find", "ค้นหา")}>
+        <svg className="h-4 w-4 sm:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" strokeLinecap="square" />
+        </svg>
+        <span className="hidden sm:inline">{t("Find", "ค้นหา")}</span>
+        <span className="ml-2 hidden font-mono text-[11px] sm:inline">⌘K</span>
       </Btn>
       <dialog
         ref={dialog}
         aria-label={t("Find a workspace tool", "ค้นหาเครื่องมือพื้นที่ทำงาน")}
-        className="fixed inset-0 m-auto w-[min(560px,90vw)] max-h-[85vh] overflow-auto border border-line-2 bg-panel p-4 text-ink backdrop:bg-ink/40"
+        className="fixed inset-0 m-auto w-[min(560px,90vw)] max-h-[85vh] overflow-auto border border-rule bg-panel p-4 text-ink backdrop:bg-ink/40"
       >
         <div className="mb-3 flex items-center justify-between gap-3">
           <h2 className="font-display text-[14px] font-bold">
@@ -93,7 +98,7 @@ export function QuickNavigation({
             }}
           />
         </label>
-        <div className="mt-3 grid gap-px border border-line bg-line">
+        <div className="mt-3 grid gap-px border border-hairline bg-hairline">
           {results.map(([route]) => (
             <Btn key={route} variant="ghost" onClick={() => choose(route)}>
               {names[route]}

@@ -149,7 +149,7 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
         {configured ? <Btn disabled={testing || pulling} onClick={() => { setTesting(true); void saveToSheets(store).then(ok => { setTesting(false); setResult({ tone: ok ? 'ok' : 'err', message: ok ? t('Saved and verified by reading the Sheet back.', 'บันทึกและอ่านกลับมาตรวจแล้ว') : t('Could not verify the save. Pull and review changes, and check the Apps Script deployment.', 'ตรวจการบันทึกไม่สำเร็จ ดึงข้อมูลมาตรวจและตรวจการติดตั้ง Apps Script') }) }) }}>{t('Send local copy to Sheet', 'ส่งสำเนาในเครื่องไปยังชีต')}</Btn> : null}
         <div className="space-y-2">
           <label className="block">
-            <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">{copy("Sheet Web App URL")}</span>
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-2">{copy("Sheet Web App URL")}</span>
             <Input
               type="url"
               autoFocus
@@ -167,7 +167,7 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
               className="mt-2 font-mono"
             />
           </label>
-          <p className="font-mono text-[11px] text-ink-3">{t("The connection URL is stored in this browser. Transfers use your Google Apps Script deployment.", "ที่อยู่การเชื่อมต่อเก็บในเบราว์เซอร์ การรับส่งใช้ Apps Script ของคุณ")}</p>
+          <p className="font-mono text-[11px] text-ink-2">{t("The connection URL is stored in this browser. Transfers use your Google Apps Script deployment.", "ที่อยู่การเชื่อมต่อเก็บในเบราว์เซอร์ การรับส่งใช้ Apps Script ของคุณ")}</p>
         </div>
 
         {result ? (
@@ -183,37 +183,37 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
           </div>
         ) : null}
 
-        <div className="border-t border-line pt-4">
-          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">{copy("Status")}</p>
+        <div className="border-t border-hairline pt-4">
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-2">{copy("Status")}</p>
           <div className="mt-2 flex flex-wrap items-baseline gap-3 text-[14px]">
-            <span className="font-mono text-[11px] uppercase text-ink-3">
+            <span className="font-mono text-[11px] uppercase text-ink-2">
               {configured ? t('Sheet connected', 'เชื่อมต่อชีตแล้ว') : t('Not connected', 'ยังไม่เชื่อมต่อ')}
             </span>
             <span className="text-ink-2">{sheetsSyncLabel(syncStatus)}</span>
-            <span className="font-mono text-[11px] text-ink-3">{lastSavedText}</span>
+            <span className="font-mono text-[11px] text-ink-2">{lastSavedText}</span>
           </div>
         </div>
 
-        <div className="space-y-2 border-t border-line pt-4">
+        <div className="space-y-2 border-t border-hairline pt-4">
           <div className="flex items-baseline justify-between gap-3">
-            <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">{copy("Apps Script")}</p>
+            <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-2">{copy("Apps Script")}</p>
             <Btn variant="ghost" className="!min-h-[44px] !px-3" onClick={copyScript}>
               {copied ? t('Copied ✓', 'คัดลอกแล้ว ✓') : t('Copy full script', 'คัดลอกสคริปต์ทั้งหมด')}
             </Btn>
           </div>
-          <pre className="max-h-40 overflow-auto border border-line bg-paper p-3 font-mono text-[11px] leading-snug text-ink-2">
+          <pre className="max-h-40 overflow-auto border border-hairline bg-paper p-3 font-mono text-[11px] leading-snug text-ink-2">
 {getSheetsAppsScript()}
           </pre>
         </div>
 
-        <div className="space-y-4 border-t border-line pt-4">
-          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">{copy("Setup — three steps")}</p>
+        <div className="space-y-4 border-t border-hairline pt-4">
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-2">{copy("Setup — three steps")}</p>
 
           <div className="flex items-start gap-3">
             <span
               className={
                 'flex h-11 w-11 shrink-0 items-center justify-center border font-display text-[14px] font-bold ' +
-                (configured ? 'border-amber bg-amber text-ink' : 'border-line text-ink-2')
+                (configured ? 'border-amber bg-amber text-ink' : 'border-hairline text-ink-2')
               }
               aria-hidden
             >
@@ -236,7 +236,7 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
           </div>
 
           <div className="flex items-start gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-line font-display text-[14px] font-bold text-ink-2" aria-hidden>
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-hairline font-display text-[14px] font-bold text-ink-2" aria-hidden>
               2
             </span>
             <div className="space-y-1">
@@ -249,7 +249,7 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
           </div>
 
           <div className="flex items-start gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-line font-display text-[14px] font-bold text-ink-2" aria-hidden>
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-hairline font-display text-[14px] font-bold text-ink-2" aria-hidden>
               3
             </span>
             <div className="space-y-1">
@@ -266,12 +266,12 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
           <p className="mt-2 text-[14px] text-ink-2">
             {t("Pressing Send local copy transfers the full workspace, including salary and tax-ID fields, to your Google deployment. Review access permissions before connecting.", "เมื่อกดส่งสำเนาในเครื่อง ระบบส่งข้อมูลทั้งพื้นที่ รวมเงินเดือนและเลขประจำตัวผู้เสียภาษีไปยัง Google ของคุณ ตรวจสิทธิ์เข้าถึงก่อนเชื่อมต่อ")}
           </p>
-          <label className="mt-3 flex min-h-[44px] cursor-pointer items-start gap-3 border-t border-line pt-3">
+          <label className="mt-3 flex min-h-[44px] cursor-pointer items-start gap-3 border-t border-hairline pt-3">
             <input
               type="checkbox"
               checked={ack}
               onChange={(e) => setAck(e.target.checked)}
-              className="mt-1 h-4 w-4 shrink-0 border border-line accent-amber"
+              className="mt-1 h-4 w-4 shrink-0 border border-hairline accent-amber"
               aria-describedby="exfil-ack-desc"
             />
             <span id="exfil-ack-desc" className="text-[14px] leading-relaxed text-ink-2">
@@ -281,7 +281,7 @@ export function SheetsSettingsModal({ open, onClose, store, onPull }: SheetsSett
         </div>
 
         <div className="border-l-2 border-amber bg-paper px-3 py-3">
-          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">{copy("Sheets is the engine. EACH is the lens.")}</p>
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-2">{copy("Sheets is the engine. EACH is the lens.")}</p>
           <p className="mt-2 text-[14px] text-ink-2">
             {t("Send your local copy when ready. After editing the Sheet, pull and review additions, changes and deletions. EACH checks the remote revision and reads back each write to confirm it.", "ส่งสำเนาในเครื่องเมื่อพร้อม หลังแก้ไขชีตให้ดึงข้อมูลมาตรวจรายการเพิ่ม แก้ไข และลบ EACH ตรวจรุ่นข้อมูลปลายทางและอ่านกลับหลังบันทึกเพื่อยืนยัน")}
           </p>

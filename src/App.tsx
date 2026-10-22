@@ -35,10 +35,12 @@ import {
 import type { SyncStatus } from './services/sheets'
 import { SheetsSettingsModal } from './components/SheetsSettingsModal'
 import {
-  backendStatusLabel,
-  startFrappeSync,
-  type BackendStatus,
-} from './services/frappeSync'
+  loadRemoteStore,
+  resolveBackend,
+  startWorkspaceSync,
+} from './services/workspaceSync'
+import { backendStatusLabel, type BackendKind, type BackendStatus } from './lib/storageStatus'
+import { accountApi, type AccountUser } from './services/account'
 
 type AppView = 'login' | 'landing' | 'onboarding' | 'app'
 type AppRoute = ModuleId | 'dossier' | 'intake' | 'mirrors' | 'security'
@@ -61,9 +63,36 @@ export default function App() {
   const [authError, setAuthError] = useState('')
   const [sheetsOpen, setSheetsOpen] = useState(false)
   const [backendStatus, setBackendStatus] = useState<BackendStatus>('off')
+  const [backendKind, setBackendKind] = useState<BackendKind>('none')
+  const [account, setAccount] = useState<AccountUser | null>(null)
 
   useEffect(() => {
     return subscribeSheetsSyncStatus(setSyncStatus)
+  }, [])
+
+  // A signed-in account owns the workspace: hydrate it from the server before showing it.
+  useEffect(() => {
+    let cancelled = false
+    void accountApi.session().then(async (session) => {
+      if (cancelled) return
+      if (!session.user) return
+      setAccount(session.user)
+      const backend = await resolveBackend()
+      if (cancelled) return
+      setBackendKind(backend.kind)
+      if (!backend.client) return
+      try {
+        const loaded = await loadRemoteStore(backend.client)
+        if (cancelled) return
+        if (loaded) setView('app')
+        else setView('onboarding')
+      } catch {
+        if (!cancelled) setView('onboarding')
+      }
+    })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   useEffect(() => {
@@ -71,8 +100,12 @@ export default function App() {
       setBackendStatus('off')
       return
     }
-    return startFrappeSync(setBackendStatus)
-  }, [view, store.dataTenant])
+    void resolveBackend().then((backend) => {
+      setBackendKind(backend.kind)
+      setBackendStatus('connecting')
+      return startWorkspaceSync(backend.kind, backend.client, setBackendStatus)
+    })
+  }, [view, store.dataTenant, account])
 
   useEffect(() => {
     const session = getAuthSession()
@@ -121,6 +154,39 @@ export default function App() {
     setRoute('erp')
   }
 
+  async function handleAccountSignedIn(user: AccountUser) {
+    setAuthError('')
+    setAccount(user)
+    const backend = await resolveBackend()
+    setBackendKind(backend.kind)
+    if (!backend.client) {
+      setView('onboarding')
+      return
+    }
+    try {
+      const loaded = await loadRemoteStore(backend.client)
+      setView(loaded ? 'app' : 'onboarding')
+      if (!loaded) setRoute('erp')
+    } catch {
+      setView('onboarding')
+    }
+  }
+
+  async function handleSignOut() {
+    try {
+      await accountApi.logout()
+    } catch {
+      // The cookie may already be gone; the local copy is cleared either way.
+    }
+    setAccount(null)
+    setBackendKind('none')
+    setBackendStatus('off')
+    clearAuthSession()
+    api.reset()
+    setView('login')
+    setRoute('erp')
+  }
+
   function openSheetsSettings() {
     setSheetsOpen(true)
   }
@@ -151,6 +217,8 @@ export default function App() {
         onGoogleSuccess={handleGoogleAuth}
         onDemo={handleDemo}
         onBlank={handleBlank}
+        onAccountSignedIn={handleAccountSignedIn}
+        onLearnMore={() => setView('landing')}
         error={authError}
       />
     )
@@ -160,15 +228,24 @@ export default function App() {
     return (
       <div className="min-h-screen px-4 py-5 sm:px-[22px] sm:py-[22px]">
         <div className="mx-auto max-w-[1360px]">
+          <div className="mb-6 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setView('login')}
+              className="inline-flex min-h-[44px] items-center border border-hairline bg-panel px-4 text-[14px] text-ink-2 hover:border-rule"
+            >
+              {t('Back to sign in', 'กลับไปเข้าสู่ระบบ')}
+            </button>
+          </div>
           <Hero onEnter={() => setView('onboarding')} />
           <section className="mt-8">
-            <h2 className="mb-4 font-display text-[32px] font-semibold">Why EACH works</h2>
-            <div className="grid gap-px border border-line bg-line md:grid-cols-2">
+            <h2 className="mb-4 font-display text-[32px] font-semibold">{t('Why EACH works', 'ทำไมต้อง EACH')}</h2>
+            <div className="grid gap-px border border-hairline bg-hairline md:grid-cols-2">
               {[
                 'Four logins become one word founders can spell in a pitch.',
                 'ERP metrics, accounting actions, customer pipeline, and people costs share one spine.',
                 'Sticky naming: EACH is a product, not an acronym deck.',
-                'Phase 2 backend: Frappe ecosystem (ERPNext + Frappe HR + Frappe CRM) under this DNA.',
+                'One account, one workspace: your numbers follow you across devices.',
               ].map((line) => (
                 <p key={line} className="bg-panel p-4 text-[14px] leading-relaxed text-ink-2">
                   {line}
@@ -196,6 +273,10 @@ export default function App() {
           ? t('Demo', 'ตัวอย่าง')
           : undefined
 
+  const storageLabel = account
+    ? t(backendStatusLabel(backendStatus, backendKind), backendStatus === 'connecting' ? 'กำลังเชื่อมต่อบัญชีของคุณ…' : backendStatus === 'connected' ? 'บันทึกในบัญชีของคุณแล้ว' : backendStatus === 'error' ? 'บันทึกไม่สำเร็จ · เก็บไว้ในเครื่องนี้' : 'บันทึกในเครื่องนี้เท่านั้น')
+    : t('Not signed in · kept on this device', 'ยังไม่ได้เข้าสู่ระบบ · เก็บไว้ในเครื่องนี้')
+
   return (
     <>
       <Shell
@@ -214,15 +295,16 @@ export default function App() {
         onSyncIndicatorClick={openSheetsSettings}
         syncLabel={sheetsSyncLabel(syncStatus)}
         syncStatus={syncStatus}
-        storageLabel={t(backendStatusLabel(backendStatus), backendStatus === 'connecting' ? 'กำลังเชื่อมต่อฐานข้อมูล…' : backendStatus === 'connected' ? 'MariaDB ผ่าน Frappe' : backendStatus === 'error' ? 'ฐานข้อมูลออฟไลน์ / ใช้ข้อมูลในเครื่อง' : 'บันทึกในเบราว์เซอร์')}
+        storageLabel={storageLabel}
         tenantLabel={tenantLabel}
+        accountEmail={account?.email}
+        onSignOut={account ? handleSignOut : undefined}
         vitals={{
           cash: money(fin.cash, store.currency),
           runway: (Number.isFinite(fin.runwayMonths) ? fin.runwayMonths : '∞') + ' ' + t('mo', 'เดือน'),
           runwayRisk: !safeRunway,
         }}
       >
-        <p className="mb-4 border-l-2 border-amber bg-panel p-3">{t('Evaluation workspace · Local data is stored in this browser. Back up before switching devices. Configure Frappe for authenticated persistence.', 'พื้นที่ทดลอง · ข้อมูลอยู่ในเบราว์เซอร์นี้ สำรองข้อมูลก่อนเปลี่ยนอุปกรณ์ เชื่อมต่อ Frappe เพื่อบันทึกข้อมูลผ่านระบบยืนยันตัวตน')}</p>
         {route === 'security' ? <SecurityModule store={store} onMirrors={() => setRoute('mirrors')} /> : null}
         {route === 'mirrors' ? <MirrorsModule store={store} onGoogle={openSheetsSettings} /> : null}
         {route === 'intake' ? <IntakeModule store={store} /> : null}
@@ -232,7 +314,7 @@ export default function App() {
         {route === 'hr' ? <HrModule store={store} api={api} /> : null}
         {route === 'dossier' ? <DossierView store={store} /> : null}
         {activeModule ? (
-          <p className="mt-4 text-[11px] text-ink-3">
+          <p className="mt-4 text-[11px] text-ink-2">
             {activeModule.label} / {t('As of', 'ข้อมูล ณ')} {store.asOf}
             {tenantLabel ? ` · ${tenantLabel}` : ''}
           </p>

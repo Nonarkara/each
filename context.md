@@ -269,3 +269,38 @@ carries data. Josefin Sans was removed from the bundle and from the contract.
 **Unverified.** Fluent Thai review of the new account screens; real provider
 OAuth for the account service; a multi-user team model; email verification and
 password reset; internet-facing deployment hardening (TLS, backups, monitoring).
+
+
+## Anti-slop pass (2026-10-23, second pass)
+
+The complaint was that the delivered screens looked AI-generated and spatially
+hallucinated. The first pass had measured geometry and fixed it; it had not
+removed the writing.
+
+**Found.** Every module opened with a paragraph explaining what the module is.
+The ERP cockpit carried a "Benchmarks" block with medians nobody had measured
+(source unverified) and fake OKRs the founder never wrote. The sign-in page was a
+card floating in a 1440px void; its bottom row pushed "What is EACH?" to the far
+left and an account note to the far right with a void between them. Each module
+page repeated the tenant name at the bottom, an orphan duplicating the header.
+Kanban cards set the title and the amount on one baseline, so a wrapped title
+collided with the amount. Action rows printed a bare lowercase module word. The
+baht sign `฿` was typed into ten data strings and rendered as tofu: the loaded
+faces have no glyph for it.
+
+**Changed.** All module paragraphs deleted; the dossier keeps its prose because
+it is an exported document, not chrome. Invented numbers deleted rather than
+labelled. Objectives render only when the founder has own objectives. Sign-in
+recomposed as a two-column poster with the account note inside the form panel and
+a three-cell band for the no-account paths. The orphan tenant line deleted. Kanban
+cards: title on its own line, amount right-aligned on the meta row. Module words
+are tags. `฿` replaced by `THB`, amounts still come from `money()`.
+
+**Verified.** `npm run build`, `npm run lint`, `npm run check:design`, `npm test`
+(22) and `npm run test:server` (23) pass. The design contract now fails any
+`<p>` over 200 characters in a module and any typed baht sign, so both cannot
+return silently. Screens captured at 390, 1024 and 1440 are in
+`docs/images/msh-2026-10-23/`.
+
+**Unverified.** Dr Non has not yet ruled on the redesigned screens; the Frappe
+backend path is still unrun locally (Docker down, Python 3.9).

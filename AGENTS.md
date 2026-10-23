@@ -21,6 +21,9 @@ npm run preview
 5. **Never replace earned CRM2 logic with placeholder cards** when porting — port the real calc/kanban/roster, do not stub forever.
 6. **Never commit `.env` or secrets.**
 7. **Never let the UI claim a save it did not make.** The storage label comes from `backendStatusLabel(status, kind)` and must match the real backend state.
+8. **Never write a paragraph that explains the page.** A founder can see the page. Prose is where a label, a number or a control belongs. `npm run check:design` fails any `<p>` over 200 characters in `src/modules` (the dossier is exempt — it is an exported document).
+9. **Never invent a number to fill a cell.** No benchmark medians, no fake objectives, no decorative figures. An empty section beats a false one.
+10. **Never type the baht sign `฿`.** The loaded fonts have no glyph for it and it renders as tofu. Amounts come from `money()`.
 
 ## Design rules (project-specific)
 
@@ -29,6 +32,7 @@ npm run preview
 - **Tap targets ≥ 44×44px.**
 - **Hairline grids:** `gap: 1px; background: var(--color-hairline)` with white/panel cells.
 - **One bold move per surface** — runway hero in ERP, not four competing heroes.
+- **No orphan, far-edge elements.** Every line of text sits next to the thing it describes. A label alone at the bottom of a page, or two facts pushed to opposite edges with a void between them, is a spatial hallucination.
 - **Palette by role, not by hue:** `paper`, `panel`, `ink`, `ink-2`, `rule`, `hairline`, `amber`. Seven tokens, no more. Amber is a surface and an edge — never body text on a light ground (1.97:1).
 
 ## Architecture rules

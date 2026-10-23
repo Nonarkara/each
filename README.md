@@ -71,7 +71,7 @@ Founders do not need another acronym deck. They need one surface where the runwa
 The architecture inherits honest lessons from the CRM2 / AXIOM prototype:
 
 ```
-EACH DNA frontend   (look, flow, discipline — Josefin Sans + Source Sans 3, amber accent)
+EACH DNA frontend   (look, flow, discipline — Jost + Source Sans 3, amber accent)
         ↓  REST / WebSocket
 Frappe backend      (ERPNext + Frappe HR + Frappe CRM — phase 2)
 ```
@@ -219,6 +219,8 @@ tasks/            todo + lessons
 npm test
 npm run lint
 npm run build
+npm run check:design
+npm run test:server
 python3 -m unittest discover -s backend/each_backend/tests -v
 ```
 
@@ -226,6 +228,11 @@ python3 -m unittest discover -s backend/each_backend/tests -v
 Tests cover money calculations, atomic document approvals, invented evidence,
 duplicate intake, XLSX round trips, formula rejection and stale review conflicts.
 Cloud credentials are never part of the test fixtures.
+
+`npm run check:design` is the interface contract, not a style suggestion: square
+corners, exactly seven role-named colour tokens, Jost as the display voice, three
+text sizes, no template decoration, no filler paragraph over 200 characters in a
+module, and no typed currency sign the loaded fonts cannot draw.
 
 ## Lineage
 

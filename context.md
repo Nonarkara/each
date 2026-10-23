@@ -304,3 +304,31 @@ return silently. Screens captured at 390, 1024 and 1440 are in
 
 **Unverified.** Dr Non has not yet ruled on the redesigned screens; the Frappe
 backend path is still unrun locally (Docker down, Python 3.9).
+
+
+## Deployment receipt (2026-10-23)
+
+**Two hosts, one public route.** `each.nonarkara.org` is served by the Cloudflare
+Pages project `each` (`each-c3p.pages.dev`); `nonarkara.github.io/each/` carries
+a `CNAME` for the same domain and redirects to it. The Cloudflare project has
+**no Git integration** (`Git Provider: No`), so a push to `main` does not
+rebuild it: its last deployment was ad-hoc, from commit `60db108`, two weeks
+old. The live route was therefore still serving the pre-redesign build.
+
+**The GitHub Pages workflow failed first.** `deploy.yml` runs
+`npm audit --audit-level=high` before building, and the tree failed it: vite
+8.0.0–8.1.5 (launch-editor argument escape, `server.fs.allow`, cross-origin
+script execution through custom middleware) and source-map-js 1.0.0–1.2.1
+(event-loop denial of service). `npm audit fix` moved the lockfile to the
+patched releases — 0 vulnerabilities — and the workflow then passed.
+
+**Published.** `git push origin main`, then `wrangler pages deploy dist
+--project-name each --branch main`. Verified in a browser against the public
+URL, not the workflow status: the served bundle is `index-Q_3k_zst.js`, the
+Benchmarks block and the filler objective are absent from the rendered page at
+1440 and 390, the baht tofu is gone, and the only console messages are
+fontsource data-URI notices.
+
+**Still static.** The published site is the evaluation tier: the workspace
+lives in `localStorage`. The account tier needs the Node service
+(`npm run product` or the container); Cloudflare Pages hosts no API.

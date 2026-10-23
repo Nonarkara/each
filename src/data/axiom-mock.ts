@@ -251,7 +251,7 @@ export function buildAxiomMockStore(): EachStore {
       {
         id: 'act_1',
         priority: 'high',
-        label: 'Invoice EDA Horizon — Jul 1 tranche (฿300K)',
+        label: 'Invoice EDA Horizon — Jul 1 tranche (THB 300K)',
         module: 'act',
         done: false,
       },
@@ -280,7 +280,7 @@ export function buildAxiomMockStore(): EachStore {
         installment: 19000,
         currency: 'THB',
         startDate: '2026-04-01',
-        note: '10×฿19K Apr 2026–Jan 2027 · serial D2M3V20F9W',
+        note: '10×THB 19K Apr 2026–Jan 2027 · serial D2M3V20F9W',
       },
     ],
   }

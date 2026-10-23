@@ -182,57 +182,41 @@ export function Shell({
 
       <main className="mx-auto w-full max-w-[1360px] px-4 py-5 sm:px-[22px] sm:py-[22px]">
         {vitals ? (
-          <div className="mb-5 flex flex-wrap items-center gap-x-6 gap-y-1 border-b border-hairline pb-3">
-            <div>
-              <p className="text-[11px] text-ink-2">{t("Cash", "เงินสด")}</p>
-              <p className="font-mono text-[14px] font-medium">{vitals.cash}</p>
+          <div className="mb-5 flex flex-wrap items-baseline gap-x-6 gap-y-1 border-b border-hairline pb-3">
+            <div className="flex items-baseline gap-2">
+              <span className="text-[11px] text-ink-2">{t("Cash", "เงินสด")}</span>
+              <span className="font-mono text-[14px] font-medium">{vitals.cash}</span>
             </div>
-            <div>
-              <p className="text-[11px] text-ink-2">
-                {t("Runway", "ระยะเวลาที่เงินพอใช้")}
-              </p>
-              <p
+            <div className="flex items-baseline gap-2">
+              <span className="text-[11px] text-ink-2">{t("Runway", "ระยะเวลาที่เงินพอใช้")}</span>
+              <span
                 className={`font-mono text-[14px] font-medium ${vitals.runwayRisk ? "underline decoration-amber decoration-2 underline-offset-4" : ""}`}
               >
                 {vitals.runway}
-              </p>
+              </span>
             </div>
-            {syncStatus !== "local" ? (
-              <div className="flex items-center gap-2">
-                {indicatorInteractive ? (
+            <div className="ml-auto flex items-center gap-3">
+              {syncStatus !== "local" ? (
+                indicatorInteractive ? (
                   <button
                     type="button"
                     onClick={onSyncIndicatorClick}
                     className="inline-flex min-h-[44px] items-center gap-2 border border-transparent px-1 hover:border-hairline"
                     title={t("Open Sheet settings", "ตั้งค่าชีต")}
                   >
-                    <span
-                      className={`inline-block h-2 w-2 ${dotClass}`}
-                      aria-hidden
-                    />
-                    <span className="text-[11px] text-ink-2">
-                      {syncLabel || "Local only"}
-                    </span>
+                    <span className={`inline-block h-2 w-2 ${dotClass}`} aria-hidden />
+                    <span className="text-[11px] text-ink-2">{syncLabel || "Local only"}</span>
                   </button>
                 ) : (
-                  <>
-                    <span
-                      className={`inline-block h-2 w-2 ${dotClass}`}
-                      aria-hidden
-                    />
-                    <span className="text-[11px] text-ink-2">
-                      {syncLabel || "Local only"}
-                    </span>
-                  </>
-                )}
-              </div>
-            ) : null}
-            {storageLabel ? (
-              <p className="text-[11px] text-ink-2">{storageLabel}</p>
-            ) : null}
-            {accountEmail ? (
-              <p className="text-[11px] text-ink-2">{accountEmail}</p>
-            ) : null}
+                  <span className="flex items-center gap-2">
+                    <span className={`inline-block h-2 w-2 ${dotClass}`} aria-hidden />
+                    <span className="text-[11px] text-ink-2">{syncLabel || "Local only"}</span>
+                  </span>
+                )
+              ) : null}
+              {storageLabel ? <span className="text-[11px] text-ink-2">{storageLabel}</span> : null}
+              {accountEmail ? <span className="text-[11px] text-ink-2">{accountEmail}</span> : null}
+            </div>
           </div>
         ) : null}
 

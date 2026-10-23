@@ -2,26 +2,25 @@ import { useEffect, type ReactNode } from 'react'
 
 interface StationProps {
   disc: string
-  kicker: string
+  kicker?: string
   title: string
   meta?: string
 }
 
+/**
+ * The page head. One line, one rule: the title carries the page, the optional
+ * kicker and meta sit on the same baseline beside it. Nothing is pushed to a
+ * far edge — an orphan "as of" on the opposite margin is spatial waste.
+ */
 export function Station({ disc, kicker, title, meta }: StationProps) {
   return (
-    <header className="mb-5 flex flex-col gap-2 border-b-2 border-ink pb-4 sm:flex-row sm:items-baseline sm:justify-between">
-      <div className="flex items-start gap-3">
-        <span className="sr-only">
-          {disc}
-        </span>
-        <div>
-          <p className="text-[11px] text-ink-2">{kicker}</p>
-          <h2 className="font-display text-[32px] font-bold leading-tight">{title}</h2>
-        </div>
+    <header className="mb-5 border-b-2 border-ink pb-3">
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <span className="sr-only">{disc}</span>
+        <h2 className="font-display text-[32px] font-bold leading-tight">{title}</h2>
+        {kicker ? <span className="text-[11px] text-ink-2">{kicker}</span> : null}
+        {meta ? <span className="text-[11px] text-ink-2">{meta}</span> : null}
       </div>
-      {meta ? (
-        <p className="text-[11px] text-ink-2">{meta}</p>
-      ) : null}
     </header>
   )
 }
@@ -42,11 +41,25 @@ export function StatCell({ label, value, sub }: StatCellProps) {
   )
 }
 
+interface MetricRowProps {
+  label: string
+  value: string
+}
+
+/** A dense label/value line: the readout of a composition, not a card. */
+export function MetricRow({ label, value }: MetricRowProps) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 border-b border-hairline py-1 last:border-b-0">
+      <dt className="text-[11px] text-ink-2">{label}</dt>
+      <dd className="font-mono text-[14px] text-ink">{value}</dd>
+    </div>
+  )
+}
+
 interface SectionHeadProps {
   label: string
   meta?: string
 }
-
 export function SectionHead({ label, meta }: SectionHeadProps) {
   return (
     <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">

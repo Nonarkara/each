@@ -96,8 +96,7 @@ export function HrModule({ store, api }: HrModuleProps) {
 
   return (
     <div>
-      <Station disc="H" kicker="HR" title={copy("People")} meta={ai.length + ' AI / ' + hum.length + t(' people', ' คน')} />
-      <p className="mb-5 max-w-3xl text-[14px] leading-relaxed text-ink-2">{t("Add the people and AI subscriptions you actually pay for. Monthly salaries and subscription costs flow into ERP burn. Efficiency scores are your own assessments, and an unrated operator is shown without a score.", "เพิ่มพนักงานและบริการ AI ที่จ่ายจริง เงินเดือนและค่าสมัครต่อเดือนรวมอยู่ในรายจ่ายของ ERP คะแนนประสิทธิภาพเป็นการประเมินของคุณเอง ผู้ช่วยที่ยังไม่ได้ประเมินจะแสดงว่าไม่มีคะแนน")}</p>
+      <Station disc="H" title={copy("People")} meta={ai.length + ' AI / ' + hum.length + t(' people', ' คน')} />
 
       <div className="mb-6 grid gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-4">
         <StatCell label={copy("Monthly people cost")} value={money(total, store.currency)} sub={copy("Feeds ERP OpEx directly")} />
@@ -109,9 +108,15 @@ export function HrModule({ store, api }: HrModuleProps) {
       <div className="mb-6">
         <SectionHead label={copy("People OpEx split")} meta={copy("Reflects into ERP monthly burn")} />
         <StackBar tall segments={[{ pct: aiShare * 100, variant: 'amber' }, { pct: (1 - aiShare) * 100, variant: 'ink' }]} />
-        <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-2">
-          <span>AI {money(aiCost, store.currency)} · {Math.round(aiShare * 100)}%</span>
-          <span>{copy("Human")}{money(humCost, store.currency)} · {Math.round((1 - aiShare) * 100)}%</span>
+        <div className="mt-2 flex flex-wrap gap-x-6 font-mono text-[11px] text-ink-2">
+          <span className="inline-flex items-center gap-2">
+            <span className="inline-block h-2 w-2 bg-amber" aria-hidden />
+            AI {money(aiCost, store.currency)} · {Math.round(aiShare * 100)}%
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <span className="inline-block h-2 w-2 bg-ink" aria-hidden />
+            {copy("Human")} {money(humCost, store.currency)} · {Math.round((1 - aiShare) * 100)}%
+          </span>
         </div>
       </div>
 
@@ -150,7 +155,7 @@ export function HrModule({ store, api }: HrModuleProps) {
           <div className="mt-4 border border-hairline bg-paper p-4">
             <p className="font-body text-[11px] text-ink-2">{copy("Operator read")}</p>
             <p className="mt-2 text-[14px] text-ink-2">
-              {t(`${best.name} has the highest self-reported efficiency per cost; ${worst.name} has the lowest. These scores are estimates you entered.`, `${best.name} มีคะแนนประสิทธิภาพต่อค่าใช้จ่ายสูงสุด ส่วน ${worst.name} ต่ำสุด คะแนนเหล่านี้เป็นค่าประเมินที่คุณกรอก`)}
+              {t(`${best.name} scores highest per cost, ${worst.name} lowest. Your own numbers.`, `${best.name} มีคะแนนต่อค่าใช้จ่ายสูงสุด ส่วน ${worst.name} ต่ำสุด เป็นตัวเลขที่คุณกรอกเอง`)}
             </p>
           </div>
         ) : null}

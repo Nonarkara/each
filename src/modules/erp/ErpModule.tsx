@@ -16,7 +16,7 @@ import {
   StackBar,
   StatCell,
   Station,
-  TagChip,
+  MetricRow,
 } from '../../components/ui/Axiom'
 
 interface ErpModuleProps {
@@ -36,14 +36,8 @@ export function ErpModule({ store, api }: ErpModuleProps) {
   const [termMonths, setTermMonths] = useState('')
   const [installment, setInstallment] = useState('')
 
-  let objectives = store.objectives
-  if (!objectives.length) {
-    objectives = [
-      { id: 'o1', objective: 'Reach capital-efficient product-market fit', keyResults: [{ k: 'First paying pilot', done: false }, { k: 'Burn under $4k/mo', done: true }, { k: 'Runway > 18 mo', done: true }] },
-      { id: 'o2', objective: 'Ship the Frappe migration', keyResults: [{ k: 'ERPNext live', done: false }, { k: 'Chart of accounts mapped', done: false }] },
-    ]
-    // Example objectives are displayed only; opening a module never saves invented progress.
-  }
+  // No invented objectives: the founder's workspace shows only what they recorded.
+  const objectives = store.objectives
 
   const funnel = f.receivedRevenue + f.outstanding + f.pipelineRevenue
   const rPct = funnel ? (f.receivedRevenue / funnel) * 100 : 0
@@ -93,47 +87,126 @@ export function ErpModule({ store, api }: ErpModuleProps) {
     })
   }
 
-  const burnSub = f.monthlyDebtService
-    ? 'Recurring + debt + this month'
-    : 'Recurring + this month'
+  const spendTotal = f.monthCapex + f.recurring + f.monthOpex + f.monthlyDebtService || 1
+  const capexPct = (f.monthCapex / spendTotal) * 100
+  const opexPct = ((f.recurring + f.monthOpex) / spendTotal) * 100
+  const debtPct = (f.monthlyDebtService / spendTotal) * 100
 
   return (
     <div>
-      <Station disc="E" kicker="ERP" title={copy("Finances")} meta={t('As of ', 'ข้อมูล ณ ') + store.asOf} />
-      <p className="mb-5 max-w-3xl text-[14px] leading-relaxed text-ink-2">{t("Cash is money already received minus recorded spending. Burn is monthly payroll, AI, recurring costs, debt service and this month\u2019s operating expenses. Runway estimates how long that cash lasts; unsigned deals do not count as cash.", "เงินสดคือเงินที่ได้รับแล้วหักรายจ่ายที่บันทึก รายจ่ายต่อเดือนรวมเงินเดือน AI ค่าใช้จ่ายประจำ เงินผ่อน และรายจ่ายดำเนินงานเดือนนี้ ระยะเวลาที่เงินพอใช้เป็นประมาณการ โครงการที่ยังไม่เซ็นสัญญาไม่ใช่เงินสด")}</p>
+      <Station disc="E" title={copy("Finances")} meta={t('As of ', 'ข้อมูล ณ ') + store.asOf} />
 
+      {/* The one bold move: how long the cash lasts, and the spend behind it. */}
       <div className="mb-6 grid gap-px border border-hairline bg-hairline lg:grid-cols-[1.618fr_1fr]">
-        <div className="bg-panel p-5">
-          <p className="text-[14px] font-semibold text-ink">{copy("Runway at current burn")}</p>
-          <p className={`mt-2 font-display text-[32px] font-bold leading-none text-ink`}>
+        <div className="flex flex-col bg-panel p-5">
+          <p className="text-[11px] text-ink-2">{copy("Runway at current burn")}</p>
+          <p className="mt-2 font-display text-[32px] font-bold leading-none text-ink">
             {Number.isFinite(f.runwayMonths) ? f.runwayMonths + ' ' + t('mo', 'เดือน') : '∞'}
           </p>
-          <p className="mt-2 text-[14px] text-ink-2">
-            {f.monthlyBurn > 0 ? money(f.monthlyBurn, f.cur) + ' / ' + t('month', 'เดือน') : t('No burn recorded', 'ยังไม่มีรายจ่าย')}
+          <p className="mt-3 font-mono text-[14px] text-ink-2">
+            {f.monthlyBurn > 0
+              ? money(f.monthlyBurn, f.cur) + ' / ' + t('month', 'เดือน')
+              : t('No burn recorded', 'ยังไม่มีรายจ่าย')}
           </p>
-          {f.monthlyDebtService > 0 ? (
-            <p className="mt-1 font-mono text-[11px] text-ink-2">
-              {t('Includes', 'รวมเงินผ่อน')} {money(f.monthlyDebtService, f.cur)}
+          {!safe ? (
+            <p className="mt-4 border-l-2 border-amber pl-3 text-[14px] font-semibold text-ink lg:mt-auto lg:pt-4">
+              {t(
+                'Under six months. Collect or cut before the next close.',
+                'ต่ำกว่า 6 เดือน เก็บเงินหรือลดรายจ่ายก่อนรอบปิดถัดไป',
+              )}
             </p>
           ) : null}
         </div>
         <div className="bg-panel p-5">
-          <p className="text-[14px] font-semibold text-ink">{copy("Status")}</p>
-          <TagChip tone={safe ? 'amber' : 'default'}>{safe ? t('At least 6 months', 'อย่างน้อย 6 เดือน') : t('Below 6 months', 'ต่ำกว่า 6 เดือน')}</TagChip>
-          <p className="mt-3 text-[14px] font-semibold text-ink">
-            {safe ? t('Cash lasts at least six months at the recorded burn.', 'เงินสดพอใช้อย่างน้อยหกเดือนตามรายจ่ายที่บันทึก') : t('Review collections and spending this week.', 'ตรวจยอดรับเงินและรายจ่ายในสัปดาห์นี้')}
-          </p>
-          <p className="mt-1 text-[14px] text-ink-2">
-            {t('This is a cash estimate, not a guarantee. Update your records before deciding.', 'นี่เป็นประมาณการเงินสด ไม่ใช่การรับประกัน อัปเดตข้อมูลก่อนตัดสินใจ')}
-          </p>
+          <p className="text-[11px] text-ink-2">{copy("Where the burn goes")}</p>
+          <div className="mt-3">
+            <StackBar
+              tall
+              segments={[
+                { pct: capexPct, variant: 'ink' },
+                { pct: opexPct, variant: 'amber' },
+                { pct: debtPct, variant: 'muted' },
+              ]}
+            />
+          </div>
+          <dl className="mt-3">
+            <MetricRow label={copy("CapEx this month")} value={money(f.monthCapex, f.cur)} />
+            <MetricRow label={copy("OpEx this month")} value={money(f.recurring + f.monthOpex, f.cur)} />
+            <MetricRow label={copy("Debt service")} value={money(f.monthlyDebtService, f.cur)} />
+          </dl>
         </div>
       </div>
 
-      <div className="mb-6 grid gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-4">
-        <StatCell label={copy("Cash on hand")} value={money(f.cash, f.cur)} sub={t('After ', 'หลังบันทึก ') + store.expenses.length + t(' transactions', ' รายการ')} />
-        <StatCell label={copy("Founding capital")} value={money(f.founding, f.cur)} sub={store.foundingCapital.length + t(' entries', ' รายการ')} />
-        <StatCell label={copy("Monthly burn")} value={money(f.monthlyBurn, f.cur)} sub={t(burnSub, f.monthlyDebtService ? 'ค่าใช้จ่ายประจำ + เงินผ่อน + เดือนนี้' : 'ค่าใช้จ่ายประจำ + เดือนนี้')} />
-        <StatCell label={copy("Recurring OpEx")} value={money(f.recurring, f.cur)} sub={store.aiEmployees.length + ' AI / ' + store.employees.length + t(' people', ' คน')} />
+      <div className="mb-6 grid gap-px border border-hairline bg-hairline sm:grid-cols-3">
+        <StatCell label={copy("Called capital")} value={money(f.founding, f.cur)} />
+        <StatCell label={copy("Monthly burn")} value={money(f.monthlyBurn, f.cur)} />
+        <StatCell label={copy("Recurring")} value={money(f.recurring, f.cur)} />
+      </div>
+
+      <div className="mb-6">
+        <SectionHead
+          label={copy("Revenue")}
+          meta={store.projects.length + t(' recorded projects', ' โครงการที่บันทึก')}
+        />
+        <div className="grid gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-4">
+          <StatCell label={copy("Received")} value={money(f.receivedRevenue, f.cur)} />
+          <StatCell label={copy("Contracted")} value={money(f.contractedRevenue, f.cur)} />
+          <StatCell label={copy("Outstanding")} value={money(f.outstanding, f.cur)} />
+          <StatCell label={copy("Expected pipeline")} value={money(f.expectedPipeline, f.cur)} />
+        </div>
+        <div className="mt-3">
+          <StackBar tall segments={[{ pct: rPct, variant: 'ink' }, { pct: oPct, variant: 'amber' }, { pct: pPct, variant: 'muted' }]} />
+          <div className="mt-2 flex flex-wrap gap-x-6 font-mono text-[11px] text-ink-2">
+            <span className="inline-flex items-center gap-2">
+              <span className="inline-block h-2 w-2 bg-ink" aria-hidden />
+              {t('Received', 'รับแล้ว')} {Math.round(rPct)}%
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <span className="inline-block h-2 w-2 bg-amber" aria-hidden />
+              {copy("Outstanding")} {Math.round(oPct)}%
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <span className="inline-block h-2 w-2 bg-ink-2" aria-hidden />
+              {t('Pipeline', 'โอกาสรายได้')} {Math.round(pPct)}%
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="mb-6">
+        <SectionHead
+          label={copy("Runway projection")}
+          meta={f.proj.length ? f.proj.length + t(' months to depletion', ' เดือนจนเงินหมด') : t('No burn', 'ยังไม่มีรายจ่าย')}
+        />
+        {!f.proj.length || f.monthlyBurn <= 0 ? (
+          <Empty>{copy("Record expenses to see the projection.")}</Empty>
+        ) : f.proj.length < 3 ? (
+          <p className="border border-hairline bg-panel p-4 text-[14px] text-ink-2">
+            {t('Cash reaches zero next month at the recorded burn.', 'เงินสดหมดเดือนหน้าที่รายจ่ายที่บันทึกไว้')}
+          </p>
+        ) : (
+          <>
+            <div className="flex h-[90px] items-end gap-[3px]">
+              {f.proj.slice(0, 24).map((bal, i) => {
+                const max = f.proj[0] || 1
+                const h = Math.max(2, (bal / max) * 90)
+                const last = i === f.proj.length - 1
+                return (
+                  <div
+                    key={i}
+                    title={'M' + i + ': ' + money(Math.max(0, bal), f.cur)}
+                    className={`w-[10px] ${last ? 'bg-amber' : 'bg-ink'}`}
+                    style={{ height: h + 'px', opacity: last ? 1 : Math.max(0.3, 1 - i / 30) }}
+                  />
+                )
+              })}
+            </div>
+            <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-2">
+              <span>{copy("Now")}</span>
+              <span>{copy("Cash hits zero")}</span>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="mb-6">
@@ -169,7 +242,7 @@ export function ErpModule({ store, api }: ErpModuleProps) {
             ) : (
               <tr>
                 <td colSpan={6} className="p-6 text-center text-[14px] text-ink-2">
-                  {t('No loans recorded. Loan installments also contribute to monthly burn.', 'ยังไม่มีสินเชื่อที่บันทึก เงินผ่อนจะรวมอยู่ในรายจ่ายต่อเดือนด้วย')}
+                  {t('No loans recorded.', 'ยังไม่มีสินเชื่อที่บันทึก')}
                 </td>
               </tr>
             )}
@@ -199,11 +272,11 @@ export function ErpModule({ store, api }: ErpModuleProps) {
             <Input type="number" value={principal} onChange={(e) => setPrincipal(e.target.value)} className="mt-2" />
           </label>
           <label className="block">
-            <span className="font-body text-[11px] text-ink-2">{copy("Annual rate (%)")}</span>
+            <span className="font-body text-[11px] text-ink-2">Annual rate (%)</span>
             <Input type="number" value={rate} onChange={(e) => setRate(e.target.value)} className="mt-2" />
           </label>
           <label className="block">
-            <span className="font-body text-[11px] text-ink-2">{copy("Term (months)")}</span>
+            <span className="font-body text-[11px] text-ink-2">Term (months)</span>
             <Input type="number" value={termMonths} onChange={(e) => setTermMonths(e.target.value)} className="mt-2" />
           </label>
           <label className="block">
@@ -213,128 +286,45 @@ export function ErpModule({ store, api }: ErpModuleProps) {
         </div>
       </Modal>
 
-      <div className="mb-6">
-        <SectionHead label={copy("Revenue pipeline")} meta={store.projects.length + t(' recorded projects', ' โครงการที่บันทึก')} />
-        <div className="grid gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-4">
-          <StatCell label={copy("Received to date")} value={money(f.receivedRevenue, f.cur)} sub={copy("Cash in")} />
-          <StatCell label={copy("Contracted")} value={money(f.contractedRevenue, f.cur)} sub={f.commissionedCount + t(' commissioned', ' โครงการที่ตกลงแล้ว')} />
-          <StatCell label={copy("Outstanding")} value={money(f.outstanding, f.cur)} sub={copy("Contracted, unbilled")} />
-          <StatCell label={copy("Expected pipeline")} value={money(f.expectedPipeline, f.cur)} sub={copy("Tier-weighted")} />
-        </div>
-        <div className="mt-3">
-          <StackBar tall segments={[{ pct: rPct, variant: 'ink' }, { pct: oPct, variant: 'amber' }, { pct: pPct, variant: 'muted' }]} />
-          <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-2">
-            <span>{t('Received', 'รับแล้ว')} {Math.round(rPct)}%</span>
-            <span>{copy("Outstanding")} {Math.round(oPct)}%</span>
-            <span>{t('Pipeline', 'โอกาสรายได้')} {Math.round(pPct)}%</span>
+      {objectives.length ? (
+        <div className="mb-6">
+          <SectionHead label={copy("Objectives & key results")} />
+          <div className="grid gap-px border border-hairline bg-hairline">
+            {objectives.map((o) => {
+              const kr = o.keyResults || []
+              const done = kr.filter((k) => k.done).length
+              const pct = kr.length ? (done / kr.length) * 100 : 0
+              return (
+                <div key={o.id} className="grid gap-px bg-hairline lg:grid-cols-[1.618fr_1fr]">
+                  <div className="bg-panel p-4">
+                    <p className="text-[14px] font-semibold">{o.objective}</p>
+                    <div className="mt-3 w-4/5">
+                      <ProgressBar pct={pct} variant="amber" />
+                    </div>
+                  </div>
+                  <div className="bg-panel p-4">
+                    <ul>
+                      {kr.map((k, i) => (
+                        <li key={i} className="flex min-h-[44px] items-center gap-3">
+                          <label className="-ml-2 flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center">
+                            <input
+                              type="checkbox"
+                              checked={k.done}
+                              onChange={(e) => toggleKr(o.id, i, e.target.checked)}
+                              className="h-[20px] w-[20px] accent-amber"
+                            />
+                          </label>
+                          <span className={`text-[14px] ${k.done ? 'text-ink-2 line-through' : ''}`}>{k.k}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
-      </div>
-
-      <div className="mb-6">
-        <SectionHead label={copy("Spend allocation this month")} meta={copy("CapEx vs OpEx")} />
-        <StackBar tall segments={[{ pct: f.capexShare * 100, variant: 'ink' }, { pct: f.opexShare * 100, variant: 'amber' }]} />
-        <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-2">
-          <span>CapEx {money(f.monthCapex, f.cur)} · {Math.round(f.capexShare * 100)}%</span>
-          <span>OpEx {money(f.recurring + f.monthOpex, f.cur)} · {Math.round(f.opexShare * 100)}%</span>
-        </div>
-      </div>
-
-      <div className="mb-6">
-        <SectionHead label={copy("Runway projection")} meta={f.proj.length ? f.proj.length + t(' months to depletion', ' เดือนจนเงินหมด') : t('No burn', 'ยังไม่มีรายจ่าย')} />
-        {!f.proj.length || f.monthlyBurn <= 0 ? (
-          <Empty>{copy("Record expenses to see the projection.")}</Empty>
-        ) : (
-          <>
-            <div className="flex h-[90px] items-end gap-[3px]">
-              {f.proj.slice(0, 24).map((bal, i) => {
-                const max = f.proj[0] || 1
-                const h = Math.max(2, (bal / max) * 90)
-                const last = i === f.proj.length - 1
-                return (
-                  <div
-                    key={i}
-                    title={'M' + i + ': ' + money(Math.max(0, bal), f.cur)}
-                    className={`w-[10px] ${last ? 'bg-amber' : 'bg-ink'}`}
-                    style={{ height: h + 'px', opacity: last ? 1 : Math.max(0.3, 1 - i / 30) }}
-                  />
-                )
-              })}
-            </div>
-            <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-2">
-              <span>{copy("Now")}</span>
-              <span>{copy("Cash hits zero")}</span>
-            </div>
-          </>
-        )}
-      </div>
-
-      <div className="mb-6">
-        <SectionHead label={copy("Benchmarks")} meta={t('Illustrative reference values · source unverified', 'ค่าอ้างอิงตัวอย่าง · ยังไม่ยืนยันแหล่งข้อมูล')} />
-        <div className="grid gap-px border border-hairline bg-hairline">
-          {[
-            ['Monthly burn', f.monthlyBurn, 35000, f.cur],
-            ['AI operator spend', f.aiMonthly, 300, f.cur],
-            ['Human headcount', store.employees.length, 8, ''],
-          ].map(([label, you, med, cur]) => {
-            const y = Number(you)
-            const m = Number(med)
-            const mx = Math.max(y, m, 1)
-            return (
-              <div key={String(label)} className="flex flex-wrap items-center justify-between gap-3 bg-panel p-4">
-                <span className="text-[14px]">{copy(String(label))}</span>
-                <div className="flex items-center gap-3">
-                  <div className="w-[90px]">
-                    <ProgressBar pct={(y / mx) * 100} />
-                  </div>
-                  <span className="font-mono text-[14px]">{cur ? money(y, String(cur)) : y}</span>
-                  <span className="font-mono text-[11px] text-ink-2">{t('example', 'ตัวอย่าง')} {cur ? money(m, String(cur)) : m}</span>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      <div className="mb-6">
-        <SectionHead label={copy("Objectives & key results")} meta={t('Example objectives until you create your own', 'เป้าหมายตัวอย่างจนกว่าจะเพิ่มของคุณเอง')} />
-        <div className="grid gap-px border border-hairline bg-hairline">
-          {objectives.map((o) => {
-            const kr = o.keyResults || []
-            const done = kr.filter((k) => k.done).length
-            const pct = kr.length ? (done / kr.length) * 100 : 0
-            return (
-              <div key={o.id} className="grid gap-px bg-hairline lg:grid-cols-[1.618fr_1fr]">
-                <div className="bg-panel p-4">
-                  <p className="font-body text-[11px] text-ink-2">{copy("Objective")}</p>
-                  <p className="mt-1 text-[14px] font-semibold">{o.objective}</p>
-                  <div className="mt-3 w-4/5">
-                    <ProgressBar pct={pct} variant="amber" />
-                  </div>
-                </div>
-                <div className="bg-panel p-4">
-                  <ul className="space-y-2">
-                    {kr.map((k, i) => (
-                      <li key={i} className="flex min-h-[44px] items-center gap-3">
-                        <label className="-ml-2 flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center">
-                          <input
-                            type="checkbox"
-                            checked={k.done}
-                            onChange={(e) => toggleKr(o.id, i, e.target.checked)}
-                            className="h-[20px] w-[20px] accent-amber"
-                          />
-                        </label>
-                        <span className={`text-[14px] ${k.done ? 'text-ink-2 line-through' : ''}`}>{k.k}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
+      ) : null}
     </div>
   )
 }

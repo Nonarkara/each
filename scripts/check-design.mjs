@@ -38,4 +38,34 @@ for (const path of await files('src')) {
   for (const match of source.matchAll(/text-\[(\d+)px\]/g)) assert.ok(['11', '14', '32'].includes(match[1]), `${path}: unsupported text size ${match[1]}`)
 }
 
-console.log('EACH design contract passed: square corners, seven role tokens, Jost + Source Sans 3, three text sizes, no template decoration.')
+// --- Money is written by the formatter, never typed -------------------------
+// The loaded faces carry no THB SIGN (U+0E3F): typing it renders as tofu.
+// Amounts go through money() so the currency code is always present.
+for (const path of await files('src')) {
+  if (!/\.(tsx|ts)$/.test(path)) continue
+  const source = await readFile(path, 'utf8')
+  assert.doesNotMatch(source, /฿/, `${path}: the baht sign has no glyph in the loaded fonts — use THB`)
+}
+
+// --- No self-explaining chrome -------------------------------------------
+// A page that explains itself to a founder is AI slop: the paragraph is a wall
+// of words where a label, a note or a real control belongs. The dossier is
+// exempt: it is an exported document, not interface chrome.
+const PROSE_LIMIT = 200
+for (const path of await files('src/modules')) {
+  if (!path.endsWith('.tsx') || path.includes('dossier/')) continue
+  const source = await readFile(path, 'utf8')
+  for (const match of source.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/g)) {
+    const inner = match[1]
+    const quoted = inner.match(/t\(\s*'([^']*)'/)
+    const text = quoted
+      ? quoted[1]
+      : inner.replace(/<[^>]*>/g, '').replace(/\{[^}]*\}/g, '').replace(/\s+/g, ' ').trim()
+    assert.ok(
+      text.length <= PROSE_LIMIT,
+      `${path}: paragraph of ${text.length} characters reads as filler — "…${text.slice(0, 60)}…"`,
+    )
+  }
+}
+
+console.log('EACH design contract passed: square corners, seven role tokens, Jost + Source Sans 3, three text sizes, no template decoration, no filler prose, no tofu currency.')

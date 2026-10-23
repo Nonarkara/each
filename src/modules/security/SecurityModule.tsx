@@ -172,10 +172,10 @@ export function SecurityModule({
         title={t("Security Center", "ศูนย์ความปลอดภัย")}
         meta={store.companyName}
       />
-      <p className="max-w-2xl">
+      <p className="max-w-2xl text-[11px] text-ink-2">
         {t(
-          "Protect company records with a clear view of what EACH can verify. Start with access, create an encrypted backup, and rehearse recovery. This page does not scan your network or certify compliance.",
-          "ดูสิ่งที่ EACH ตรวจยืนยันได้เพื่อปกป้องข้อมูลบริษัท เริ่มจากสิทธิ์เข้าถึง สร้างข้อมูลสำรองเข้ารหัส และทดลองกู้คืน หน้านี้ไม่ได้สแกนเครือข่ายหรือรับรองมาตรฐาน",
+          "What EACH can verify: access, encrypted backup, recovery. It does not scan your network or certify compliance.",
+          "สิ่งที่ EACH ตรวจสอบได้: สิทธิ์เข้าถึง ข้อมูลสำรองเข้ารหัส และการกู้คืน ไม่ได้สแกนเครือข่ายหรือรับรองมาตรฐาน",
         )}
       </p>
       <div className="flex flex-wrap gap-3">
@@ -225,10 +225,10 @@ export function SecurityModule({
             "สำรองข้อมูลเข้ารหัสและตรวจการกู้คืน",
           )}
         </h3>
-        <p>
+        <p className="text-[11px] text-ink-2">
           {t(
-            "Choose a unique passphrase with at least 12 characters. EACH cannot recover it. Enter the passphrase, then export a backup or select a .eachlock file to decrypt locally. Decryption shows a change review before replacing records.",
-            "ใช้รหัสผ่านไม่ซ้ำยาวอย่างน้อย 12 ตัวอักษร EACH กู้รหัสผ่านให้ไม่ได้ ใส่รหัสผ่านเพื่อส่งออกหรือเลือกไฟล์ .eachlock เพื่อถอดรหัสในเครื่อง ระบบแสดงการเปลี่ยนแปลงก่อนแทนที่ข้อมูล",
+            "12+ characters, and EACH cannot recover it. Decryption shows a change review before it replaces records.",
+            "อย่างน้อย 12 ตัวอักษร และ EACH กู้รหัสผ่านให้ไม่ได้ การถอดรหัสจะแสดงการเปลี่ยนแปลงก่อนแทนที่ข้อมูล",
           )}
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -338,10 +338,10 @@ export function SecurityModule({
         <h3 className="font-display text-[14px] font-bold">
           {t("Recent activity on this device", "กิจกรรมล่าสุดในอุปกรณ์นี้")}
         </h3>
-        <p>
+        <p className="text-[11px] text-ink-2">
           {t(
-            "Last 100 events, stored locally without document text, keys or payroll fields. This device log can be changed or cleared; it is not a tamper-proof audit. Events cover workspace saves, AI transfers/approvals and encrypted backups.",
-            "เก็บ 100 เหตุการณ์ล่าสุดในเครื่อง ไม่เก็บข้อความเอกสาร คีย์ หรือเงินเดือน บันทึกนี้แก้ไขหรือล้างได้ จึงไม่ใช่หลักฐานที่ป้องกันการแก้ไข ครอบคลุมการบันทึกพื้นที่ การส่ง/อนุมัติ AI และสำรองเข้ารหัส",
+            "Last 100 events on this device, without document text, keys or payroll. Editable and clearable — not a tamper-proof audit.",
+            "100 เหตุการณ์ล่าสุดในเครื่องนี้ ไม่เก็บข้อความเอกสาร คีย์ หรือเงินเดือน แก้ไขหรือล้างได้ จึงไม่ใช่หลักฐานที่ป้องกันการแก้ไข",
           )}
         </p>
         {events.length ? (
@@ -373,10 +373,10 @@ export function SecurityModule({
               "กิจกรรมพื้นที่ทำงานบนเซิร์ฟเวอร์",
             )}
           </h3>
-          <p>
+          <p className="text-[11px] text-ink-2">
             {t(
-              "Recent owner-scoped save events recorded by the server. Administrators can manage these logs; configure external retention for an independent audit.",
-              "เหตุการณ์บันทึกข้อมูลล่าสุดของเจ้าของที่เซิร์ฟเวอร์บันทึก ผู้ดูแลจัดการบันทึกนี้ได้ ควรเก็บภายนอกหากต้องการตรวจสอบอิสระ",
+              "Owner-scoped save events from the server. Administrators manage retention.",
+              "เหตุการณ์บันทึกข้อมูลของเจ้าของจากเซิร์ฟเวอร์ ผู้ดูแลจัดการการเก็บรักษา",
             )}
           </p>
           {server.audit.map((e, i) => (

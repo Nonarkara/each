@@ -27,7 +27,7 @@ export function buildAbcMockStore(): EachStore {
     currency: 'THB',
     asOf: '2026-06-25',
     foundingCapital: [],
-    /** PP&E ฿2.3M is balance-sheet history — omitted from cash ledger so vitals match audited cash ฿43,181.70. */
+    /** PP&E THB 2.3M is balance-sheet history — omitted from cash ledger so vitals match audited cash THB 43,181.70. */
     expenses: [],
     gmailConnected: false,
     gmailImported: 0,
@@ -57,7 +57,7 @@ export function buildAbcMockStore(): EachStore {
         currency: 'THB',
         owner: 'Finance',
         checklist: [{ k: 'Audited balance sheet cash', done: true }],
-        notes: [{ t: 'Cash ฿43,181.70 per balance sheet 31 Dec 2025 — not new funding.', at: '2026-04-01' }],
+        notes: [{ t: 'Cash THB 43,181.70 per balance sheet 31 Dec 2025 — not new funding.', at: '2026-04-01' }],
         files: [],
       },
       {
@@ -72,7 +72,7 @@ export function buildAbcMockStore(): EachStore {
         currency: 'THB',
         owner: 'Delivery',
         checklist: [{ k: 'FY2025 net sales spread across fiscal months', done: false }],
-        notes: [{ t: '฿809,667/mo scheduled — collection timing drives cash.', at: '2026-06-25' }],
+        notes: [{ t: 'THB 809,667/mo scheduled — collection timing drives cash.', at: '2026-06-25' }],
         files: [],
       },
       {
@@ -86,8 +86,8 @@ export function buildAbcMockStore(): EachStore {
         scenarioTier: 2,
         currency: 'THB',
         owner: 'Sales',
-        checklist: [{ k: '12 projects · ฿2.9M booked value', done: false }],
-        notes: [{ t: 'Pipeline down from ฿4.8M in 2025 — lumpy gov revenue.', at: '2026-06-25' }],
+        checklist: [{ k: '12 projects · THB 2.9M booked value', done: false }],
+        notes: [{ t: 'Pipeline down from THB 4.8M in 2025 — lumpy gov revenue.', at: '2026-06-25' }],
         files: [],
       },
       {
@@ -128,7 +128,7 @@ export function buildAbcMockStore(): EachStore {
         objective: 'Extend cash runway beyond 30 days',
         quarter: '2026-Q3',
         keyResults: [
-          { k: 'Collect ฿984K receivables', done: false },
+          { k: 'Collect THB 984K receivables', done: false },
           { k: 'Reduce Mr. A comp or defer payables', done: false },
         ],
       },
@@ -146,7 +146,7 @@ export function buildAbcMockStore(): EachStore {
       {
         id: 'abc-a1',
         priority: 'high',
-        label: 'Emergency: negotiate payables stretch (฿4.31M AP vs ฿43K cash)',
+        label: 'Emergency: negotiate payables stretch (THB 4.31M AP vs THB 43K cash)',
         module: 'act',
         done: false,
       },
@@ -175,7 +175,7 @@ export function buildAbcMockStore(): EachStore {
         installment: 14973.91,
         currency: 'THB',
         startDate: '2026-04-01',
-        note: 'FY2025 interest ฿179,686.94 ÷ 12 — debt service only',
+        note: 'FY2025 interest THB 179,686.94 ÷ 12 — debt service only',
       },
     ],
   }

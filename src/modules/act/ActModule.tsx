@@ -30,7 +30,7 @@ function deriveActions(store: EachStore): ActionItem[] {
       items.push({
         id: 'inv-' + p.id,
         priority: 'high',
-        label: 'Invoice ' + p.client + ' — ' + money(p.totalValue - (p.received || 0), store.currency) + ' outstanding on "' + p.title + '"',
+        label: 'Invoice ' + p.client + ' — ' + money(p.totalValue - (p.received || 0), store.currency) + ' outstanding on ' + p.title,
         module: 'act',
         done: false,
       })
@@ -140,8 +140,7 @@ export function ActModule({ store, api }: ActModuleProps) {
 
   return (
     <div>
-      <Station disc="A" kicker="ACT" title={copy("Accounting & actions")} meta={openActions.length + t(' open actions', ' งานที่ยังไม่เสร็จ')} />
-      <p className="mb-5 max-w-3xl text-[14px] leading-relaxed text-ink-2">{t("Record actual expenses here. Receivables are signed deal values still unpaid; Mark paid records full receipt, so use it only after confirming payment. The action queue points to unfinished work derived from your records.", "บันทึกรายจ่ายจริงที่นี่ ลูกหนี้คือยอดโครงการที่ตกลงแล้วแต่ยังไม่ได้รับเงิน ปุ่มบันทึกรับเงินครบใช้หลังตรวจว่าชำระครบแล้วเท่านั้น งานที่ต้องทำแสดงรายการค้างจากข้อมูลที่บันทึก")}</p>
+      <Station disc="A" title={copy("Accounting & actions")} meta={openActions.length + t(' open actions', ' งานที่ยังไม่เสร็จ')} />
 
       <div className="mb-6 grid gap-px border border-hairline bg-hairline sm:grid-cols-3">
         <StatCell label={copy("Outstanding AR")} value={money(f.outstanding, f.cur)} sub={invoices.length + ' invoices due'} />
@@ -153,24 +152,20 @@ export function ActModule({ store, api }: ActModuleProps) {
         <SectionHead label={copy("Action queue")} meta={copy("What must happen next")} />
         <div className="grid gap-px border border-hairline bg-hairline">
           {openActions.length ? openActions.map((a) => (
-            <div key={a.id} className="flex flex-wrap items-center justify-between gap-3 bg-panel p-4">
-              <div className="flex items-start gap-3">
-                <label className="-ml-2 flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center">
-                  <input type="checkbox" checked={a.done} onChange={() => toggleAction(a.id)} className="h-[20px] w-[20px] accent-amber" />
-                </label>
-                <div>
-                  <TagChip tone={a.priority === 'high' ? 'amber' : 'default'}>{a.priority}</TagChip>
-                  <p className="mt-2 text-[14px]">{a.label}</p>
-                  <p className="mt-1 font-body text-[11px] text-ink-2">{a.module}</p>
-                </div>
-              </div>
+            <div key={a.id} className="flex flex-wrap items-center gap-3 bg-panel p-4">
+              <label className="-ml-2 flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center">
+                <input type="checkbox" checked={a.done} onChange={() => toggleAction(a.id)} className="h-[20px] w-[20px] accent-amber" />
+              </label>
+              <p className="min-w-0 flex-1 text-[14px]">{a.label}</p>
+              <TagChip tone="default">{a.module.toUpperCase()}</TagChip>
+              <TagChip tone={a.priority === 'high' ? 'amber' : 'default'}>{a.priority}</TagChip>
             </div>
           )) : <div className="bg-panel"><Empty>{copy("Queue clear.")}</Empty></div>}
         </div>
       </div>
 
       <div className="mb-6">
-        <SectionHead label={copy("Invoices & receivables")} meta={copy("Commissioned deals · tax-ready")} />
+        <SectionHead label={copy("Invoices & receivables")} meta={invoices.length + t(' open invoices', ' ใบแจ้งหนี้ค้าง')} />
         <DataTable>
           <thead>
             <tr className="border-b border-hairline bg-paper">
@@ -198,7 +193,7 @@ export function ActModule({ store, api }: ActModuleProps) {
       </div>
 
       <div>
-        <SectionHead label={copy("Expense ledger")} meta={copy("Transparent — all members")} />
+        <SectionHead label={copy("Expense ledger")} meta={store.expenses.length + t(' entries', ' รายการ')} />
         <DataTable>
           <thead>
             <tr className="border-b border-hairline bg-paper">

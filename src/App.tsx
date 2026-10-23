@@ -8,7 +8,7 @@ import { calcFinance } from './lib/calc'
 import { Hero } from './components/Hero'
 import { Shell } from './components/Shell'
 import { useStore } from './hooks/useStore'
-import { MODULES, type ModuleId } from './lib/types'
+import { type ModuleId } from './lib/types'
 import { Onboarding } from './modules/onboarding/Onboarding'
 import { ErpModule } from './modules/erp'
 import { ActModule } from './modules/act'
@@ -262,7 +262,6 @@ export default function App() {
     return <Onboarding api={api} onDone={enterApp} />
   }
 
-  const activeModule = MODULES.find((m) => m.id === route)
   const session = getAuthSession()
   const tenantLabel =
     store.dataTenant === 'abc'
@@ -313,12 +312,6 @@ export default function App() {
         {route === 'crm' ? <CrmModule store={store} api={api} /> : null}
         {route === 'hr' ? <HrModule store={store} api={api} /> : null}
         {route === 'dossier' ? <DossierView store={store} /> : null}
-        {activeModule ? (
-          <p className="mt-4 text-[11px] text-ink-2">
-            {activeModule.label} / {t('As of', 'ข้อมูล ณ')} {store.asOf}
-            {tenantLabel ? ` · ${tenantLabel}` : ''}
-          </p>
-        ) : null}
       </Shell>
       <SheetsSettingsModal
         open={sheetsOpen}

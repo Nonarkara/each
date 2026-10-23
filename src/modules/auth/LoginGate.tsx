@@ -129,9 +129,50 @@ export function LoginGate({
 
   return (
     <div className="min-h-screen px-4 py-8 sm:px-[22px] sm:py-[22px]">
-      <div className="mx-auto max-w-[520px]">
+      <div className="mx-auto max-w-[1100px]">
+        <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:gap-[22px]">
+        {/* What the product is. The space beside the form earns its place. */}
+        <div className="hidden lg:flex lg:flex-col lg:justify-center">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center border border-amber font-display text-[14px] font-bold text-ink">E</span>
+            <div>
+              <p className="font-display text-[32px] font-bold leading-none">EACH</p>
+              <p className="font-body text-[11px] text-ink-2">ERP · ACT · CRM · HR</p>
+            </div>
+          </div>
+          <p className="mt-10 font-display text-[32px] font-bold leading-[1.1]">
+            {t('Every piece of your startup, unified.', 'ทุกชิ้นส่วนของสตาร์ทอัป รวมที่เดียว')}
+          </p>
+          <div className="mt-8 grid gap-px border border-hairline bg-hairline">
+            {[
+              ['E', 'ERP', t('Cash, burn, runway, credit', 'เงินสด รายจ่าย ระยะเวลา เงินกู้')],
+              ['A', 'ACT', t('Expenses, receivables, open work', 'รายจ่าย ลูกหนี้ งานค้าง')],
+              ['C', 'CRM', t('Customers, pipeline, deals', 'ลูกค้า โอกาส โครงการ')],
+              ['H', 'HR', t('People, payroll, AI operators', 'พนักงาน เงินเดือน ผู้ช่วย AI')],
+            ].map(([letter, name, line]) => (
+              <div key={letter} className="flex items-baseline gap-4 bg-panel px-4 py-3">
+                <span className="font-display text-[14px] font-bold text-ink-2">{letter}</span>
+                <span className="font-display text-[14px] font-bold">{name}</span>
+                <span className="text-[14px] text-ink-2">{line}</span>
+              </div>
+            ))}
+          </div>
+          <ul className="mt-6">
+            {[
+              t('Thai and English throughout', 'ไทยและอังกฤษในทุกหน้า'),
+              t('Excel mirror · encrypted backup · JSON export', 'สำเนา Excel · สำรองเข้ารหัส · ส่งออก JSON'),
+              t('Runs on your own server', 'รันบนเซิร์ฟเวอร์ของคุณเอง'),
+            ].map((fact) => (
+              <li key={fact} className="border-b border-hairline py-2 text-[14px] text-ink-2 last:border-b-0">
+                {fact}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
         <div className="mb-5 flex justify-end"><LanguageSwitch /></div>
-        <div className="mb-8 flex items-center gap-3">
+        <div className="mb-8 flex items-center gap-3 lg:hidden">
           <span className="flex h-11 w-11 items-center justify-center border border-amber font-display text-[14px] font-bold text-ink">E</span>
           <div>
             <p className="font-display text-[32px] font-bold leading-none">EACH</p>
@@ -140,11 +181,7 @@ export function LoginGate({
         </div>
 
         <div className="border border-hairline bg-panel p-5 sm:p-6">
-          <p className="font-body text-[11px] text-ink-2">{copy("Sign in")}</p>
-          <h1 className="mt-2 font-display text-[32px] font-bold leading-tight">{t('Run your startup in one place', 'บริหารสตาร์ทอัปในที่เดียว')}</h1>
-          <p className="mt-3 text-[14px] leading-relaxed text-ink-2">
-            {t('See your cash, record expenses, track customer work, and manage people. Start with your own company or explore a sample workspace first.', 'ดูเงินสด บันทึกรายจ่าย ติดตามงานลูกค้า และจัดการทีม เริ่มด้วยบริษัทของคุณ หรือทดลองพื้นที่ตัวอย่างก่อน')}
-          </p>
+          <h1 className="font-display text-[32px] font-bold leading-tight">{t('Run your startup in one place', 'บริหารสตาร์ทอัปในที่เดียว')}</h1>
 
           {error || signInError ? (
             <p className="mt-4 border-l-2 border-amber bg-paper p-3 text-[14px] text-ink" role="alert">
@@ -249,61 +286,70 @@ export function LoginGate({
 
           {isGoogleConfigured() ? (
             <div ref={googleRef} className="min-h-[44px]" aria-label="Sign in with Google" />
-          ) : (
-            <p className="text-[14px] text-ink-2">
-              {t(
-                'Company sign-in is available when an administrator configures it.',
-                'การเข้าสู่ระบบบริษัทเปิดใช้งานเมื่อผู้ดูแลระบบตั้งค่าแล้ว',
-              )}
-            </p>
-          )}
+          ) : null}
 
           {!googleReady && isGoogleConfigured() ? (
             <p className="font-mono text-[11px] text-ink-2">{copy("Loading Google sign-in…")}</p>
           ) : null}
 
-          <button
-            type="button"
-            onClick={onDemo}
-            className={`${accountAvailable ? 'mt-6' : 'mt-6'} inline-flex min-h-[44px] w-full items-center justify-center border border-hairline bg-panel px-4 text-[14px] text-ink-2 hover:border-rule`}
-          >
-            {t('Explore sample workspace', 'ทดลองพื้นที่ตัวอย่าง')}
-          </button>
-          <p className="mt-2 text-[14px] text-ink-2">
-            {t('ABC Company is fictional. Try every module with sample data; export only when you choose.', 'ABC Company เป็นบริษัทสมมติ ทดลองทุกโมดูลด้วยข้อมูลตัวอย่าง ส่งออกเมื่อคุณเลือกเท่านั้น')}
-          </p>
-
-          <button
-            type="button"
-            onClick={onBlank}
-            className="mt-4 inline-flex min-h-[44px] w-full items-center justify-center border border-hairline bg-panel px-4 text-[14px] text-ink-2 hover:border-ink"
-          >
-            {t('Continue on this device', 'ใช้งานบนเครื่องนี้ก่อน')}
-          </button>
-          <p className="mt-2 text-[14px] text-ink-2">
+          <p className="mt-4 border-t border-hairline pt-3 font-mono text-[11px] text-ink-2">
             {t(
-              'No account: this browser stores the workspace. Export a backup before switching devices.',
-              'ไม่ใช้บัญชี: เบราว์เซอร์นี้เก็บพื้นที่ทำงาน กรุณาสำรองข้อมูลก่อนเปลี่ยนอุปกรณ์',
+              'Your workspace belongs to your account.',
+              'พื้นที่ทำงานของคุณเป็นของบัญชีคุณ',
             )}
           </p>
         </div>
+        </div>
+        </div>
 
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-          {onLearnMore ? (
+        {/* The three ways in without an account: one band, one level below the form. */}
+        <div className="mt-6 grid gap-4 border-t border-hairline pt-5 sm:grid-cols-3">
+          <div>
+            <button
+              type="button"
+              onClick={onDemo}
+              className="inline-flex min-h-[44px] w-full items-center justify-center border border-hairline bg-panel px-4 text-[14px] text-ink-2 hover:border-rule"
+            >
+              {t('Explore sample workspace', 'ทดลองพื้นที่ตัวอย่าง')}
+            </button>
+            <p className="mt-2 text-[11px] text-ink-2">
+              {t(
+                'ABC Company is fictional. Export only when you choose.',
+                'ABC Company เป็นบริษัทสมมติ ส่งออกเมื่อคุณเลือกเท่านั้น',
+              )}
+            </p>
+          </div>
+          <div>
+            <button
+              type="button"
+              onClick={onBlank}
+              className="inline-flex min-h-[44px] w-full items-center justify-center border border-hairline bg-panel px-4 text-[14px] text-ink-2 hover:border-ink"
+            >
+              {t('Continue on this device', 'ใช้งานบนเครื่องนี้ก่อน')}
+            </button>
+            <p className="mt-2 text-[11px] text-ink-2">
+              {t(
+                'No account: this browser keeps the workspace. Back it up before switching devices.',
+                'ไม่ใช้บัญชี: เบราว์เซอร์นี้เก็บพื้นที่ทำงาน สำรองก่อนเปลี่ยนอุปกรณ์',
+              )}
+            </p>
+          </div>
+          <div>
             <button
               type="button"
               onClick={onLearnMore}
-              className="inline-flex min-h-[44px] items-center text-[14px] text-ink-2 underline underline-offset-4 hover:text-ink"
+              disabled={!onLearnMore}
+              className="inline-flex min-h-[44px] w-full items-center justify-center border border-hairline bg-panel px-4 text-[14px] text-ink-2 hover:border-ink disabled:opacity-50"
             >
               {t('What is EACH?', 'EACH คืออะไร')}
             </button>
-          ) : null}
-          <p className="font-mono text-[11px] leading-relaxed text-ink-2">
-            {t(
-              'Your workspace is encrypted in transit and belongs to your account.',
-              'พื้นที่ทำงานของคุณถูกเข้ารหัสระหว่างส่ง และเป็นของบัญชีคุณ',
-            )}
-          </p>
+            <p className="mt-2 text-[11px] text-ink-2">
+              {t(
+                'ERP, ACT, CRM and HR on one workspace.',
+                'ERP, ACT, CRM และ HR ในพื้นที่ทำงานเดียว',
+              )}
+            </p>
+          </div>
         </div>
       </div>
     </div>

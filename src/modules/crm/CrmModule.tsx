@@ -50,17 +50,20 @@ export function CrmModule({ store, api }: CrmModuleProps) {
   const bookValue = store.projects.reduce((a, p) => a + (Number(p.totalValue) || 0), 0)
   const detail = detailId ? store.projects.find((p) => p.id === detailId) : null
 
-  const ideas: string[] = []
+  // One fact and one next move per project — no commentary, no quoting.
+  const reads: { title: string; fact: string }[] = []
   store.projects.forEach((p) => {
     const v = p.totalValue ? compact(p.totalValue, store.currency) : ''
     if (p.dealStatus === 'pipeline' && p.scenarioTier === 2)
-      ideas.push('"' + p.title + '" with ' + (p.client || 'the client') + ' is in pipeline (' + v + '). Follow up this week.')
+      reads.push({ title: p.title, fact: v + ' · pipeline · follow up this week' })
     else if (p.dealStatus === 'pipeline' && p.scenarioTier === 3)
-      ideas.push('"' + p.title + '" is a stretch (' + v + '). Qualify the opportunity before investing time.')
+      reads.push({ title: p.title, fact: v + ' · stretch · qualify before time' })
     else if (p.dealStatus === 'commissioned' && p.totalValue && (p.received || 0) < p.totalValue)
-      ideas.push('"' + p.title + '": ' + compact(p.totalValue - (p.received || 0), store.currency) + ' outstanding. Schedule the next invoice.')
+      reads.push({
+        title: p.title,
+        fact: compact(p.totalValue - (p.received || 0), store.currency) + ' outstanding · schedule next invoice',
+      })
   })
-  if (!ideas.length) ideas.push('Board is steady. No open reads.')
 
   function dropOn(col: ProjectStatus) {
     if (!dragId) return
@@ -130,24 +133,33 @@ export function CrmModule({ store, api }: CrmModuleProps) {
 
   return (
     <div>
-      <Station disc="C" kicker="CRM" title={copy("Projects")} meta={store.projects.length + t(' projects / ', ' โครงการ / ') + compact(bookValue, store.currency) + t(' total project value', ' มูลค่าโครงการรวม')} />
-      <p className="mb-5 max-w-3xl text-[14px] leading-relaxed text-ink-2">{t("Move work from Backlog to In progress, Review, then Done. Open a card to change its status on a phone, add tasks and notes, or log a file name. Pipeline value is a sales possibility; cash changes only when payment is recorded.", "ย้ายงานจากงานรอเริ่ม ไปกำลังทำ รอตรวจ แล้วเสร็จแล้ว บนมือถือเปิดการ์ดเพื่อเลือกสถานะ เพิ่มงาน บันทึก หรือชื่อไฟล์ มูลค่าโอกาสขายยังไม่ใช่เงินสด เงินสดจะเปลี่ยนเมื่อบันทึกการรับเงิน")}</p>
+      <Station disc="C" title={copy("Projects")} meta={store.projects.length + t(' projects / ', ' โครงการ / ') + compact(bookValue, store.currency) + t(' total project value', ' มูลค่าโครงการรวม')} />
 
-      <div className="mb-6 border border-hairline bg-paper p-4">
-        <div className="mb-3 flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center border border-ink font-display text-[14px] font-bold">A</span>
-          <p className="font-body text-[11px] text-ink-2">{copy("Operator reads")}</p>
+      <div className="mb-6 border border-hairline bg-panel">
+        <div className="flex items-center gap-2 border-b border-hairline px-4 py-2">
+          <span className="flex h-6 w-6 items-center justify-center border border-ink font-display text-[11px] font-bold">A</span>
+          <span className="font-body text-[11px] text-ink-2">{copy("Operator reads")}</span>
         </div>
-        {ideas.slice(0, 4).map((t, i) => (
-          <p key={i} className="mt-2 text-[14px] text-ink-2">{t}</p>
-        ))}
+        {reads.length ? (
+          reads.slice(0, 4).map((r, i) => (
+            <div
+              key={i}
+              className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-hairline px-4 py-2 last:border-b-0"
+            >
+              <span className="text-[14px] text-ink">{r.title}</span>
+              <span className="font-mono text-[11px] text-ink-2">{r.fact}</span>
+            </div>
+          ))
+        ) : (
+          <p className="px-4 py-2 text-[11px] text-ink-2">{copy("No open reads")}</p>
+        )}
       </div>
 
       <div className="mb-4 grid gap-px border border-hairline bg-hairline lg:grid-cols-4">
         {COLS.map((col) => {
           const cards = store.projects.filter((p) => p.status === col.id)
           return (
-            <div key={col.id} className="flex min-h-[200px] flex-col bg-panel">
+            <div key={col.id} className={`flex min-h-[200px] flex-col ${cards.length ? 'bg-panel' : 'bg-paper'}`}>
               <div className="flex items-center justify-between border-b border-hairline px-3 py-2">
                 <span className="font-body text-[11px] text-ink-2">{copy(col.label)}</span>
                 <span className="font-mono text-[11px] text-ink-2">{cards.length}</span>
@@ -171,19 +183,19 @@ export function CrmModule({ store, api }: CrmModuleProps) {
                       onClick={() => setDetailId(p.id)}
                       className="cursor-pointer border border-hairline bg-paper p-3 hover:border-rule"
                     >
-                      <div className="flex justify-between gap-2">
-                        <p className="text-[14px] font-semibold">{p.title}</p>
-                        {p.totalValue ? <span className="font-mono text-[14px]">{compact(p.totalValue, store.currency)}</span> : null}
-                      </div>
+                      <p className="text-[14px] font-semibold">{p.title}</p>
                       {p.client ? <p className="mt-1 font-mono text-[11px] text-ink-2">{p.client}</p> : null}
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {p.dealStatus ? (
-                          <TagChip tone={deal ? 'amber' : 'human'}>
-                            {deal ? 'Commissioned' : 'Pipeline · T' + (p.scenarioTier || '?')}
-                          </TagChip>
-                        ) : null}
-                        <span className="font-mono text-[11px] text-ink-2">{tot ? done + '/' + tot + ' tasks' : 'No tasks'}</span>
-                        {p.files?.length ? <span className="font-mono text-[11px] text-ink-2">{p.files.length} files</span> : null}
+                      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap gap-2">
+                          {p.dealStatus ? (
+                            <TagChip tone={deal ? 'amber' : 'human'}>
+                              {deal ? 'Commissioned' : 'Pipeline · T' + (p.scenarioTier || '?')}
+                            </TagChip>
+                          ) : null}
+                          <span className="font-mono text-[11px] text-ink-2">{tot ? done + '/' + tot + ' tasks' : 'No tasks'}</span>
+                          {p.files?.length ? <span className="font-mono text-[11px] text-ink-2">{p.files.length} files</span> : null}
+                        </div>
+                        {p.totalValue ? <span className="font-mono text-[14px]">{compact(p.totalValue, store.currency)}</span> : null}
                       </div>
                       {deal && p.totalValue ? (
                         <div className="mt-2">

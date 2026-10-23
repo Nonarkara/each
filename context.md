@@ -331,4 +331,7 @@ fontsource data-URI notices.
 
 **Still static.** The published site is the evaluation tier: the workspace
 lives in `localStorage`. The account tier needs the Node service
-(`npm run product` or the container); Cloudflare Pages hosts no API.
+(`npm run product` or the container); Cloudflare Pages hosts no API. Because
+there is no account service there, the sign-in panel states that the
+deployment has no accounts and offers "Continue on this device" as the action,
+instead of rendering an empty form box.

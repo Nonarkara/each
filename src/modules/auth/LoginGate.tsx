@@ -189,6 +189,24 @@ export function LoginGate({
             </p>
           ) : null}
 
+          {accountAvailable ? null : (
+            <div className="mt-6">
+              <p className="text-[11px] text-ink-2">
+                {t(
+                  'This deployment has no account service. Your workspace stays in this browser.',
+                  'การติดตั้งนี้ไม่มีบริการบัญชี พื้นที่ทำงานของคุณจะอยู่ในเบราว์เซอร์นี้',
+                )}
+              </p>
+              <button
+                type="button"
+                onClick={onBlank}
+                className="mt-3 inline-flex min-h-[44px] w-full items-center justify-center border border-ink bg-panel px-4 text-[14px] text-ink hover:border-amber"
+              >
+                {t('Continue on this device', 'ใช้งานบนเครื่องนี้ก่อน')}
+              </button>
+            </div>
+          )}
+
           {accountAvailable ? (
             <form className="mt-6" onSubmit={submitAccount}>
               <p className="font-body text-[11px] text-ink-2">
@@ -292,18 +310,20 @@ export function LoginGate({
             <p className="font-mono text-[11px] text-ink-2">{copy("Loading Google sign-in…")}</p>
           ) : null}
 
-          <p className="mt-4 border-t border-hairline pt-3 font-mono text-[11px] text-ink-2">
-            {t(
-              'Your workspace belongs to your account.',
-              'พื้นที่ทำงานของคุณเป็นของบัญชีคุณ',
-            )}
-          </p>
+          {accountAvailable ? (
+            <p className="mt-4 border-t border-hairline pt-3 font-mono text-[11px] text-ink-2">
+              {t(
+                'Your workspace belongs to your account.',
+                'พื้นที่ทำงานของคุณเป็นของบัญชีคุณ',
+              )}
+            </p>
+          ) : null}
         </div>
         </div>
         </div>
 
-        {/* The three ways in without an account: one band, one level below the form. */}
-        <div className="mt-6 grid gap-4 border-t border-hairline pt-5 sm:grid-cols-3">
+        {/* The ways in without an account: one band, one level below the form. */}
+        <div className={`mt-6 grid gap-4 border-t border-hairline pt-5 ${accountAvailable ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
           <div>
             <button
               type="button"
@@ -319,21 +339,23 @@ export function LoginGate({
               )}
             </p>
           </div>
-          <div>
-            <button
-              type="button"
-              onClick={onBlank}
-              className="inline-flex min-h-[44px] w-full items-center justify-center border border-hairline bg-panel px-4 text-[14px] text-ink-2 hover:border-ink"
-            >
-              {t('Continue on this device', 'ใช้งานบนเครื่องนี้ก่อน')}
-            </button>
-            <p className="mt-2 text-[11px] text-ink-2">
-              {t(
-                'No account: this browser keeps the workspace. Back it up before switching devices.',
-                'ไม่ใช้บัญชี: เบราว์เซอร์นี้เก็บพื้นที่ทำงาน สำรองก่อนเปลี่ยนอุปกรณ์',
-              )}
-            </p>
-          </div>
+          {accountAvailable ? (
+            <div>
+              <button
+                type="button"
+                onClick={onBlank}
+                className="inline-flex min-h-[44px] w-full items-center justify-center border border-hairline bg-panel px-4 text-[14px] text-ink-2 hover:border-ink"
+              >
+                {t('Continue on this device', 'ใช้งานบนเครื่องนี้ก่อน')}
+              </button>
+              <p className="mt-2 text-[11px] text-ink-2">
+                {t(
+                  'No account: this browser keeps the workspace. Back it up before switching devices.',
+                  'ไม่ใช้บัญชี: เบราว์เซอร์นี้เก็บพื้นที่ทำงาน สำรองก่อนเปลี่ยนอุปกรณ์',
+                )}
+              </p>
+            </div>
+          ) : null}
           <div>
             <button
               type="button"

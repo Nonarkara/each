@@ -11,9 +11,9 @@ import {
   Input,
   Modal,
   ProgressBar,
+  MetricRow,
   SectionHead,
   StackBar,
-  StatCell,
   Station,
   TagChip,
 } from '../../components/ui/Axiom'
@@ -21,11 +21,6 @@ import {
 interface HrModuleProps {
   store: EachStore
   api: typeof storeApi
-}
-
-function avgEff(ai: EachStore['aiEmployees']) {
-  if (!ai.length) return 0
-  return Math.round(ai.reduce((a, b) => a + (Number(b.efficiency) || 0), 0) / ai.length)
 }
 
 export function HrModule({ store, api }: HrModuleProps) {
@@ -96,32 +91,35 @@ export function HrModule({ store, api }: HrModuleProps) {
 
   return (
     <div>
-      <Station disc="H" title={copy("People")} meta={ai.length + ' AI / ' + hum.length + t(' people', ' คน')} />
+      <Station disc="H" title={copy("People")} />
 
-      <div className="mb-6 grid gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-4">
-        <StatCell label={copy("Monthly people cost")} value={money(total, store.currency)} sub={copy("Feeds ERP OpEx directly")} />
-        <StatCell label={copy("AI operators")} value={String(ai.length)} sub={money(aiCost, store.currency) + ' / mo'} />
-        <StatCell label={copy("Human staff")} value={String(hum.length)} sub={money(humCost, store.currency) + ' / mo'} />
-        <StatCell label={copy("Avg AI efficiency")} value={ai.some((a) => a.efficiency > 0) ? avgEff(ai) + '%' : '—'} sub={copy("Self-reported / rated")} />
-      </div>
-
-      <div className="mb-6">
-        <SectionHead label={copy("People OpEx split")} meta={copy("Reflects into ERP monthly burn")} />
-        <StackBar tall segments={[{ pct: aiShare * 100, variant: 'amber' }, { pct: (1 - aiShare) * 100, variant: 'ink' }]} />
-        <div className="mt-2 flex flex-wrap gap-x-6 font-mono text-[11px] text-ink-2">
-          <span className="inline-flex items-center gap-2">
-            <span className="inline-block h-2 w-2 bg-amber" aria-hidden />
-            AI {money(aiCost, store.currency)} · {Math.round(aiShare * 100)}%
-          </span>
-          <span className="inline-flex items-center gap-2">
-            <span className="inline-block h-2 w-2 bg-ink" aria-hidden />
-            {copy("Human")} {money(humCost, store.currency)} · {Math.round((1 - aiShare) * 100)}%
-          </span>
+      {/* The one number people cost, and the split of it. The roster counts live
+          with their own sections, so nothing is stated twice. */}
+      <div className="mb-6 grid gap-px border border-hairline bg-hairline lg:grid-cols-[1.618fr_1fr]">
+        <div className="bg-panel p-5">
+          <p className="text-[11px] text-ink-2">{copy("Monthly people cost")}</p>
+          <p className="mt-2 font-display text-[32px] font-bold leading-none">{money(total, store.currency)}</p>
+          <p className="mt-2 font-mono text-[11px] text-ink-2">{copy("Feeds ERP OpEx directly")}</p>
+          <div className="mt-4">
+            <StackBar tall segments={[{ pct: aiShare * 100, variant: 'amber' }, { pct: (1 - aiShare) * 100, variant: 'ink' }]} />
+          </div>
+        </div>
+        <div className="bg-panel p-5">
+          <p className="text-[11px] text-ink-2">{copy("What it pays for")}</p>
+          <dl className="mt-3">
+            <MetricRow label={t('AI', 'AI')} value={money(aiCost, store.currency) + ' · ' + Math.round(aiShare * 100) + '%'} />
+            <MetricRow label={t('Human', 'คน')} value={money(humCost, store.currency) + ' · ' + Math.round((1 - aiShare) * 100) + '%'} />
+          </dl>
         </div>
       </div>
 
+      {ai.length ? (
       <div className="mb-6">
-        <SectionHead label={copy("AI operators")} meta={ai.length + ' active · framed as employees'} />
+        <SectionHead
+          label={copy("AI operators")}
+          meta={ai.length + t(' active', ' คน')}
+          action={<Btn variant="ghost" onClick={() => setAiOpen(true)}>{copy("+ Add operator")}</Btn>}
+        />
         <div className="grid gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-3">
           {ai.map((a) => (
             <div key={a.id} className="bg-panel p-4">
@@ -152,18 +150,27 @@ export function HrModule({ store, api }: HrModuleProps) {
           ))}
         </div>
         {best ? (
-          <div className="mt-4 border border-hairline bg-paper p-4">
-            <p className="font-body text-[11px] text-ink-2">{copy("Operator read")}</p>
-            <p className="mt-2 text-[14px] text-ink-2">
-              {t(`${best.name} scores highest per cost, ${worst.name} lowest. Your own numbers.`, `${best.name} มีคะแนนต่อค่าใช้จ่ายสูงสุด ส่วน ${worst.name} ต่ำสุด เป็นตัวเลขที่คุณกรอกเอง`)}
-            </p>
+          <div className="mt-4 flex flex-wrap items-baseline justify-between gap-3 border border-hairline bg-paper px-4 py-3">
+            <span className="text-[11px] text-ink-2">{copy("Best per cost")}</span>
+            <span className="font-mono text-[14px]">{best.name}</span>
+            <span className="text-[11px] text-ink-2">{copy("Lowest per cost")}</span>
+            <span className="font-mono text-[14px]">{worst.name}</span>
           </div>
         ) : null}
-        <Btn variant="ghost" className="mt-4" onClick={() => setAiOpen(true)}>{copy("+ Add operator")}</Btn>
       </div>
+      ) : (
+        <div className="mb-6 flex items-center justify-between gap-3 border border-hairline bg-panel px-4 py-2">
+          <span className="text-[14px]">{copy("AI operators")}</span>
+          <Btn variant="ghost" onClick={() => setAiOpen(true)}>{copy("+ Add operator")}</Btn>
+        </div>
+      )}
 
       <div>
-        <SectionHead label={copy("Human staff")} meta={hum.length + ' on payroll'} />
+        <SectionHead
+          label={copy("Human staff")}
+          meta={hum.length + ' on payroll'}
+          action={<Btn variant="ghost" onClick={() => setHumOpen(true)}>{copy("+ Add employee")}</Btn>}
+        />
         <DataTable>
           <thead>
             <tr className="border-b border-hairline bg-paper">
@@ -188,7 +195,6 @@ export function HrModule({ store, api }: HrModuleProps) {
             )}
           </tbody>
         </DataTable>
-        <Btn variant="ghost" className="mt-4" onClick={() => setHumOpen(true)}>{copy("+ Add employee")}</Btn>
       </div>
 
       <Modal title={copy("Add AI operator")} open={aiOpen} onClose={() => setAiOpen(false)} actions={<><Btn variant="ghost" onClick={() => setAiOpen(false)}>{copy("Cancel")}</Btn><Btn onClick={addAi}>{copy("Add")}</Btn></>}>

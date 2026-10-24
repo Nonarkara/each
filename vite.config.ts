@@ -8,8 +8,13 @@ const accountService = process.env.EACH_ACCOUNT_URL || 'http://127.0.0.1:8080'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  // Relative base: works on github.io/each/ and each.nonarkara.org without rebuild
-  base: './',
+  // Absolute base: the site is served from the root of its host
+  // (each.nonarkara.org), and the root is the only place the asset paths can
+  // be honest. A relative base ("./assets/...") breaks the moment the same
+  // index.html is served from a subdirectory — the MSH gate's own fixture
+  // pages are exactly that case, and a page whose script 404s is a blank page
+  // that measures as nothing.
+  base: '/',
   server: {
     host: '127.0.0.1',
     allowedHosts: ['each.localhost'],

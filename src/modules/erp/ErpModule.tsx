@@ -8,13 +8,11 @@ import type { storeApi } from '../../lib/store'
 import {
   Btn,
   DataTable,
-  Empty,
   Input,
   Modal,
   ProgressBar,
   SectionHead,
   StackBar,
-  StatCell,
   Station,
   MetricRow,
 } from '../../components/ui/Axiom'
@@ -109,12 +107,36 @@ export function ErpModule({ store, api }: ErpModuleProps) {
               : t('No burn recorded', 'ยังไม่มีรายจ่าย')}
           </p>
           {!safe ? (
-            <p className="mt-4 border-l-2 border-amber pl-3 text-[14px] font-semibold text-ink lg:mt-auto lg:pt-4">
+            <p className="mt-4 border-l-2 border-amber pl-3 text-[14px] font-semibold text-ink">
               {t(
                 'Under six months. Collect or cut before the next close.',
                 'ต่ำกว่า 6 เดือน เก็บเงินหรือลดรายจ่ายก่อนรอบปิดถัดไป',
               )}
             </p>
+          ) : null}
+          {/* The curve is the runway's own evidence: it belongs beside the number. */}
+          {f.proj.length >= 3 && f.monthlyBurn > 0 ? (
+            <div className="mt-5">
+              <div className="flex h-[60px] items-end gap-[3px]">
+                {f.proj.slice(0, 24).map((bal, i) => {
+                  const max = f.proj[0] || 1
+                  const h = Math.max(2, (bal / max) * 60)
+                  const last = i === f.proj.length - 1
+                  return (
+                    <div
+                      key={i}
+                      title={'M' + i + ': ' + money(Math.max(0, bal), f.cur)}
+                      className={`w-[10px] ${last ? 'bg-amber' : 'bg-ink'}`}
+                      style={{ height: h + 'px', opacity: last ? 1 : Math.max(0.3, 1 - i / 30) }}
+                    />
+                  )
+                })}
+              </div>
+              <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-2">
+                <span>{copy("Now")}</span>
+                <span>{copy("Cash hits zero")}</span>
+              </div>
+            </div>
           ) : null}
         </div>
         <div className="bg-panel p-5">
@@ -130,89 +152,55 @@ export function ErpModule({ store, api }: ErpModuleProps) {
             />
           </div>
           <dl className="mt-3">
-            <MetricRow label={copy("CapEx this month")} value={money(f.monthCapex, f.cur)} />
-            <MetricRow label={copy("OpEx this month")} value={money(f.recurring + f.monthOpex, f.cur)} />
-            <MetricRow label={copy("Debt service")} value={money(f.monthlyDebtService, f.cur)} />
+            <MetricRow label={copy("CapEx this month")} value={money(f.monthCapex, f.cur)} swatch="ink" />
+            <MetricRow label={copy("OpEx this month")} value={money(f.recurring + f.monthOpex, f.cur)} swatch="amber" />
+            <MetricRow label={copy("Debt service")} value={money(f.monthlyDebtService, f.cur)} swatch="muted" />
           </dl>
         </div>
-      </div>
 
-      <div className="mb-6 grid gap-px border border-hairline bg-hairline sm:grid-cols-3">
-        <StatCell label={copy("Called capital")} value={money(f.founding, f.cur)} />
-        <StatCell label={copy("Monthly burn")} value={money(f.monthlyBurn, f.cur)} />
-        <StatCell label={copy("Recurring")} value={money(f.recurring, f.cur)} />
-      </div>
-
-      <div className="mb-6">
-        <SectionHead
-          label={copy("Revenue")}
-          meta={store.projects.length + t(' recorded projects', ' โครงการที่บันทึก')}
-        />
-        <div className="grid gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-4">
-          <StatCell label={copy("Received")} value={money(f.receivedRevenue, f.cur)} />
-          <StatCell label={copy("Contracted")} value={money(f.contractedRevenue, f.cur)} />
-          <StatCell label={copy("Outstanding")} value={money(f.outstanding, f.cur)} />
-          <StatCell label={copy("Expected pipeline")} value={money(f.expectedPipeline, f.cur)} />
-        </div>
-        <div className="mt-3">
-          <StackBar tall segments={[{ pct: rPct, variant: 'ink' }, { pct: oPct, variant: 'amber' }, { pct: pPct, variant: 'muted' }]} />
-          <div className="mt-2 flex flex-wrap gap-x-6 font-mono text-[11px] text-ink-2">
-            <span className="inline-flex items-center gap-2">
-              <span className="inline-block h-2 w-2 bg-ink" aria-hidden />
-              {t('Received', 'รับแล้ว')} {Math.round(rPct)}%
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <span className="inline-block h-2 w-2 bg-amber" aria-hidden />
-              {copy("Outstanding")} {Math.round(oPct)}%
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <span className="inline-block h-2 w-2 bg-ink-2" aria-hidden />
-              {t('Pipeline', 'โอกาสรายได้')} {Math.round(pPct)}%
-            </span>
+        {/* Money in three states, and what the balance sheet is carrying. */}
+        <div className="bg-panel p-5">
+          <div className="flex items-baseline justify-between gap-3">
+            <p className="text-[11px] text-ink-2">{copy("Revenue")}</p>
+            <p className="font-mono text-[11px] text-ink-2">
+              {store.projects.length + t(' recorded projects', ' โครงการที่บันทึก')}
+            </p>
+          </div>
+          <div className="mt-3">
+            <StackBar tall segments={[{ pct: rPct, variant: 'ink' }, { pct: oPct, variant: 'amber' }, { pct: pPct, variant: 'muted' }]} />
+          </div>
+          <div className="mt-3 grid gap-px bg-hairline sm:grid-cols-3">
+            {[
+              { swatch: 'bg-ink', label: t('Received', 'รับแล้ว'), value: money(f.receivedRevenue, f.cur), pct: rPct },
+              { swatch: 'bg-amber', label: t('Outstanding', 'ลูกหนี้ค้าง'), value: money(f.outstanding, f.cur), pct: oPct },
+              { swatch: 'bg-ink-2', label: t('Expected pipeline', 'รายได้ที่คาดหวัง'), value: money(f.expectedPipeline, f.cur), pct: pPct },
+            ].map((c) => (
+              <div key={c.label} className="bg-panel pt-3 sm:pr-3">
+                <p className="flex items-center gap-2 text-[11px] text-ink-2">
+                  <span className={`inline-block h-2 w-2 ${c.swatch}`} aria-hidden />
+                  {c.label}
+                </p>
+                <p className="mt-1 font-mono text-[14px]">{c.value}</p>
+                <p className="font-mono text-[11px] text-ink-2">{Math.round(c.pct)}%</p>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
-
-      <div className="mb-6">
-        <SectionHead
-          label={copy("Runway projection")}
-          meta={f.proj.length ? f.proj.length + t(' months to depletion', ' เดือนจนเงินหมด') : t('No burn', 'ยังไม่มีรายจ่าย')}
-        />
-        {!f.proj.length || f.monthlyBurn <= 0 ? (
-          <Empty>{copy("Record expenses to see the projection.")}</Empty>
-        ) : f.proj.length < 3 ? (
-          <p className="border border-hairline bg-panel p-4 text-[14px] text-ink-2">
-            {t('Cash reaches zero next month at the recorded burn.', 'เงินสดหมดเดือนหน้าที่รายจ่ายที่บันทึกไว้')}
-          </p>
-        ) : (
-          <>
-            <div className="flex h-[90px] items-end gap-[3px]">
-              {f.proj.slice(0, 24).map((bal, i) => {
-                const max = f.proj[0] || 1
-                const h = Math.max(2, (bal / max) * 90)
-                const last = i === f.proj.length - 1
-                return (
-                  <div
-                    key={i}
-                    title={'M' + i + ': ' + money(Math.max(0, bal), f.cur)}
-                    className={`w-[10px] ${last ? 'bg-amber' : 'bg-ink'}`}
-                    style={{ height: h + 'px', opacity: last ? 1 : Math.max(0.3, 1 - i / 30) }}
-                  />
-                )
-              })}
-            </div>
-            <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-2">
-              <span>{copy("Now")}</span>
-              <span>{copy("Cash hits zero")}</span>
-            </div>
-          </>
-        )}
+        <div className="bg-panel p-5">
+          <p className="text-[11px] text-ink-2">{copy("Capital and debt")}</p>
+          <dl className="mt-3">
+            <MetricRow label={copy("Called capital")} value={money(f.founding, f.cur)} />
+            <MetricRow label={copy("Debt owed")} value={money(f.totalDebt, f.cur)} />
+            <MetricRow label={copy("Loans")} value={String((store.loans || []).length)} />
+          </dl>
+        </div>
       </div>
 
       <div className="mb-6">
         <SectionHead
           label={copy("Credit & installments")}
-          meta={(store.loans?.length || 0) + t(' loans / ', ' รายการ / ') + money(f.totalDebt, f.cur) + t(' owed / ', ' ยอดหนี้ / ') + money(f.monthlyDebtService, f.cur) + t(' per month', ' ต่อเดือน')}
+          meta={(store.loans?.length || 0) + t(' loans', ' รายการ')}
+          action={<Btn variant="ghost" onClick={() => setLoanOpen(true)}>{copy("+ Add loan")}</Btn>}
         />
         <DataTable>
           <thead>
@@ -248,7 +236,6 @@ export function ErpModule({ store, api }: ErpModuleProps) {
             )}
           </tbody>
         </DataTable>
-        <Btn variant="ghost" className="mt-3" onClick={() => setLoanOpen(true)}>{copy("+ Add loan")}</Btn>
       </div>
 
       <Modal
@@ -295,30 +282,31 @@ export function ErpModule({ store, api }: ErpModuleProps) {
               const done = kr.filter((k) => k.done).length
               const pct = kr.length ? (done / kr.length) * 100 : 0
               return (
-                <div key={o.id} className="grid gap-px bg-hairline lg:grid-cols-[1.618fr_1fr]">
-                  <div className="bg-panel p-4">
+                <div key={o.id} className="bg-panel p-4">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                     <p className="text-[14px] font-semibold">{o.objective}</p>
-                    <div className="mt-3 w-4/5">
-                      <ProgressBar pct={pct} variant="amber" />
-                    </div>
+                    <p className="font-mono text-[11px] text-ink-2">
+                      {done + ' / ' + kr.length + t(' done', ' เสร็จ')}
+                    </p>
                   </div>
-                  <div className="bg-panel p-4">
-                    <ul>
-                      {kr.map((k, i) => (
-                        <li key={i} className="flex min-h-[44px] items-center gap-3">
-                          <label className="-ml-2 flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center">
-                            <input
-                              type="checkbox"
-                              checked={k.done}
-                              onChange={(e) => toggleKr(o.id, i, e.target.checked)}
-                              className="h-[20px] w-[20px] accent-amber"
-                            />
-                          </label>
-                          <span className={`text-[14px] ${k.done ? 'text-ink-2 line-through' : ''}`}>{k.k}</span>
-                        </li>
-                      ))}
-                    </ul>
+                  <div className="mt-3 max-w-[520px]">
+                    <ProgressBar pct={pct} variant="amber" />
                   </div>
+                  <ul className="mt-2">
+                    {kr.map((k, i) => (
+                      <li key={i} className="flex min-h-[44px] items-center gap-3">
+                        <label className="-ml-2 flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center">
+                          <input
+                            type="checkbox"
+                            checked={k.done}
+                            onChange={(e) => toggleKr(o.id, i, e.target.checked)}
+                            className="h-[20px] w-[20px] accent-amber"
+                          />
+                        </label>
+                        <span className={`text-[14px] ${k.done ? 'text-ink-2 line-through' : ''}`}>{k.k}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )
             })}

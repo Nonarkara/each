@@ -13,7 +13,6 @@ import {
   Modal,
   SectionHead,
   Select,
-  StatCell,
   Station,
   TagChip,
 } from '../../components/ui/Axiom'
@@ -140,19 +139,17 @@ export function ActModule({ store, api }: ActModuleProps) {
 
   return (
     <div>
-      <Station disc="A" title={copy("Accounting & actions")} meta={openActions.length + t(' open actions', ' งานที่ยังไม่เสร็จ')} />
-
-      <div className="mb-6 grid gap-px border border-hairline bg-hairline sm:grid-cols-3">
-        <StatCell label={copy("Outstanding AR")} value={money(f.outstanding, f.cur)} sub={invoices.length + ' invoices due'} />
-        <StatCell label={copy("Expense ledger")} value={String(store.expenses.length)} sub={money(f.totalExpenses, f.cur) + ' recorded'} />
-        <StatCell label={copy("Action queue")} value={String(openActions.length)} sub={copy("Derived + manual")} />
-      </div>
+      <Station
+        disc="A"
+        title={copy("Accounting & actions")}
+        meta={openActions.length + t(' open · ', ' งานค้าง ') + money(f.outstanding, f.cur) + t(' outstanding', ' ลูกหนี้ค้าง')}
+      />
 
       <div className="mb-6">
-        <SectionHead label={copy("Action queue")} meta={copy("What must happen next")} />
+        <SectionHead label={copy("Action queue")} />
         <div className="grid gap-px border border-hairline bg-hairline">
           {openActions.length ? openActions.map((a) => (
-            <div key={a.id} className="flex flex-wrap items-center gap-3 bg-panel p-4">
+            <div key={a.id} className="flex flex-wrap items-center gap-3 bg-panel px-4 py-2">
               <label className="-ml-2 flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center">
                 <input type="checkbox" checked={a.done} onChange={() => toggleAction(a.id)} className="h-[20px] w-[20px] accent-amber" />
               </label>
@@ -193,7 +190,11 @@ export function ActModule({ store, api }: ActModuleProps) {
       </div>
 
       <div>
-        <SectionHead label={copy("Expense ledger")} meta={store.expenses.length + t(' entries', ' รายการ')} />
+        <SectionHead
+          label={copy("Expense ledger")}
+          meta={store.expenses.length + t(' entries', ' รายการ')}
+          action={<Btn variant="ghost" onClick={() => setExpenseOpen(true)}>{copy("+ Add expense")}</Btn>}
+        />
         <DataTable>
           <thead>
             <tr className="border-b border-hairline bg-paper">
@@ -220,7 +221,6 @@ export function ActModule({ store, api }: ActModuleProps) {
             )}
           </tbody>
         </DataTable>
-        <Btn variant="ghost" className="mt-4" onClick={() => setExpenseOpen(true)}>{copy("+ Add expense")}</Btn>
       </div>
 
       {expenseError ? <p role="alert" className="border-l-2 border-amber p-3">{expenseError}</p> : null}

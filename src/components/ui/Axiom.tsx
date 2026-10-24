@@ -8,18 +8,23 @@ interface StationProps {
 }
 
 /**
- * The page head. One line, one rule: the title carries the page, the optional
- * kicker and meta sit on the same baseline beside it. Nothing is pushed to a
- * far edge — an orphan "as of" on the opposite margin is spatial waste.
+ * The page head. One line, one rule: the title carries the page, and the
+ * supporting facts ride beside it on one baseline — never stacked as a column
+ * of lone lines, and never pushed to the opposite margin.
+ *
+ * The facts are ONE string, so the head wraps as text rather than as a row of
+ * items that can break and strand one of them on a line of its own. On a
+ * phone the title takes its own line and the facts sit under it, attached to
+ * the thing they describe.
  */
 export function Station({ disc, kicker, title, meta }: StationProps) {
+  const facts = [kicker, meta].filter(Boolean).join(' · ')
   return (
     <header className="mb-5 border-b-2 border-ink pb-3">
-      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <span className="sr-only">{disc}</span>
-        <h2 className="font-display text-[32px] font-bold leading-tight">{title}</h2>
-        {kicker ? <span className="text-[11px] text-ink-2">{kicker}</span> : null}
-        {meta ? <span className="text-[11px] text-ink-2">{meta}</span> : null}
+      <span className="sr-only">{disc}</span>
+      <div className="grid gap-y-1 sm:grid-cols-[auto_1fr] sm:items-baseline sm:gap-x-3">
+        <h1 className="font-display text-[32px] font-bold leading-tight">{title}</h1>
+        {facts ? <p className="text-[11px] text-ink-2">{facts}</p> : null}
       </div>
     </header>
   )
@@ -44,13 +49,25 @@ export function StatCell({ label, value, sub }: StatCellProps) {
 interface MetricRowProps {
   label: string
   value: string
+  /** The colour this row's share of the bar above it wears. A segment a
+      reader cannot name is a segment they cannot read. */
+  swatch?: 'ink' | 'amber' | 'muted'
+}
+
+const SWATCH_CLASS: Record<string, string> = {
+  ink: 'bg-ink',
+  amber: 'bg-amber',
+  muted: 'bg-ink-2',
 }
 
 /** A dense label/value line: the readout of a composition, not a card. */
-export function MetricRow({ label, value }: MetricRowProps) {
+export function MetricRow({ label, value, swatch }: MetricRowProps) {
   return (
     <div className="flex items-baseline justify-between gap-3 border-b border-hairline py-1 last:border-b-0">
-      <dt className="text-[11px] text-ink-2">{label}</dt>
+      <dt className="flex items-center gap-2 text-[11px] text-ink-2">
+        {swatch ? <span className={`inline-block h-2 w-2 ${SWATCH_CLASS[swatch]}`} aria-hidden /> : null}
+        {label}
+      </dt>
       <dd className="font-mono text-[14px] text-ink">{value}</dd>
     </div>
   )
@@ -59,12 +76,20 @@ export function MetricRow({ label, value }: MetricRowProps) {
 interface SectionHeadProps {
   label: string
   meta?: string
+  action?: ReactNode
 }
-export function SectionHead({ label, meta }: SectionHeadProps) {
+/**
+ * A section's title row. The meta is the count, and the action belongs to the
+ * section it sits in — a button stranded under the table is a scattered action.
+ */
+export function SectionHead({ label, meta, action }: SectionHeadProps) {
   return (
-    <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-      <h3 className="text-[14px] font-semibold text-ink">{label}</h3>
-      {meta ? <p className="text-[11px] text-ink-2">{meta}</p> : null}
+    <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h3 className="text-[14px] font-semibold text-ink">{label}</h3>
+        {meta ? <p className="text-[11px] text-ink-2">{meta}</p> : null}
+      </div>
+      {action ? <div className="shrink-0">{action}</div> : null}
     </div>
   )
 }

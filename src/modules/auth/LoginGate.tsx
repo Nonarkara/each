@@ -128,7 +128,7 @@ export function LoginGate({
   }
 
   return (
-    <div className="min-h-screen px-4 py-8 sm:px-[22px] sm:py-[22px]">
+    <main className="min-h-screen px-4 py-8 sm:px-[22px] sm:py-[22px]">
       <div className="mx-auto max-w-[1100px]">
         <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:gap-[22px]">
         {/* What the product is. The space beside the form earns its place. */}
@@ -170,8 +170,9 @@ export function LoginGate({
           </ul>
         </div>
 
-        <div>
+        <div className="flex flex-col">
         <div className="mb-5 flex justify-end"><LanguageSwitch /></div>
+        <div className="lg:flex lg:flex-1 lg:flex-col lg:justify-center">
         <div className="mb-8 flex items-center gap-3 lg:hidden">
           <span className="flex h-11 w-11 items-center justify-center border border-amber font-display text-[14px] font-bold text-ink">E</span>
           <div>
@@ -200,7 +201,7 @@ export function LoginGate({
               <button
                 type="button"
                 onClick={onBlank}
-                className="mt-3 inline-flex min-h-[44px] w-full items-center justify-center border border-ink bg-panel px-4 text-[14px] text-ink hover:border-amber"
+                className="mt-3 inline-flex min-h-[44px] w-full items-center justify-center border border-amber bg-amber px-4 text-[14px] font-semibold text-ink hover:brightness-95"
               >
                 {t('Continue on this device', 'ใช้งานบนเครื่องนี้ก่อน')}
               </button>
@@ -321,6 +322,7 @@ export function LoginGate({
         </div>
         </div>
         </div>
+        </div>
 
         {/* The ways in without an account: one band, one level below the form. */}
         <div className={`mt-6 grid gap-4 border-t border-hairline pt-5 ${accountAvailable ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
@@ -374,6 +376,6 @@ export function LoginGate({
           </div>
         </div>
       </div>
-    </div>
+    </main>
   )
 }

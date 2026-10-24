@@ -62,22 +62,25 @@ export function Shell({
           ? "bg-ink-2"
           : "bg-ink-2";
   const indicatorInteractive = Boolean(onSyncIndicatorClick);
+  /* Which dataset this is, where the data lives, and who is signed in: three
+     facts about the state of the workspace, told together under the numbers
+     they belong to. */
+  const stateText = [tenantLabel, storageLabel, accountEmail].filter(Boolean).join(" · ");
   return (
     <div>
       <header className="sticky top-0 z-50 border-b border-rule bg-paper">
         <div className="workspace-header mx-auto max-w-[1360px] px-4 py-2 lg:px-[22px]">
-          <div className="workspace-identity flex min-w-0 items-center gap-3">
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="min-w-0">
-                <p className="font-display text-[14px] font-bold text-ink">
-                  EACH
-                </p>
-                <p className="truncate text-[11px] text-ink-2">
-                  {companyName || "Startup / SME"}
-                  {tenantLabel ? ` · ${tenantLabel}` : ""}
-                </p>
-              </div>
-            </div>
+          <div className="workspace-identity flex min-w-0 flex-col">
+            {/* The masthead names two things and stops: the product, and the
+                workspace it is running for. At 360px the column beside the
+                actions is 94px wide — a third name in this block pushed the
+                wordmark out of its own column and broke it mid-word. */}
+            <p className="font-display text-[14px] font-bold text-ink">
+              EACH
+            </p>
+            <p className="min-w-0 break-words text-[11px] text-ink-2">
+              {companyName || "Startup / SME"}
+            </p>
           </div>
           <div className="workspace-actions flex flex-wrap items-center gap-2">
             <span className="workspace-language">
@@ -89,11 +92,19 @@ export function Shell({
             ) : null}
             <details className="relative">
               <summary
-                className="inline-flex min-h-[44px] min-w-[44px] cursor-pointer list-none items-center justify-center border border-hairline bg-panel px-3"
+                className="inline-flex min-h-[44px] min-w-[44px] w-11 cursor-pointer list-none items-center justify-center border border-hairline bg-panel px-0 sm:w-auto sm:px-3"
                 aria-label={t("Workspace tools", "เครื่องมือพื้นที่ทำงาน")}
                 title={t("Workspace tools", "เครื่องมือพื้นที่ทำงาน")}
               >
-                {t("Tools", "เครื่องมือ")}
+                {/* Below 640px the band has room for the mark, not for the
+                    word: four squares say "tools" and cost 44px. */}
+                <svg className="h-4 w-4 sm:hidden" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <rect x="0" y="0" width="6" height="6" />
+                  <rect x="10" y="0" width="6" height="6" />
+                  <rect x="0" y="10" width="6" height="6" />
+                  <rect x="10" y="10" width="6" height="6" />
+                </svg>
+                <span className="hidden sm:inline">{t("Tools", "เครื่องมือ")}</span>
               </summary>
               <div
                 className="absolute right-0 top-full z-50 mt-px grid w-[min(340px,90vw)] grid-cols-2 gap-px border border-rule bg-hairline p-px"
@@ -182,7 +193,11 @@ export function Shell({
 
       <main className="mx-auto w-full max-w-[1360px] px-4 py-5 sm:px-[22px] sm:py-[22px]">
         {vitals ? (
-          <div className="mb-5 flex flex-wrap items-baseline gap-x-6 gap-y-1 border-b border-hairline pb-3">
+          /* Three facts in one strip, one reading order. The state of the
+             workspace sits beside the numbers it belongs to: pushed to the
+             opposite margin it leaves a void the reader has to cross, and at
+             390px it strands on a line of its own. */
+          <div className="mb-5 grid grid-cols-2 gap-x-6 gap-y-1 border-b border-hairline pb-3 sm:grid-cols-[auto_auto_1fr]">
             <div className="flex items-baseline gap-2">
               <span className="text-[11px] text-ink-2">{t("Cash", "เงินสด")}</span>
               <span className="font-mono text-[14px] font-medium">{vitals.cash}</span>
@@ -195,7 +210,7 @@ export function Shell({
                 {vitals.runway}
               </span>
             </div>
-            <div className="ml-auto flex items-center gap-3">
+            <div className="col-span-2 flex flex-wrap items-center gap-x-3 gap-y-1 sm:col-span-1">
               {syncStatus !== "local" ? (
                 indicatorInteractive ? (
                   <button
@@ -214,8 +229,7 @@ export function Shell({
                   </span>
                 )
               ) : null}
-              {storageLabel ? <span className="text-[11px] text-ink-2">{storageLabel}</span> : null}
-              {accountEmail ? <span className="text-[11px] text-ink-2">{accountEmail}</span> : null}
+              {stateText ? <span className="text-[11px] text-ink-2">{stateText}</span> : null}
             </div>
           </div>
         ) : null}

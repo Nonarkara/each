@@ -50,21 +50,6 @@ export function CrmModule({ store, api }: CrmModuleProps) {
   const bookValue = store.projects.reduce((a, p) => a + (Number(p.totalValue) || 0), 0)
   const detail = detailId ? store.projects.find((p) => p.id === detailId) : null
 
-  // One fact and one next move per project — no commentary, no quoting.
-  const reads: { title: string; fact: string }[] = []
-  store.projects.forEach((p) => {
-    const v = p.totalValue ? compact(p.totalValue, store.currency) : ''
-    if (p.dealStatus === 'pipeline' && p.scenarioTier === 2)
-      reads.push({ title: p.title, fact: v + ' · pipeline · follow up this week' })
-    else if (p.dealStatus === 'pipeline' && p.scenarioTier === 3)
-      reads.push({ title: p.title, fact: v + ' · stretch · qualify before time' })
-    else if (p.dealStatus === 'commissioned' && p.totalValue && (p.received || 0) < p.totalValue)
-      reads.push({
-        title: p.title,
-        fact: compact(p.totalValue - (p.received || 0), store.currency) + ' outstanding · schedule next invoice',
-      })
-  })
-
   function dropOn(col: ProjectStatus) {
     if (!dragId) return
     api.update((s) => {
@@ -135,27 +120,9 @@ export function CrmModule({ store, api }: CrmModuleProps) {
     <div>
       <Station disc="C" title={copy("Projects")} meta={store.projects.length + t(' projects / ', ' โครงการ / ') + compact(bookValue, store.currency) + t(' total project value', ' มูลค่าโครงการรวม')} />
 
-      <div className="mb-6 border border-hairline bg-panel">
-        <div className="flex items-center gap-2 border-b border-hairline px-4 py-2">
-          <span className="flex h-6 w-6 items-center justify-center border border-ink font-display text-[11px] font-bold">A</span>
-          <span className="font-body text-[11px] text-ink-2">{copy("Operator reads")}</span>
-        </div>
-        {reads.length ? (
-          reads.slice(0, 4).map((r, i) => (
-            <div
-              key={i}
-              className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-hairline px-4 py-2 last:border-b-0"
-            >
-              <span className="text-[14px] text-ink">{r.title}</span>
-              <span className="font-mono text-[11px] text-ink-2">{r.fact}</span>
-            </div>
-          ))
-        ) : (
-          <p className="px-4 py-2 text-[11px] text-ink-2">{copy("No open reads")}</p>
-        )}
-      </div>
-
-      <div className="mb-4 grid gap-px border border-hairline bg-hairline lg:grid-cols-4">
+      {/* Four stages. Two columns until the board is wide enough for four,
+          so a card is wide enough to hold a client name without cutting it. */}
+      <div className="mb-4 grid gap-px border border-hairline bg-hairline md:grid-cols-2 xl:grid-cols-4">
         {COLS.map((col) => {
           const cards = store.projects.filter((p) => p.status === col.id)
           return (
@@ -174,6 +141,12 @@ export function CrmModule({ store, api }: CrmModuleProps) {
                   const tot = (p.checklist || []).length
                   const deal = p.dealStatus === 'commissioned'
                   const collectPct = deal && p.totalValue ? Math.min(100, ((p.received || 0) / p.totalValue) * 100) : 0
+                  const nextMove =
+                    deal && p.totalValue && (p.received || 0) < p.totalValue
+                      ? copy('Next: schedule next invoice')
+                      : !deal && p.scenarioTier === 2
+                        ? copy('Next: follow up this week')
+                        : null
                   return (
                     <div
                       key={p.id}
@@ -184,7 +157,13 @@ export function CrmModule({ store, api }: CrmModuleProps) {
                       className="cursor-pointer border border-hairline bg-paper p-3 hover:border-rule"
                     >
                       <p className="text-[14px] font-semibold">{p.title}</p>
-                      {p.client ? <p className="mt-1 font-mono text-[11px] text-ink-2">{p.client}</p> : null}
+                      {/* The client name wraps; it is never cut. The amount keeps
+                          its place at the right and the pair holds one line
+                          whenever the column can carry it. */}
+                      <div className="mt-1 flex items-start justify-between gap-2">
+                        <p className="min-w-0 break-words font-mono text-[11px] text-ink-2">{p.client || '—'}</p>
+                        {p.totalValue ? <span className="shrink-0 font-mono text-[14px]">{compact(p.totalValue, store.currency)}</span> : null}
+                      </div>
                       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                         <div className="flex flex-wrap gap-2">
                           {p.dealStatus ? (
@@ -193,9 +172,8 @@ export function CrmModule({ store, api }: CrmModuleProps) {
                             </TagChip>
                           ) : null}
                           <span className="font-mono text-[11px] text-ink-2">{tot ? done + '/' + tot + ' tasks' : 'No tasks'}</span>
-                          {p.files?.length ? <span className="font-mono text-[11px] text-ink-2">{p.files.length} files</span> : null}
                         </div>
-                        {p.totalValue ? <span className="font-mono text-[14px]">{compact(p.totalValue, store.currency)}</span> : null}
+                        {nextMove ? <span className="text-[11px] text-ink-2">{nextMove}</span> : null}
                       </div>
                       {deal && p.totalValue ? (
                         <div className="mt-2">
@@ -216,7 +194,7 @@ export function CrmModule({ store, api }: CrmModuleProps) {
 
       <div className="flex flex-wrap items-center gap-3">
         <Btn variant="ghost" onClick={() => setNewOpen(true)}>{copy("+ New project")}</Btn>
-        <span className="text-[14px] text-ink-2">{copy("Drag cards between columns.")}</span>
+        <span className="text-[11px] text-ink-2">{copy("Drag a card to move it.")}</span>
       </div>
 
       <Modal title={copy("New project")} open={newOpen} onClose={() => setNewOpen(false)} actions={<><Btn variant="ghost" onClick={() => setNewOpen(false)}>{copy("Cancel")}</Btn><Btn onClick={createProject}>{copy("Create")}</Btn></>}>

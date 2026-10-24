@@ -335,3 +335,71 @@ lives in `localStorage`. The account tier needs the Node service
 there is no account service there, the sign-in panel states that the
 deployment has no accounts and offers "Continue on this device" as the action,
 instead of rendering an empty form box.
+
+
+## MSH gate pass (2026-10-24)
+
+**The instrument, not an opinion.** `docs/msh-law.md` is Dr Non's spatial law,
+vendored verbatim. `scripts/spatial/` is the instrument that enforces it,
+vendored byte for byte from the skill that owns it — `npm run check:instrument`
+proves the hashes. Both the gate and the falsifier run in CI (`spatial` job:
+`check:instrument` → `check:spatial` → `check:spatial:false`), so a page that
+invents a reason to occupy space cannot reach production, and a gate that
+stops biting fails the build too.
+
+**Found.**
+
+1. *The gate was measuring the wrong thing.* Hash routes (`#/erp`) are
+   invisible to the instrument, which identifies a load by a token in
+   `location.search`; the harness served files by path, and every measurement
+   landed back on the sign-in wall. Routing moved into the query
+   (`/?demo=1&module=erp`), which is the same URL for a person and for the
+   gate. The promise — nine routes × six widths — became 54 measurements, then
+   171 once the CSS breakpoints were swept.
+2. *The sweep never saw the breakpoints.* The instrument reads cliffs in the
+   legacy `(min-width:)` syntax; the build emits the modern range syntax
+   `(width >= 40rem)`, so the stylesheet was not found and the sweep fell back
+   to the widths somebody had listed. `scripts/spatial/prepare-site.mjs` now
+   reads the real cliffs out of the built CSS and states them where the
+   instrument can read them: 19 widths, every cliff ±1px.
+3. *A wordmark broken in half.* At 360px the masthead column is 94px wide;
+   the tenant label beside "EACH" pushed the wordmark out of its own column
+   and `overflow-wrap` broke it into "E" / "ACH". The masthead now names two
+   things and stops (the product, the workspace); the tenant, the storage
+   state and the account moved into the state band under the numbers.
+4. *The chrome grew 28px* at 360px (111 → 139) for a name that was then cut
+   in half by `truncate`. It is now 119px with nothing cut: the Tools menu is
+   a 44px icon below 640px, and the company name wraps instead of hiding.
+5. *A client name that hid 78px of itself.* The CRM board ran four columns
+   from 1024px, so a card was 200px wide and the client's name was truncated
+   to fit. The board is two columns until 1280px, and the name wraps.
+6. *The sign-in page had no primary action.* On the static tier — the tier the
+   deployed site actually serves — every button was an outline, so the page
+   had no loud control: the law's "first thing you can do" was nothing at all.
+   The CTA is now the amber filled button, and the page is inside a `<main>`
+   landmark, which it was missing entirely.
+7. *A relative build base.* `base: './'` broke any copy of `index.html`
+   served from a subdirectory: the script 404s, the page is blank, and a
+   blank page measures as nothing. The base is absolute now.
+8. *A bar with unnamed segments.* "Where the burn goes" drew three segments
+   over rows that carried no swatch, so a reader could not name what the
+   colours meant. The rows wear the colour of their segment.
+
+**Changed.** The masthead, the vitals strip, the CRM board, the sign-in
+panel, the burn composition, the routing, the build base, and the CI. Every
+hole the gate reported is either gone or written down with a reason in
+`design/spatial-baseline.json` — the receipt names what it saw at every route
+and every width.
+
+**Verified.** `npm run check:spatial` passes: **171 measurements — 9 routes ×
+19 widths — zero findings**, every one of them a fresh load at the width
+measured, on a real clock. `npm run check:spatial:false` passes: **10 injected
+page defects, 12 broken-baseline cases and 1 case about the instrument itself,
+all caught; 8 of 8 modes.** `npm run check:design` passes, `npm test` (22) and
+`npm run test:server` pass, `npm run build` passes.
+
+**Remaining.** The gate measures the built site; the deployed site was
+re-measured after the upload and the receipt is in the deployment section
+below. Dr Non has not yet ruled on the recomposed screens. Frappe is still
+unrun locally (Docker down, Python 3.9), so the Node account service remains
+the verified tier.

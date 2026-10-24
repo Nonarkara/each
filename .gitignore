@@ -43,3 +43,6 @@ data/
 
 # MSH gate mirror (built site + stylesheet where the instrument looks for it)
 .spatial-site
+
+# MSH deployed mirror (the bytes the public route serves)
+.spatial-deployed

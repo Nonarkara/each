@@ -8,7 +8,7 @@ import { calcFinance } from './lib/calc'
 import { Hero } from './components/Hero'
 import { Shell } from './components/Shell'
 import { useStore } from './hooks/useStore'
-import { type ModuleId } from './lib/types'
+import { DEMO_REQUESTED, routeFromLocation, urlForRoute, type AppRoute } from './lib/routes'
 import { Onboarding } from './modules/onboarding/Onboarding'
 import { ErpModule } from './modules/erp'
 import { ActModule } from './modules/act'
@@ -43,7 +43,6 @@ import { backendStatusLabel, type BackendKind, type BackendStatus } from './lib/
 import { accountApi, type AccountUser } from './services/account'
 
 type AppView = 'login' | 'landing' | 'onboarding' | 'app'
-type AppRoute = ModuleId | 'dossier' | 'intake' | 'mirrors' | 'security'
 
 
 function initialView(): AppView {
@@ -58,7 +57,7 @@ export default function App() {
   const { t } = useLanguage()
   const [store, api] = useStore()
   const [view, setView] = useState<AppView>(initialView)
-  const [route, setRoute] = useState<AppRoute>('erp')
+  const [route, setRoute] = useState<AppRoute>(routeFromLocation)
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('local')
   const [authError, setAuthError] = useState('')
   const [sheetsOpen, setSheetsOpen] = useState(false)
@@ -69,6 +68,32 @@ export default function App() {
   useEffect(() => {
     return subscribeSheetsSyncStatus(setSyncStatus)
   }, [])
+
+  // The module is a link: a deep link opens that surface, and the back button works.
+  useEffect(() => {
+    const onAddress = () => {
+      setRoute(routeFromLocation())
+    }
+    window.addEventListener('popstate', onAddress)
+    onAddress()
+    return () => window.removeEventListener('popstate', onAddress)
+  }, [])
+
+  // ?demo=1 opens the sample workspace without an account: a link a founder can send.
+  useEffect(() => {
+    if (!DEMO_REQUESTED) return
+    setDemoSession()
+    loadAbcStore()
+    setView('app')
+  }, [])
+
+  function navigate(next: AppRoute) {
+    setRoute(next)
+    const url = urlForRoute(next, window.location.search)
+    if (window.location.pathname + window.location.search !== url) {
+      window.history.pushState(null, '', url)
+    }
+  }
 
   // A signed-in account owns the workspace: hydrate it from the server before showing it.
   useEffect(() => {
@@ -120,7 +145,7 @@ export default function App() {
 
   function enterApp() {
     setView('app')
-    setRoute('erp')
+    navigate('erp')
   }
 
   function handleGoogleAuth() {
@@ -151,7 +176,7 @@ export default function App() {
     clearAuthSession()
     api.reset()
     setView('login')
-    setRoute('erp')
+    navigate('erp')
   }
 
   async function handleAccountSignedIn(user: AccountUser) {
@@ -166,7 +191,7 @@ export default function App() {
     try {
       const loaded = await loadRemoteStore(backend.client)
       setView(loaded ? 'app' : 'onboarding')
-      if (!loaded) setRoute('erp')
+      if (!loaded) navigate('erp')
     } catch {
       setView('onboarding')
     }
@@ -184,7 +209,7 @@ export default function App() {
     clearAuthSession()
     api.reset()
     setView('login')
-    setRoute('erp')
+    navigate('erp')
   }
 
   function openSheetsSettings() {
@@ -281,12 +306,12 @@ export default function App() {
       <Shell
         companyName={companyName}
         activeModule={['dossier', 'intake', 'mirrors'].includes(route) ? undefined : route}
-        onNavigate={(id) => setRoute(id as AppRoute)}
+        onNavigate={(id) => navigate(id as AppRoute)}
         onReset={handleReset}
-        onIntake={() => setRoute('intake')}
-        onMirrors={() => setRoute('mirrors')}
-        onSecurity={() => setRoute('security')}
-        onDossier={() => setRoute('dossier')}
+        onIntake={() => navigate('intake')}
+        onMirrors={() => navigate('mirrors')}
+        onSecurity={() => navigate('security')}
+        onDossier={() => navigate('dossier')}
         onExport={() => exportJsonBackup(store)}
         onSheets={() => exportSheetCsvBundle(store)}
         onImport={handleImport}
@@ -304,7 +329,7 @@ export default function App() {
           runwayRisk: !safeRunway,
         }}
       >
-        {route === 'security' ? <SecurityModule store={store} onMirrors={() => setRoute('mirrors')} /> : null}
+        {route === 'security' ? <SecurityModule store={store} onMirrors={() => navigate('mirrors')} /> : null}
         {route === 'mirrors' ? <MirrorsModule store={store} onGoogle={openSheetsSettings} /> : null}
         {route === 'intake' ? <IntakeModule store={store} /> : null}
         {route === 'erp' ? <ErpModule store={store} api={api} /> : null}

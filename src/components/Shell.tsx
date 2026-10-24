@@ -14,6 +14,7 @@ interface ShellProps {
   onMirrors?: () => void;
   onSecurity?: () => void;
   onDossier?: () => void;
+  onDesign?: () => void;
   onExport?: () => void;
   onSheets?: () => void;
   onImport?: () => void;
@@ -25,7 +26,7 @@ interface ShellProps {
   tenantLabel?: string;
   accountEmail?: string;
   onSignOut?: () => void;
-  vitals?: { cash: string; runway: string; runwayRisk?: boolean };
+  vitals?: { cash?: string; runway?: string; runwayRisk?: boolean };
   children: ReactNode;
 }
 
@@ -38,6 +39,7 @@ export function Shell({
   onMirrors,
   onSecurity,
   onDossier,
+  onDesign,
   onExport,
   onSheets,
   onImport,
@@ -150,6 +152,11 @@ export function Shell({
                     {t("Dossier", "สรุปข้อมูล")}
                   </Btn>
                 ) : null}
+                {onDesign ? (
+                  <Btn variant="ghost" onClick={onDesign}>
+                    {t("Design system", "ระบบออกแบบ")}
+                  </Btn>
+                ) : null}
                 {onReset ? (
                   <Btn variant="ghost" onClick={onReset}>
                     {t("Clear this device", "ล้างข้อมูลในเครื่อง")}
@@ -193,24 +200,32 @@ export function Shell({
 
       <main className="mx-auto w-full max-w-[1360px] px-4 py-5 sm:px-[22px] sm:py-[22px]">
         {vitals ? (
-          /* Three facts in one strip, one reading order. The state of the
-             workspace sits beside the numbers it belongs to: pushed to the
-             opposite margin it leaves a void the reader has to cross, and at
-             390px it strands on a line of its own. */
-          <div className="mb-5 grid grid-cols-2 gap-x-6 gap-y-1 border-b border-hairline pb-3 sm:grid-cols-[auto_auto_1fr]">
-            <div className="flex items-baseline gap-2">
-              <span className="text-[11px] text-ink-2">{t("Cash", "เงินสด")}</span>
-              <span className="font-mono text-[14px] font-medium">{vitals.cash}</span>
+          /* Two kinds of fact, told on two lines. The first line is what the
+             workspace holds — the cash, and on every surface but the money
+             room, which owns the runway as its one bold move, how long that
+             cash lasts. The second is where the workspace lives and who is
+             signed in. They are different kinds of fact, so they are not
+             forced onto one baseline that has to break somewhere. */
+          <div className="mb-5 border-b border-hairline pb-2">
+            <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+              {vitals.cash ? (
+                <span className="text-[11px] text-ink-2">
+                  {t("Cash", "เงินสด")}
+                  <span className="ml-2 font-mono text-[14px] text-ink">{vitals.cash}</span>
+                </span>
+              ) : null}
+              {vitals.runway ? (
+                <span className="text-[11px] text-ink-2">
+                  {t("Runway", "ระยะเวลาที่เงินพอใช้")}
+                  <span
+                    className={`ml-2 font-mono text-[14px] text-ink ${vitals.runwayRisk ? "underline decoration-amber decoration-2 underline-offset-4" : ""}`}
+                  >
+                    {vitals.runway}
+                  </span>
+                </span>
+              ) : null}
             </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-[11px] text-ink-2">{t("Runway", "ระยะเวลาที่เงินพอใช้")}</span>
-              <span
-                className={`font-mono text-[14px] font-medium ${vitals.runwayRisk ? "underline decoration-amber decoration-2 underline-offset-4" : ""}`}
-              >
-                {vitals.runway}
-              </span>
-            </div>
-            <div className="col-span-2 flex flex-wrap items-center gap-x-3 gap-y-1 sm:col-span-1">
+            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
               {syncStatus !== "local" ? (
                 indicatorInteractive ? (
                   <button

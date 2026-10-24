@@ -36,6 +36,7 @@ export function QuickNavigation({
     ["mirrors", "Mirrors Excel Sheets สำเนาข้อมูล ชีต"],
     ["security", "Security backups recovery ความปลอดภัย สำรอง กู้คืน"],
     ["dossier", "Dossier investor summary สรุป นักลงทุน"],
+    ["design", "Design system palette colours สี ระบบออกแบบ"],
   ];
   const names: Record<string, string> = {
     erp: t("ERP · Finance", "ERP · การเงิน"),
@@ -46,6 +47,7 @@ export function QuickNavigation({
     mirrors: t("Data mirrors", "สำเนาข้อมูล"),
     security: t("Security Center", "ศูนย์ความปลอดภัย"),
     dossier: t("Company dossier", "สรุปข้อมูลบริษัท"),
+    design: t("Design system", "ระบบออกแบบ"),
   };
   const results = routes.filter(([, keywords]) =>
     query

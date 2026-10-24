@@ -30,17 +30,20 @@ export function Hero({ onEnter }: HeroProps) {
         ) : null}
       </div>
 
-      <div className="grid gap-px border border-hairline bg-hairline sm:grid-cols-2">
+      {/* The four modules as lines, the same grammar the sign-in uses: a
+          letter, a name, a line. Four big letters would be four heroes
+          competing with the statement that is supposed to win. */}
+      <div className="border-t border-hairline">
         {[
           { letter: 'E', name: 'ERP', desc: 'Finance · inventory · operations' },
           { letter: 'A', name: 'ACT', desc: 'Accounting · invoicing · actions' },
           { letter: 'C', name: 'CRM', desc: 'Customers · pipeline · deals' },
           { letter: 'H', name: 'HR', desc: 'People · payroll · leave' },
         ].map((item) => (
-          <div key={item.letter} className="bg-panel p-4">
-            <span className="font-display text-[32px] font-bold text-ink">{item.letter}</span>
-            <p className="mt-2 font-display text-[14px] font-bold">{item.name}</p>
-            <p className="mt-1 text-[14px] text-ink-2">{item.desc}</p>
+          <div key={item.letter} className="flex items-baseline gap-4 border-b border-hairline py-3">
+            <span className="font-display text-[14px] font-bold text-ink-2">{item.letter}</span>
+            <span className="font-display text-[14px] font-bold">{item.name}</span>
+            <span className="text-[14px] text-ink-2">{item.desc}</span>
           </div>
         ))}
       </div>

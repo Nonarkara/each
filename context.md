@@ -448,3 +448,103 @@ the dossier.
 **Still static.** The published site is the evaluation tier: no account
 service, so the workspace lives in this browser and the sign-in panel says
 so. The Node service (`npm run product`) is the tier with accounts.
+
+
+## The rebuild (2026-10-24, "still extremely AI design slopped")
+
+Dr Non's complaint was not a bug: *"many texts on the page that look as though
+they could have been in smaller boxes… spaces that were there because it got
+expanded… you keep expanding, extending, slapping… a page that is so bad in
+terms of real estate design."* The root cause he named was **deciding** rather
+than **extending**. And the target he named was a screen: *"a palette design
+component screen that allows good color combinations, shades, and lights to
+come into the system."*
+
+**The position taken.** The deep shade is not only the voice — it is a
+**ground**. A surface that has to be looked at stands on it, and the palette
+inverts there. No new token was added (Rams: less, but better): the same
+seven roles, used as grounds as well as voices.
+
+### Found
+
+1. **Every module was a grid of stretched cells.** The cockpit was a 2×2 of
+   `bg-panel p-5` cells; HR, ACT and the dossier carried the same padded-cell
+   pattern; the CRM board ran `min-h-[200px]` columns. A cell that is given a
+   height it did not ask for is a box around a sentence — the slop, named.
+2. **The band said one thing twice.** The vitals strip carried Cash *and*
+   Runway, and the money room carried Runway as its hero: a fact said twice
+   on one screen is a fact said nowhere.
+3. **The band broke and stranded the state.** One flex row of Cash, Runway and
+   the workspace state wrapped at 360–414px and left the state alone on the
+   last line — an accident, not a layout.
+4. **The ACT hero stood beside a queue it could not fill.** 616px of dead
+   space under a 104px field: a box that exists to balance a neighbour.
+5. **The kanban columns were hollow.** One stage had no cards; the empty
+   column was a hole beside three full ones.
+6. **The palette screen did not exist.** The system had seven tokens and no
+   screen that showed them, the shades between them, or the pairs they allow.
+7. **The design route scrolled sideways** by 136px at 360: a table with a
+   `min-w` inside a grid column that was not allowed to shrink.
+8. **The HR roster repeated itself.** A "Type" column said "Human" on every
+   row of the human roster, and the AI roster was a heading over nothing.
+9. **The CRM cards were clickable divs** — a deal could not be opened from
+   the keyboard.
+
+### Changed
+
+- `src/components/ui/Axiom.tsx` — the components are the law now: `Figure`
+  (a number on the deep shade or on paper), `Stat` (a fact on one line, with
+  a tone for the deep ground), `Meter`, `SectionHead`, `Station`, and a
+  `DataTable` that is allowed to declare its own minimum width.
+- `src/modules/erp/ErpModule.tsx` — the runway is the hero, the balance sheet
+  stands under it (its inputs, in its column), the two compositions sit beside
+  it, and the cash is not repeated.
+- `src/modules/act/ActModule.tsx` — the receivables are a full-width field:
+  the number at the left, the composition filling the rest of it. The queue is
+  its own block beneath, not a column beside a short field.
+- `src/modules/hr/HrModule.tsx` — the people cost is the hero on the deep
+  shade with the AI/human split under it; the operators are a roster of
+  lines, not a grid of cards; the human table lost its constant column.
+- `src/modules/crm/CrmModule.tsx` — the board is four drop zones that share
+  a height, a sideways strip on a phone, and a card that is a button.
+- `src/modules/dossier/DossierView.tsx` — a document, not a dashboard: a
+  letterhead, four facts, prose held to its measure, one composition.
+- `src/modules/design/DesignModule.tsx` — **the palette screen**: the six
+  neutrals as one continuous scale with the amber standing apart from it, the
+  five allowed pairs with their measured contrast, and the components drawn
+  in the system itself.
+- `src/components/Shell.tsx` — the band is two lines: what the workspace
+  holds, and where the workspace lives.
+- `src/modules/{intake,mirrors,security}` — the steps of a workflow are
+  separated by the 2px rule; the two mirror providers and the five security
+  checks are content-sized.
+
+### Verified
+
+`npm run check:spatial` passes: **210 measurements — 10 routes × 21 widths —
+zero findings.** `npm run check:spatial:false` passes: **10 injected page
+defects, 12 broken-baseline cases and 1 case about the instrument itself, all
+caught; 8 of 8 modes.** `npm run check:design` passes, `npm run build` passes.
+
+The receipt was re-issued (`--update`) because the pages moved: the first
+action on every surface but ACT moved **up**, and on ACT it moved **down** by
+147–254px, because the receivables now stand above the queue. The first
+action on ACT is still inside the first screen at every width (498px of 900
+at 1440, 594px of 844 at 390).
+
+Three limits were turned on, so the receipt now judges instead of only
+recording: **`firstAction: 1200`** (the first thing you can do must be within
+1200px of the top), **`chromeTopPct: 14`** (the chrome may not take more than
+14% of the first screen), **`allowedSizes: [11, 14, 32]`** (the type ramp is
+the house ramp). One exemption is written down: the palette screen's buttons
+are specimens, so its first "action" is not an action a reader has to reach.
+
+### Remaining
+
+- The gate measures the built site; the deployed site is measured separately
+  (`npm run check:spatial:live`) after the upload.
+- Frappe is still unrun locally (Docker down, Python 3.9); the Node account
+  service remains the verified tier.
+- The ERP page's first *control* is a key-result checkbox at 1132px on a
+  phone: the money room is read before it is acted on, and no action was
+  invented to move that number.

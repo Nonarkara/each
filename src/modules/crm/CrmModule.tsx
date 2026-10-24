@@ -121,18 +121,22 @@ export function CrmModule({ store, api }: CrmModuleProps) {
       <Station disc="C" title={copy("Projects")} meta={store.projects.length + t(' projects / ', ' โครงการ / ') + compact(bookValue, store.currency) + t(' total project value', ' มูลค่าโครงการรวม')} />
 
       {/* Four stages. Two columns until the board is wide enough for four,
-          so a card is wide enough to hold a client name without cutting it. */}
-      <div className="mb-4 grid gap-px border border-hairline bg-hairline md:grid-cols-2 xl:grid-cols-4">
+          so a card is wide enough to hold a client name without cutting it.
+          A stage is a drop zone: it has a floor, so an empty stage is a real
+          target and every stage on the board is the same size — the eye
+          compares the stages, not the boxes. On a phone the board is a strip
+          you scroll sideways, the way a board works on a small screen. */}
+      <div className="mb-4 flex gap-3 overflow-x-auto pb-1 md:grid md:grid-cols-2 md:gap-4 md:overflow-visible md:pb-0 xl:grid-cols-4">
         {COLS.map((col) => {
           const cards = store.projects.filter((p) => p.status === col.id)
           return (
-            <div key={col.id} className={`flex min-h-[200px] flex-col ${cards.length ? 'bg-panel' : 'bg-paper'}`}>
+            <div key={col.id} className="flex w-[78vw] flex-none flex-col border border-hairline md:w-auto md:flex-initial">
               <div className="flex items-center justify-between border-b border-hairline px-3 py-2">
                 <span className="font-body text-[11px] text-ink-2">{copy(col.label)}</span>
                 <span className="font-mono text-[11px] text-ink-2">{cards.length}</span>
               </div>
               <div
-                className="flex flex-1 flex-col gap-2 p-2"
+                className="flex h-full min-h-[140px] flex-col gap-2 p-2"
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => { e.preventDefault(); dropOn(col.id) }}
               >
@@ -142,50 +146,57 @@ export function CrmModule({ store, api }: CrmModuleProps) {
                   const deal = p.dealStatus === 'commissioned'
                   const collectPct = deal && p.totalValue ? Math.min(100, ((p.received || 0) / p.totalValue) * 100) : 0
                   const nextMove =
-                    deal && p.totalValue && (p.received || 0) < p.totalValue
-                      ? copy('Next: schedule next invoice')
-                      : !deal && p.scenarioTier === 2
-                        ? copy('Next: follow up this week')
-                        : null
+                    !deal && p.scenarioTier === 2
+                      ? copy('Next: follow up this week')
+                      : null
                   return (
-                    <div
+                    <button
                       key={p.id}
+                      type="button"
                       draggable
                       onDragStart={() => setDragId(p.id)}
                       onDragEnd={() => setDragId(null)}
                       onClick={() => setDetailId(p.id)}
-                      className="cursor-pointer border border-hairline bg-paper p-3 hover:border-rule"
+                      /* A button, not a div that happens to be clickable: a
+                         deal has to be openable from the keyboard. */
+                      className="block w-full cursor-pointer border border-hairline bg-paper p-3 text-left hover:border-rule"
                     >
                       <p className="text-[14px] font-semibold">{p.title}</p>
-                      {/* The client name wraps; it is never cut. The amount keeps
-                          its place at the right and the pair holds one line
-                          whenever the column can carry it. */}
-                      <div className="mt-1 flex items-start justify-between gap-2">
-                        <p className="min-w-0 break-words font-mono text-[11px] text-ink-2">{p.client || '—'}</p>
-                        {p.totalValue ? <span className="shrink-0 font-mono text-[14px]">{compact(p.totalValue, store.currency)}</span> : null}
-                      </div>
-                      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex flex-wrap gap-2">
-                          {p.dealStatus ? (
-                            <TagChip tone={deal ? 'amber' : 'human'}>
-                              {deal ? 'Commissioned' : 'Pipeline · T' + (p.scenarioTier || '?')}
-                            </TagChip>
-                          ) : null}
-                          <span className="font-mono text-[11px] text-ink-2">{tot ? done + '/' + tot + ' tasks' : 'No tasks'}</span>
-                        </div>
-                        {nextMove ? <span className="text-[11px] text-ink-2">{nextMove}</span> : null}
-                      </div>
+                      {/* The client name wraps; it is never cut. */}
+                      <p className="mt-0.5 min-w-0 break-words font-mono text-[11px] text-ink-2">{p.client || '—'}</p>
                       {deal && p.totalValue ? (
+                        /* The bar and the sentence under it are one fact: what
+                           has been collected out of the deal. The total is not
+                           repeated in the corner on top of that sentence. */
                         <div className="mt-2">
                           <ProgressBar pct={collectPct} variant="amber" />
                           <p className="mt-1 font-mono text-[11px] text-ink-2">
                             {money(p.received || 0, store.currency)} of {money(p.totalValue, store.currency)} collected
                           </p>
                         </div>
+                      ) : p.totalValue ? (
+                        <p className="mt-0.5 font-mono text-[14px]">{compact(p.totalValue, store.currency)}</p>
                       ) : null}
-                    </div>
+                      {/* The stage of the deal and the state of its tasks are
+                          one line. The next move is a second line of its own,
+                          so neither ever ends up stranded beside the other. */}
+                      <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+                        {p.dealStatus ? (
+                          <TagChip tone={deal ? 'amber' : 'human'}>
+                            {deal ? 'Commissioned' : 'Pipeline · T' + (p.scenarioTier || '?')}
+                          </TagChip>
+                        ) : null}
+                        <span className="font-mono text-[11px] text-ink-2">{tot ? done + '/' + tot + ' tasks' : 'No tasks'}</span>
+                      </div>
+                      {nextMove ? <p className="mt-1 text-[11px] text-ink-2">{nextMove}</p> : null}
+                    </button>
                   )
-                }) : <Empty>—</Empty>}
+                }) : (
+                  /* An empty stage says so and shows where a deal lands. */
+                  <div className="flex flex-1 items-center justify-center border border-dashed border-hairline p-3">
+                    <p className="text-center text-[11px] text-ink-2">{copy("Drag a deal here")}</p>
+                  </div>
+                )}
               </div>
             </div>
           )

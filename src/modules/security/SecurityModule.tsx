@@ -206,15 +206,17 @@ export function SecurityModule({
           {new Date(server.checkedAt).toLocaleString()}
         </p>
       ) : null}
-      <div className="grid gap-px border border-hairline bg-hairline">
+      {/* Five checks, five lines. The status is the fact and sits on the
+          line; the reasoning under it is measured to a readable measure
+          instead of being squeezed into a third of the page. */}
+      <div className="border-t border-hairline">
         {checks.map(([title, status, detail]) => (
-          <article
-            key={title}
-            className="grid gap-3 bg-panel p-4 md:grid-cols-[1fr_1fr_2fr]"
-          >
-            <h3 className="font-semibold">{title}</h3>
-            <p className="text-[14px] font-semibold">{status}</p>
-            <p>{detail}</p>
+          <article key={title} className="border-b border-hairline py-3">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <h3 className="text-[14px] font-semibold">{title}</h3>
+              <p className="text-[11px] text-ink-2">{status}</p>
+            </div>
+            <p className="mt-1 max-w-[72ch] text-[14px] text-ink-2">{detail}</p>
           </article>
         ))}
       </div>

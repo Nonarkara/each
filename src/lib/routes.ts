@@ -23,9 +23,28 @@
 // `?demo=1` opens the sample workspace without an account, so the surface is
 // reachable by link and not only by a click through the sign-in wall.
 
-export type AppRoute = 'erp' | 'act' | 'crm' | 'hr' | 'dossier' | 'intake' | 'mirrors' | 'security'
+export type AppRoute =
+  | 'erp'
+  | 'act'
+  | 'crm'
+  | 'hr'
+  | 'dossier'
+  | 'intake'
+  | 'mirrors'
+  | 'security'
+  | 'design'
 
-export const ROUTES: AppRoute[] = ['erp', 'act', 'crm', 'hr', 'dossier', 'intake', 'mirrors', 'security']
+export const ROUTES: AppRoute[] = [
+  'erp',
+  'act',
+  'crm',
+  'hr',
+  'dossier',
+  'intake',
+  'mirrors',
+  'security',
+  'design',
+]
 
 /** "?module=erp&demo=1" → route "erp", params { module: "erp", demo: "1" }. */
 export function parseQuery(search: string): { route: AppRoute | null; params: URLSearchParams } {

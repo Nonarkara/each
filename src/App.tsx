@@ -16,6 +16,7 @@ import { CrmModule } from './modules/crm'
 import { HrModule } from './modules/hr'
 import { DossierView } from './modules/dossier/DossierView'
 import { LoginGate } from './modules/auth/LoginGate'
+import { DesignModule } from './modules/design/DesignModule'
 
 import { money } from './lib/format'
 import {
@@ -319,6 +320,7 @@ export default function App() {
         onMirrors={() => navigate('mirrors')}
         onSecurity={() => navigate('security')}
         onDossier={() => navigate('dossier')}
+        onDesign={() => navigate('design')}
         onExport={() => exportJsonBackup(store)}
         onSheets={() => exportSheetCsvBundle(store)}
         onImport={handleImport}
@@ -330,11 +332,23 @@ export default function App() {
         tenantLabel={tenantLabel}
         accountEmail={account?.email}
         onSignOut={account ? handleSignOut : undefined}
-        vitals={{
-          cash: money(fin.cash, store.currency),
-          runway: (Number.isFinite(fin.runwayMonths) ? fin.runwayMonths : '∞') + ' ' + t('mo', 'เดือน'),
-          runwayRisk: !safeRunway,
-        }}
+        vitals={
+          /* The dossier is the document that states the money facts in full,
+             so the band does not repeat them there — a band left with one thin
+             line of state is space without balance. The money room owns the
+             runway: it is the hero there, and a fact said twice on one screen
+             is a fact said nowhere. */
+          route === 'dossier'
+            ? undefined
+            : {
+                cash: money(fin.cash, store.currency),
+                runway:
+                  route === 'erp'
+                    ? undefined
+                    : (Number.isFinite(fin.runwayMonths) ? fin.runwayMonths : '∞') + ' ' + t('mo', 'เดือน'),
+                runwayRisk: !safeRunway,
+              }
+        }
       >
         {route === 'security' ? <SecurityModule store={store} onMirrors={() => navigate('mirrors')} /> : null}
         {route === 'mirrors' ? <MirrorsModule store={store} onGoogle={openSheetsSettings} /> : null}
@@ -344,6 +358,7 @@ export default function App() {
         {route === 'crm' ? <CrmModule store={store} api={api} /> : null}
         {route === 'hr' ? <HrModule store={store} api={api} /> : null}
         {route === 'dossier' ? <DossierView store={store} /> : null}
+        {route === 'design' ? <DesignModule /> : null}
       </Shell>
       <SheetsSettingsModal
         open={sheetsOpen}

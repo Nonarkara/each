@@ -53,8 +53,11 @@ export function IntakeModule({ store }: { store: EachStore }) {
   }
   return <section className="space-y-5">
     <Station disc="IN" kicker={t('Human approval required', 'บันทึกเมื่อคุณอนุมัติเท่านั้น')} title={t('Document intake', 'รับข้อมูลจากเอกสาร')} />
-    <div className="grid gap-px border border-hairline bg-hairline md:grid-cols-[1fr_2fr]">
-      <div className="space-y-4 bg-panel p-4">
+    {/* Two steps of one workflow, so a 2px rule separates them — the rule is
+        the token that means "a boundary between steps". Each step is sized by
+        what is in it; the shorter one does not stretch to meet the taller. */}
+    <div className="grid items-start gap-6 md:grid-cols-[1fr_2fr] md:gap-0">
+      <div className="space-y-4 md:pr-6">
         <h3 className="font-display text-[14px] font-bold">{t('1. Choose your AI', '1. เลือก AI ที่ต้องการใช้')}</h3>
         <p className="text-[11px] text-ink-2">{t('Use an OpenAI-compatible /v1 endpoint from your provider or local server. Credentials stay in this tab’s memory and are cleared after filing or leaving this page.', 'ใช้ปลายทาง /v1 ที่รองรับรูปแบบ OpenAI จากผู้ให้บริการหรือเซิร์ฟเวอร์ในเครื่อง คีย์อยู่ในหน่วยความจำของแท็บเท่านั้น และจะล้างหลังบันทึกหรือออกจากหน้านี้')}</p>
         <Btn variant="ghost" disabled={busy} onClick={() => configure({ endpoint: 'http://127.0.0.1:11434/v1', model: 'qwen2.5:7b-instruct', key: '' })}>{t('Use local Ollama', 'ใช้ Ollama ในเครื่อง')}</Btn>
@@ -63,7 +66,7 @@ export function IntakeModule({ store }: { store: EachStore }) {
         <label className="block">{t('API key (optional for local AI)', 'API key (AI ในเครื่องอาจไม่ต้องใช้)')}<Input type="password" autoComplete="off" value={connection.key} disabled={busy} onChange={e => configure({ key: e.target.value })} /></label>
         <details><summary className="min-h-[44px] cursor-pointer py-3">{t('Using a local model', 'ใช้โมเดลในเครื่อง')}</summary><p className="text-[11px] text-ink-2">{t('Run Ollama or LM Studio with its OpenAI-compatible server, then enter its base URL and model name. Allow this origin in the server’s CORS settings. HTTPS blocks HTTP local connections.', 'เปิดเซิร์ฟเวอร์ที่รองรับ OpenAI ใน Ollama หรือ LM Studio แล้วใส่ URL และชื่อโมเดลที่ติดตั้ง ตั้งค่า CORS ให้ยอมรับต้นทางของ EACH หากเบราว์เซอร์ HTTPS บล็อก HTTP ในเครื่อง ให้เปิด EACH ในเครื่องด้วย')}</p></details>
       </div>
-      <div className="space-y-4 bg-panel p-4">
+      <div className="space-y-4 md:border-l-2 md:border-rule md:pl-6">
         <h3 className="font-display text-[14px] font-bold">{t('2. Read the source', '2. อ่านต้นฉบับ')}</h3>
         <label className="flex min-h-[44px] items-start gap-3"><input className="mt-1 h-5 w-5 accent-amber" type="checkbox" checked={ocr} disabled={busy} onChange={e => setOcr(e.target.checked)} /><span>{t('Read scanned pages with local TH/EN OCR. Downloads language files on first use; documents stay in this browser during OCR. Up to 20 pages.', 'อ่านหน้าสแกนด้วย OCR ไทย/อังกฤษในเบราว์เซอร์ ดาวน์โหลดไฟล์ภาษาเมื่อใช้ครั้งแรก เอกสารอยู่ในเบราว์เซอร์ระหว่างทำ OCR รองรับไม่เกิน 20 หน้า')}</span></label>
         <label className="block border-2 border-dashed border-rule p-4">{t('Choose PDF or text · up to 10 MB', 'เลือก PDF หรือข้อความ · ไม่เกิน 10 MB')}<input className="mt-3 block min-h-[44px] w-full max-w-full text-[14px]" type="file" accept=".pdf,.txt,.md,.csv" disabled={busy} onChange={e => void chooseFile(e.target.files?.[0])} /></label>

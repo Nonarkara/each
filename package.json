@@ -19,9 +19,9 @@
     "stack:down": "docker compose down",
     "check:design": "node scripts/check-design.mjs",
     "check:instrument": "node scripts/spatial/verify-manifest.mjs",
-    "check:spatial": "node scripts/spatial/prepare-site.mjs && node scripts/spatial/spatial-check.mjs --dir .spatial-site --baseline design/spatial-baseline.json --widths 360,390,414,480,639,640,641,767,768,769,1023,1024,1025,1279,1280,1281,1440,1535,1536,1537,1920 --routes \"/,/?demo=1&module=erp,/?demo=1&module=act,/?demo=1&module=crm,/?demo=1&module=hr,/?demo=1&module=intake,/?demo=1&module=mirrors,/?demo=1&module=security,/?demo=1&module=dossier\"",
+    "check:spatial": "node scripts/spatial/prepare-site.mjs && node scripts/spatial/spatial-check.mjs --dir .spatial-site --baseline design/spatial-baseline.json --widths 360,390,414,480,639,640,641,767,768,769,1023,1024,1025,1279,1280,1281,1440,1535,1536,1537,1920 --routes \"/,/?demo=1&module=erp,/?demo=1&module=act,/?demo=1&module=crm,/?demo=1&module=hr,/?demo=1&module=intake,/?demo=1&module=mirrors,/?demo=1&module=security,/?demo=1&module=dossier,/?demo=1&module=design\"",
     "check:spatial:false": "node scripts/spatial/prepare-site.mjs --with-fixture && node scripts/spatial/spatial-falsify.mjs .spatial-site",
-    "check:spatial:live": "node scripts/spatial/fetch-deployed.mjs && node scripts/spatial/spatial-check.mjs --dir .spatial-deployed --baseline design/spatial-baseline.json --widths 360,390,414,480,639,640,641,767,768,769,1023,1024,1025,1279,1280,1281,1440,1535,1536,1537,1920 --routes \"/,/?demo=1&module=erp,/?demo=1&module=act,/?demo=1&module=crm,/?demo=1&module=hr,/?demo=1&module=intake,/?demo=1&module=mirrors,/?demo=1&module=security,/?demo=1&module=dossier\""
+    "check:spatial:live": "node scripts/spatial/fetch-deployed.mjs && node scripts/spatial/spatial-check.mjs --dir .spatial-deployed --baseline design/spatial-baseline.json --widths 360,390,414,480,639,640,641,767,768,769,1023,1024,1025,1279,1280,1281,1440,1535,1536,1537,1920 --routes \"/,/?demo=1&module=erp,/?demo=1&module=act,/?demo=1&module=crm,/?demo=1&module=hr,/?demo=1&module=intake,/?demo=1&module=mirrors,/?demo=1&module=security,/?demo=1&module=dossier,/?demo=1&module=design\""
   },
   "dependencies": {
     "@fontsource/ibm-plex-sans-thai": "^5.3.0",

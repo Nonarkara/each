@@ -8,11 +8,11 @@ import type { storeApi } from '../../lib/store'
 import {
   Btn,
   DataTable,
-  Empty,
   Input,
   Modal,
   SectionHead,
   Select,
+  Stat,
   Station,
   TagChip,
 } from '../../components/ui/Axiom'
@@ -137,28 +137,100 @@ export function ActModule({ store, api }: ActModuleProps) {
 
   const openActions = actions.filter((a) => !a.done)
 
+  // The book, split three ways. The shares are of the whole book, so a fat
+  // collected bar and a fat outstanding bar cannot both be true.
+  const bookTotal = Math.max(
+    1,
+    f.receivedRevenue + f.outstanding + f.expectedPipeline,
+  )
+  const bookPct = {
+    received: (f.receivedRevenue / bookTotal) * 100,
+    outstanding: (f.outstanding / bookTotal) * 100,
+    expected: (f.expectedPipeline / bookTotal) * 100,
+  }
+
   return (
     <div>
       <Station
         disc="A"
         title={copy("Accounting & actions")}
-        meta={openActions.length + t(' open · ', ' งานค้าง ') + money(f.outstanding, f.cur) + t(' outstanding', ' ลูกหนี้ค้าง')}
+        meta={openActions.length + t(' open actions', ' งานค้าง')}
       />
 
-      <div className="mb-6">
-        <SectionHead label={copy("Action queue")} />
-        <div className="grid gap-px border border-hairline bg-hairline">
-          {openActions.length ? openActions.map((a) => (
-            <div key={a.id} className="flex flex-wrap items-center gap-3 bg-panel px-4 py-2">
-              <label className="-ml-2 flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center">
-                <input type="checkbox" checked={a.done} onChange={() => toggleAction(a.id)} className="h-[20px] w-[20px] accent-amber" />
-              </label>
-              <p className="min-w-0 flex-1 text-[14px]">{a.label}</p>
-              <TagChip tone="default">{a.module.toUpperCase()}</TagChip>
-              <TagChip tone={a.priority === 'high' ? 'amber' : 'default'}>{a.priority}</TagChip>
+      {/* THE ONE BOLD MOVE. What the company is owed, and the shape of the
+          money that is owed — the number at the left, the composition filling
+          the rest of the field. The field is as wide as the page and is filled
+          to its edge, because a deep shade with one number in the corner of it
+          is a hole, not a hero. */}
+      <div className="mb-6 bg-ink p-5 sm:p-6">
+        <div className="grid gap-5 md:grid-cols-[auto_1fr] md:items-center md:gap-10">
+          <div className="min-w-0">
+            <p className="text-[11px] text-paper">{copy("Outstanding receivables")}</p>
+            <p className="mt-1 font-display text-[32px] font-bold leading-none text-paper">
+              {money(f.outstanding, f.cur)}
+            </p>
+            <p className="mt-2 font-mono text-[14px] text-paper">
+              {invoices.length + t(' open invoices', ' ใบแจ้งหนี้ค้าง')}
+            </p>
+          </div>
+          <div className="min-w-0">
+            {/* The book, split: collected, still owed, and expected. The
+                legend sits in three columns so each number stays beside the
+                word that names it instead of being stranded at the far edge
+                of a wide page. */}
+            <div className="flex w-full overflow-hidden bg-paper/25" style={{ height: 10 }}>
+              {[
+                { key: 'received', pct: bookPct.received, cls: 'bg-paper' },
+                { key: 'outstanding', pct: bookPct.outstanding, cls: 'bg-amber' },
+                { key: 'expected', pct: bookPct.expected, cls: 'bg-ink-2' },
+              ].map((s) => (
+                <div key={s.key} className={s.cls} style={{ width: `${Math.max(0, Math.min(100, s.pct))}%` }} />
+              ))}
             </div>
-          )) : <div className="bg-panel"><Empty>{copy("Queue clear.")}</Empty></div>}
+            <dl className="mt-3 grid gap-x-6 sm:grid-cols-2 xl:grid-cols-3">
+              <Stat
+                tone="ink"
+                swatch="paper"
+                label={t('Collected', 'รับแล้ว')}
+                value={money(f.receivedRevenue, f.cur)}
+              />
+              <Stat
+                tone="ink"
+                swatch="amber"
+                label={t('Outstanding', 'ลูกหนี้ค้าง')}
+                value={money(f.outstanding, f.cur)}
+              />
+              <Stat
+                tone="ink"
+                swatch="muted"
+                label={t('Expected', 'คาดหวัง')}
+                value={money(f.expectedPipeline, f.cur)}
+              />
+            </dl>
+          </div>
         </div>
+      </div>
+
+      {/* What must happen next. Its own block, its own height, under the
+          number that says why it matters. */}
+      <div className="mb-6">
+        <SectionHead label={copy("Action queue")} meta={openActions.length + t(' open', ' ค้าง')} />
+        {openActions.length ? (
+          <div className="border-t border-hairline">
+            {openActions.map((a) => (
+              <div key={a.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-hairline py-2">
+                <label className="-ml-2 flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center">
+                  <input type="checkbox" checked={a.done} onChange={() => toggleAction(a.id)} className="h-[20px] w-[20px] accent-amber" />
+                </label>
+                <p className="min-w-0 flex-1 text-[14px]">{a.label}</p>
+                <TagChip tone="default">{a.module.toUpperCase()}</TagChip>
+                <TagChip tone={a.priority === 'high' ? 'amber' : 'default'}>{a.priority}</TagChip>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="border-b border-hairline py-2 text-[14px] text-ink-2">{copy("Queue clear.")}</p>
+        )}
       </div>
 
       <div className="mb-6">
@@ -166,24 +238,24 @@ export function ActModule({ store, api }: ActModuleProps) {
         <DataTable>
           <thead>
             <tr className="border-b border-hairline bg-paper">
-              <th className="p-3 font-body text-[11px] text-ink-2">{copy("Project")}</th>
-              <th className="p-3 font-body text-[11px] text-ink-2">{copy("Client")}</th>
-              <th className="p-3 text-right font-body text-[11px] text-ink-2">{copy("Outstanding")}</th>
-              <th className="p-3 font-body text-[11px] text-ink-2">{copy("Action")}</th>
+              <th className="px-3 py-2 font-body text-[11px] text-ink-2">{copy("Project")}</th>
+              <th className="px-3 py-2 font-body text-[11px] text-ink-2">{copy("Client")}</th>
+              <th className="px-3 py-2 text-right font-body text-[11px] text-ink-2">{copy("Outstanding")}</th>
+              <th className="px-3 py-2 font-body text-[11px] text-ink-2">{copy("Action")}</th>
             </tr>
           </thead>
           <tbody>
             {invoices.length ? invoices.map((p) => (
               <tr key={p.id} className="border-b border-hairline">
-                <td className="p-3">{p.title}</td>
-                <td className="p-3">{p.client || '—'}</td>
-                <td className="p-3 text-right font-mono">{money((p.totalValue || 0) - (p.received || 0), store.currency)}</td>
-                <td className="p-3">
+                <td className="px-3 py-2">{p.title}</td>
+                <td className="px-3 py-2">{p.client || '—'}</td>
+                <td className="px-3 py-2 text-right font-mono">{money((p.totalValue || 0) - (p.received || 0), store.currency)}</td>
+                <td className="px-3 py-2">
                   <Btn variant="ghost" onClick={() => recordPayment(p.id)}>{copy("Mark paid")}</Btn>
                 </td>
               </tr>
             )) : (
-              <tr><td colSpan={4} className="p-6 text-center text-ink-2">{copy("No outstanding invoices.")}</td></tr>
+              <tr><td colSpan={4} className="px-3 py-4 text-[14px] text-ink-2">{copy("No outstanding invoices.")}</td></tr>
             )}
           </tbody>
         </DataTable>
@@ -198,26 +270,26 @@ export function ActModule({ store, api }: ActModuleProps) {
         <DataTable>
           <thead>
             <tr className="border-b border-hairline bg-paper">
-              <th className="p-3 font-body text-[11px] text-ink-2">{copy("Date")}</th>
-              <th className="p-3 font-body text-[11px] text-ink-2">{copy("Vendor")}</th>
-              <th className="p-3 font-body text-[11px] text-ink-2">{copy("Category")}</th>
-              <th className="p-3 font-body text-[11px] text-ink-2">{copy("Type")}</th>
-              <th className="p-3 font-body text-[11px] text-ink-2">{copy("Owner")}</th>
-              <th className="p-3 text-right font-body text-[11px] text-ink-2">{copy("Amount")}</th>
+              <th className="px-3 py-2 font-body text-[11px] text-ink-2">{copy("Date")}</th>
+              <th className="px-3 py-2 font-body text-[11px] text-ink-2">{copy("Vendor")}</th>
+              <th className="px-3 py-2 font-body text-[11px] text-ink-2">{copy("Category")}</th>
+              <th className="px-3 py-2 font-body text-[11px] text-ink-2">{copy("Type")}</th>
+              <th className="px-3 py-2 font-body text-[11px] text-ink-2">{copy("Owner")}</th>
+              <th className="px-3 py-2 text-right font-body text-[11px] text-ink-2">{copy("Amount")}</th>
             </tr>
           </thead>
           <tbody>
             {store.expenses.length ? store.expenses.slice().reverse().map((e) => (
               <tr key={e.id} className="border-b border-hairline">
-                <td className="p-3">{e.date}</td>
-                <td className="p-3">{e.vendor}</td>
-                <td className="p-3">{e.category}</td>
-                <td className="p-3"><TagChip tone={e.type === 'capex' ? 'capex' : 'opex'}>{e.type.toUpperCase()}</TagChip></td>
-                <td className="p-3">{e.owner}</td>
-                <td className="p-3 text-right font-mono">{money(e.amount, e.currency)}</td>
+                <td className="px-3 py-2">{e.date}</td>
+                <td className="px-3 py-2">{e.vendor}</td>
+                <td className="px-3 py-2">{e.category}</td>
+                <td className="px-3 py-2"><TagChip tone={e.type === 'capex' ? 'capex' : 'opex'}>{e.type.toUpperCase()}</TagChip></td>
+                <td className="px-3 py-2">{e.owner}</td>
+                <td className="px-3 py-2 text-right font-mono">{money(e.amount, e.currency)}</td>
               </tr>
             )) : (
-              <tr><td colSpan={6} className="p-6 text-center text-ink-2">{copy("No expenses yet. Connect Gmail or add manually.")}</td></tr>
+              <tr><td colSpan={6} className="px-3 py-4 text-[14px] text-ink-2">{copy("No expenses yet. Connect Gmail or add manually.")}</td></tr>
             )}
           </tbody>
         </DataTable>

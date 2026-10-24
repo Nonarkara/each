@@ -39,6 +39,32 @@ jobs:
         with:
           path: dist
 
+  # The MSH gate. It is the law's own instrument, vendored byte for byte, and
+  # it runs over every route at every width it measures. A page that invents
+  # a reason to occupy space fails the build.
+  spatial:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Find Chrome
+        run: |
+          for c in /usr/bin/google-chrome /usr/bin/google-chrome-stable /usr/bin/chromium; do
+            if [ -x "$c" ]; then echo "CHROME_PATH=$c" >> "$GITHUB_ENV"; exit 0; fi
+          done
+          sudo apt-get update && sudo apt-get install -y google-chrome-stable
+          echo "CHROME_PATH=/usr/bin/google-chrome" >> "$GITHUB_ENV"
+      - run: npm run build
+      - run: npm run check:instrument
+      - run: npm run check:spatial
+      # A gate that has never failed proves nothing: this injects one real
+      # defect per mode of spatial hallucination and checks the gate bites.
+      - run: npm run check:spatial:false
+
   deploy:
     if: github.event_name != 'pull_request'
     environment:

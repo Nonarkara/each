@@ -10,7 +10,25 @@ EACH = ERP + ACT + CRM + HR. A unified startup/SME management tool. Phase 0 is a
 npm run dev
 npm run build
 npm run preview
+npm run check:design      # the design contract
+npm run check:spatial     # the MSH gate — the law's own instrument, over every route and width
+npm run check:spatial:false  # proves the gate bites
 ```
+
+## The MSH gate is the law, not a suggestion
+
+`docs/msh-law.md` is Dr Non's spatial law, vendored verbatim.
+`scripts/spatial/` is the instrument that enforces it, vendored byte for byte
+(`npm run check:instrument` proves it). A page that invents a reason to
+occupy space fails the build, and a deliberate hole must be written down in
+`design/spatial-baseline.json` with a reason that says why — "the grid put it
+there" is not a reason.
+
+- The gate measures the **built** site, every route, at every width the CSS
+  changes at. A route is addressed by query: `/?demo=1&module=erp`.
+- **Never edit the vendored instrument.** Fix the page, or write the reason.
+- The falsifier proves the gate is not a rule that always passes; if it
+  fails, the gate is broken, not the site.
 
 ## Anti-regression — do not touch without approval
 

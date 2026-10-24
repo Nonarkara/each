@@ -40,3 +40,6 @@ data/
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
+
+# MSH gate mirror (built site + stylesheet where the instrument looks for it)
+.spatial-site

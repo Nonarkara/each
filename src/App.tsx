@@ -46,6 +46,16 @@ type AppView = 'login' | 'landing' | 'onboarding' | 'app'
 
 
 function initialView(): AppView {
+  // A demo link asked for the sample workspace in the address, so the FIRST
+  // paint must be that workspace. Rendering the sign-in wall first is a flash
+  // of the wrong page — and it is what the spatial gate caught on the live
+  // site: seven measurements of a panel route came back with no chrome at
+  // all, because the panel had not been painted yet when the gate looked.
+  if (DEMO_REQUESTED) {
+    setDemoSession()
+    loadAbcStore()
+    return 'app'
+  }
   const session = getAuthSession()
   if (storeApi.get().onboarded && storeApi.get().dataTenant === 'custom') return 'app'
   if (session?.dataPath === 'axiom' && !session.demo) return 'app'
@@ -79,13 +89,10 @@ export default function App() {
     return () => window.removeEventListener('popstate', onAddress)
   }, [])
 
-  // ?demo=1 opens the sample workspace without an account: a link a founder can send.
-  useEffect(() => {
-    if (!DEMO_REQUESTED) return
-    setDemoSession()
-    loadAbcStore()
-    setView('app')
-  }, [])
+  // ?demo=1 opens the sample workspace without an account: a link a founder can
+  // send. The workspace and the session are already in place before the first
+  // paint (see initialView), so there is nothing left to do here but to keep
+  // the view honest if the store says otherwise.
 
   function navigate(next: AppRoute) {
     setRoute(next)

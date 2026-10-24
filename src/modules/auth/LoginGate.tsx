@@ -139,6 +139,10 @@ export function LoginGate({
               <p className="font-display text-[32px] font-bold leading-none">EACH</p>
               <p className="font-body text-[11px] text-ink-2">ERP · ACT · CRM · HR</p>
             </div>
+            {/* The language switch belongs to the masthead, beside the name it
+                belongs to. Alone in the far corner it was a control with
+                nothing near it and a void to cross. */}
+            <span className="ml-2"><LanguageSwitch /></span>
           </div>
           <p className="mt-10 font-display text-[32px] font-bold leading-[1.1]">
             {t('Every piece of your startup, unified.', 'ทุกชิ้นส่วนของสตาร์ทอัป รวมที่เดียว')}
@@ -171,7 +175,6 @@ export function LoginGate({
         </div>
 
         <div className="flex flex-col">
-        <div className="mb-5 flex justify-end"><LanguageSwitch /></div>
         <div className="lg:flex lg:flex-1 lg:flex-col lg:justify-center">
         <div className="mb-8 flex items-center gap-3 lg:hidden">
           <span className="flex h-11 w-11 items-center justify-center border border-amber font-display text-[14px] font-bold text-ink">E</span>
@@ -179,6 +182,7 @@ export function LoginGate({
             <p className="font-display text-[32px] font-bold leading-none">EACH</p>
             <p className="font-body text-[11px] text-ink-2">ERP + ACT + CRM + HR</p>
           </div>
+          <span className="ml-2"><LanguageSwitch /></span>
         </div>
 
         <div className="border border-hairline bg-panel p-5 sm:p-6">

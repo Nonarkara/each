@@ -403,3 +403,48 @@ re-measured after the upload and the receipt is in the deployment section
 below. Dr Non has not yet ruled on the recomposed screens. Frappe is still
 unrun locally (Docker down, Python 3.9), so the Node account service remains
 the verified tier.
+
+
+## Deployment receipt (2026-10-24, MSH release)
+
+**Published from the commit.** `e5c4c72`, built in a pristine `git worktree`
+export of that commit — not from the working tree — and uploaded with
+`wrangler pages deploy dist --project-name each --branch main
+--commit-hash e5c4c72`. The public route serves `index-BbxRXUhi.js`, and the
+deployed `index.html` is **byte-identical** to the built one (sha256 compared
+by `scripts/spatial/fetch-deployed.mjs`).
+
+**Measured, three ways.**
+
+1. **The built site** — `npm run check:spatial`: **189 measurements, 9 routes ×
+   21 widths, zero findings.** The widths are the six project widths, every
+   CSS breakpoint and its two neighbours, and the phone widths the law names
+   (390, 414). Every measurement is a fresh load at the width measured.
+2. **The deployed bytes** — `npm run check:spatial:live` fetches the public
+   route into a mirror (70 files: the HTML, the CSS, the JavaScript, every
+   font) and sweeps those bytes with the same instrument and the same
+   receipt: **189 measurements, zero findings.**
+3. **The falsifier** — `npm run check:spatial:false`: **10 injected page
+   defects, 12 broken-baseline cases and 1 case about the instrument itself,
+   all caught; 8 of 8 modes.**
+
+**The one thing that did not come out clean.** The gate's `--base` mode
+measures a running site through a proxy that re-fetches every asset from the
+origin, one round trip at a time: document, stylesheet, script. The
+instrument's settle window closes before the application has painted, so
+**10 of 189 measurements recorded the page before the app was on it** — a
+blank document with no chrome, not a layout defect. The same measurement of
+the same bytes, served locally, is clean 189 for 189. That is the harness's
+asset chain, not the layout, and it is recorded here rather than hidden:
+the fix is to measure the deployed bytes (which is what
+`check:spatial:live` does), and the product change that came out of it —
+the first render is now flushed synchronously, so the chrome is in the
+document before the browser says the page has loaded — is in `e5c4c72`.
+
+**Evidence.** `docs/images/msh-2026-10-24/` holds the live screens at 390,
+1024 and 1440: the sign-in page, the ERP cockpit, the CRM board, ACT, HR and
+the dossier.
+
+**Still static.** The published site is the evaluation tier: no account
+service, so the workspace lives in this browser and the sign-in panel says
+so. The Node service (`npm run product`) is the tier with accounts.

@@ -32,26 +32,40 @@ const seen = new Set();
 const queue = ["/"];
 const written = [];
 
-function localPaths(text) {
+function localPaths(text, kind) {
   const out = new Set();
-  for (const m of text.matchAll(/(?:src|href)\s*=\s*["']([^"']+)["']/gi)) {
-    const v = m[1];
-    if (!v.startsWith("/") || v.startsWith("//")) continue;
-    if (v.startsWith("/api")) continue;
-    out.add(v.split("#")[0].split("?")[0]);
+  if (kind === "html") {
+    for (const m of text.matchAll(/(?:src|href)\s*=\s*["']([^"']+)["']/gi)) {
+      const v = m[1];
+      if (!v.startsWith("/") || v.startsWith("//")) continue;
+      if (v.startsWith("/api")) continue;
+      out.add(v.split("#")[0].split("?")[0]);
+    }
   }
-  // Chunks the entry script imports, statically or not.
-  for (const m of text.matchAll(/["'](\/assets\/[^"']+?\.js)["']/g)) out.add(m[1]);
-  for (const m of text.matchAll(/["'](\.\/[^"']+?\.js)["']/g)) out.add("/assets/" + m[1].replace(/^\.\//, ""));
-  // The stylesheet's own assets: fonts, images, anything url() points at.
-  // A mirror without the fonts is a mirror of a DIFFERENT page — the text
-  // falls back and the line lengths change.
-  for (const m of text.matchAll(/url\(\s*["']?([^"')]+)["']?\s*\)/gi)) {
-    const v = m[1];
-    if (v.startsWith("data:")) continue;
-    if (v.startsWith("/")) out.add(v.split("?")[0]);
-    else if (v.startsWith("./")) out.add("/assets/" + v.slice(2).split("?")[0]);
-    else if (!v.startsWith("#") && !v.startsWith("data:")) out.add("/assets/" + v.split("?")[0]);
+  if (kind === "js") {
+    // Chunks the entry script imports, statically or not. Only names that
+    // look like build output are taken: a JavaScript string is not a file
+    // path, and fetching "/assets/new Blob([Pt(" would fetch a 404 page and
+    // call it a file.
+    const HASHED = /[A-Za-z0-9_-]+\.[A-Za-z0-9]{6,}\.[a-z0-9]{2,5}$/;
+    for (const m of text.matchAll(/["'`](\/assets\/[^"'`\s)]+?)["'`]/g)) {
+      if (HASHED.test(m[1])) out.add(m[1]);
+    }
+    for (const m of text.matchAll(/["'`](\.\/[^"'`\s)]+?)["'`]/g)) {
+      if (HASHED.test(m[1])) out.add("/assets/" + m[1].replace(/^\.\//, ""));
+    }
+  }
+  if (kind === "css") {
+    // The stylesheet's own assets: fonts, images, anything url() points at.
+    // A mirror without the fonts is a mirror of a DIFFERENT page — the text
+    // falls back and the line lengths change.
+    for (const m of text.matchAll(/url\(\s*["']?([^"')]+)["']?\s*\)/gim)) {
+      const v = m[1];
+      if (v.startsWith("data:")) continue;
+      if (v.startsWith("/")) out.add(v.split("?")[0]);
+      else if (v.startsWith("./")) out.add("/assets/" + v.slice(2).split("?")[0]);
+      else if (!v.startsWith("#")) out.add("/assets/" + v.split("?")[0]);
+    }
   }
   return [...out];
 }
@@ -77,8 +91,9 @@ while (queue.length) {
   writeFileSync(file, body);
   written.push({ route, bytes: body.length, sha: createHash("sha256").update(body).digest("hex").slice(0, 12) });
   const ct = res.headers.get("content-type") || "";
-  if (ct.includes("html") || ct.includes("javascript") || ct.includes("json")) {
-    for (const p of localPaths(body.toString("utf8"))) if (!seen.has(p)) queue.push(p);
+  const kind = ct.includes("css") ? "css" : ct.includes("javascript") ? "js" : ct.includes("html") ? "html" : "";
+  if (kind) {
+    for (const p of localPaths(body.toString("utf8"), kind)) if (!seen.has(p)) queue.push(p);
   }
 }
 

@@ -1,5 +1,6 @@
 import { useLanguage } from '../../lib/languageContext'
 import { useCopy } from '../../lib/copy'
+import { admit, contrastRatio, formatRatio, mix } from '../../lib/color'
 import {
   Btn,
   DataTable,
@@ -8,6 +9,11 @@ import {
   Station,
   TagChip,
 } from '../../components/ui/Axiom'
+
+const PAPER = '#f6f5f2'
+const INK = '#191712'
+const INK2 = '#5f5b52'
+const AMBER = '#f59e0b'
 
 /**
  * THE PALETTE, AS A SCALE.
@@ -45,10 +51,84 @@ export function DesignModule() {
   const combinations = [
     { ground: '#f6f5f2', text: '#191712', pair: 'paper → ink', note: t('The reading pair. 16.4:1', 'คู่อ่านหลัก 16.4:1') },
     { ground: '#ffffff', text: '#5f5b52', pair: 'panel → ink-2', note: t('Labels on a raised surface. 6.8:1', 'ป้ายบนพื้นยก 6.8:1') },
-    { ground: '#191712', text: '#f6f5f2', pair: 'ink → paper', note: t('The inverted pair. 15.4:1', 'คู่กลับสี 15.4:1') },
-    { ground: '#191712', text: '#f59e0b', pair: 'ink → amber', note: t('The point on the deep shade. 8.6:1', 'จุดเน้นบนเฉดลึก 8.6:1') },
+    { ground: '#191712', text: '#f6f5f2', pair: 'ink → paper', note: t('The inverted pair. 16.4:1', 'คู่กลับสี 16.4:1') },
+    { ground: '#191712', text: '#f59e0b', pair: 'ink → amber', note: t('The point on the deep shade. 8.3:1', 'จุดเน้นบนเฉดลึก 8.3:1') },
     { ground: '#f59e0b', text: '#191712', pair: 'amber → ink', note: t('Ink on the point. 8.3:1', 'ตัวอักษรบนจุดเน้น 8.3:1') },
   ]
+
+  /* SHADES AND LIGHTS.
+   *
+   * The palette is closed, but a system that cannot grow is a photograph of a
+   * system. So the system states the rule by which it grows: a tone enters
+   * as a SHADE of a colour already in the palette (a mix toward ink) or a
+   * LIGHT of one (a mix toward paper). Value moves; hue does not. A new hue
+   * would need the accent slot, and there is one accent slot.
+   *
+   * Every tone below is measured on the ground it is meant to stand on, and
+   * the measurement says what it earns: body text, a rule or a number, a
+   * fill, or nothing at all. The screen does not decide; it shows what the
+   * arithmetic decides, which is the only kind of decision a screen can
+   * make honestly.
+   */
+  const tones = [
+    {
+      name: 'ink-2 · shade',
+      recipe: t('ink-2 mixed 40% toward ink', 'ink-2 ผสม 40% เข้าหาเฉดลึก'),
+      hex: mix(INK2, INK, 0.4),
+      ground: PAPER,
+    },
+    {
+      name: 'ink-2 · light',
+      recipe: t('ink-2 mixed 35% toward paper', 'ink-2 ผสม 35% เข้าหากระดาษ'),
+      hex: mix(INK2, PAPER, 0.35),
+      ground: PAPER,
+    },
+    {
+      name: 'ink-2 · wash',
+      recipe: t('ink-2 mixed 75% toward paper', 'ink-2 ผสม 75% เข้าหากระดาษ'),
+      hex: mix(INK2, PAPER, 0.75),
+      ground: PAPER,
+    },
+    {
+      name: 'amber · light',
+      recipe: t('amber mixed 78% toward paper', 'amber ผสม 78% เข้าหากระดาษ'),
+      hex: mix(AMBER, PAPER, 0.78),
+      ground: PAPER,
+    },
+    {
+      name: 'amber · shade',
+      recipe: t('amber mixed 35% toward ink', 'amber ผสม 35% เข้าหาเฉดลึก'),
+      hex: mix(AMBER, INK, 0.35),
+      ground: PAPER,
+    },
+    {
+      name: 'paper · dim',
+      recipe: t('paper mixed 18% toward ink', 'กระดาษผสม 18% เข้าหาเฉดลึก'),
+      hex: mix(PAPER, INK, 0.18),
+      ground: INK,
+    },
+  ].map((tone) => {
+    const onPaper = contrastRatio(tone.hex, PAPER)
+    const onInk = contrastRatio(tone.hex, INK)
+    const earned = admit(contrastRatio(tone.hex, tone.ground))
+    return {
+      ...tone,
+      onPaper,
+      onInk,
+      earned,
+      // The colour that may be written ON this tone: the one that clears
+      // body text against it. When nothing does, the ground's own light is
+      // used and the tone is shown as a fill, not a surface for words.
+      text: contrastRatio(tone.hex, INK) >= 4.5 ? INK : PAPER,
+    }
+  })
+
+  const admissionLabel: Record<string, string> = {
+    body: t('As text on this ground — 4.5:1 or better', 'เป็นตัวอักษรบนพื้นนี้ — 4.5:1 ขึ้นไป'),
+    large: t('As a number, a rule or an edge — 3:1 or better', 'เป็นตัวเลข เส้น หรือขอบ — 3:1 ขึ้นไป'),
+    fill: t('As a ground or a wash — never as text', 'เป็นพื้นหรือฝังสี — ห้ามใช้เป็นตัวอักษร'),
+    none: t('Not legible as text on this ground', 'อ่านไม่ออกถ้าเป็นตัวอักษรบนพื้นนี้'),
+  }
 
   const Ramp = ({ r, isPoint }: { r: { name: string; hex: string; job: string }; isPoint?: boolean }) => (
     <div className={`flex items-center gap-3 lg:block ${isPoint ? 'mt-1 lg:mt-0 lg:ml-5' : ''}`}>
@@ -124,11 +204,58 @@ export function DesignModule() {
         </div>
       </div>
 
+      {/* SHADES AND LIGHTS. The rule by which the palette grows, and the
+          tones that rule admits — each one measured on the ground it stands
+          on, with the use its measurement earns. */}
+      <div className="mb-6">
+        <SectionHead
+          label={t('Shades and lights', 'เฉดแสงและแสงอ่อน')}
+          meta={t('measured, not asserted', 'วัดจริง ไม่ใช่คำบอกกล่าว')}
+        />
+        <p className="mb-3 max-w-[65ch] text-[14px] text-ink-2">
+          {t(
+            'A tone enters as a shade of a colour already in it, or a light of one: value moves, hue does not. What it may then do is decided by the measured number beside it.',
+            'เฉดใหม่เข้าสู่ระบบได้ด้วยการเป็นเฉดเข้มหรือแสงอ่อนของสีที่มีอยู่แล้ว เปลี่ยนค่า ไม่เปลี่ยนเฉดสี สิทธิ์ที่จะใช้ทำอะไรต่อไปให้ตัวเลขที่วัดไว้เป็นผู้ตัดสิน',
+          )}
+        </p>
+        <p className="mb-3 max-w-[65ch] text-[14px] text-ink-2">
+          {t(
+            'A new hue would need the accent slot, and there is one accent slot.',
+            'สีใหม่ที่ต้องใช้ช่องสีเน้น ซึ่งมีเพียงช่องเดียว',
+          )}
+        </p>
+        <div className="grid gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-3">
+          {tones.map((tone) => (
+            <div key={tone.name} className="bg-panel p-3">
+              <div
+                className="flex h-16 items-center justify-center border border-hairline"
+                style={{ background: tone.hex }}
+              >
+                <span className="font-display text-[14px] font-bold" style={{ color: tone.text }}>
+                  {t('Aa', 'Aa')} 43,182
+                </span>
+              </div>
+              <p className="mt-2 font-mono text-[14px] text-ink">{tone.name}</p>
+              <p className="text-[11px] text-ink-2">{tone.recipe}</p>
+              <p className="font-mono text-[11px] text-ink-2">{tone.hex}</p>
+              <p className="mt-1 font-mono text-[11px] text-ink">
+                {t('on paper', 'บนกระดาษ')} {formatRatio(tone.onPaper)} · {t('on ink', 'บนเฉดลึก')}{' '}
+                {formatRatio(tone.onInk)}
+              </p>
+              <p className="text-[11px] text-ink-2">{admissionLabel[tone.earned]}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* The components the system is built from, drawn in the system. A
           design system you cannot see is a list of opinions. */}
       <div className="mb-6">
         <SectionHead label={t('Components', 'คอมโพเนนต์')} />
-        <div className="grid gap-6 lg:grid-cols-2">
+        {/* Two columns only when both columns can carry their own weight. At
+            a laptop width the specimens stack instead, because a specimen
+            beside a hole is a worse specimen than a taller page. */}
+        <div className="grid gap-6 xl:grid-cols-2">
           <div className="min-w-0">
             <h4 className="mb-2 text-[11px] text-ink-2">{t('Buttons', 'ปุ่ม')}</h4>
             <div className="flex flex-wrap items-center gap-2">

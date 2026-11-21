@@ -58,7 +58,7 @@
     }
   ],
   "provenance": {
-    "measuredAt": "2026-11-21T11:03:40.896Z",
+    "measuredAt": "2026-11-21T14:22:22.716Z",
     "measurements": 210,
     "routes": 10,
     "widths": 21,
@@ -576,7 +576,7 @@
       "360": {
         "findings": [],
         "firstAction": {
-          "y": 1174,
+          "y": 1156,
           "sel": "input.h-[20px].w-[20px]"
         },
         "chrome": {
@@ -600,7 +600,7 @@
       "390": {
         "findings": [],
         "firstAction": {
-          "y": 1174,
+          "y": 1132,
           "sel": "input.h-[20px].w-[20px]"
         },
         "chrome": {
@@ -624,7 +624,7 @@
       "414": {
         "findings": [],
         "firstAction": {
-          "y": 1154,
+          "y": 1112,
           "sel": "input.h-[20px].w-[20px]"
         },
         "chrome": {
@@ -648,7 +648,7 @@
       "480": {
         "findings": [],
         "firstAction": {
-          "y": 1154,
+          "y": 1112,
           "sel": "input.h-[20px].w-[20px]"
         },
         "chrome": {
@@ -672,7 +672,7 @@
       "639": {
         "findings": [],
         "firstAction": {
-          "y": 1091,
+          "y": 1048,
           "sel": "input.h-[20px].w-[20px]"
         },
         "chrome": {
@@ -696,7 +696,7 @@
       "640": {
         "findings": [],
         "firstAction": {
-          "y": 952,
+          "y": 940,
           "sel": "input.h-[20px].w-[20px]"
         },
         "chrome": {
@@ -720,7 +720,7 @@
       "641": {
         "findings": [],
         "firstAction": {
-          "y": 952,
+          "y": 940,
           "sel": "input.h-[20px].w-[20px]"
         },
         "chrome": {
@@ -744,7 +744,7 @@
       "767": {
         "findings": [],
         "firstAction": {
-          "y": 888,
+          "y": 877,
           "sel": "input.h-[20px].w-[20px]"
         },
         "chrome": {
@@ -768,7 +768,7 @@
       "768": {
         "findings": [],
         "firstAction": {
-          "y": 820,
+          "y": 794,
           "sel": "input.h-[20px].w-[20px]"
         },
         "chrome": {
@@ -792,7 +792,7 @@
       "769": {
         "findings": [],
         "firstAction": {
-          "y": 820,
+          "y": 794,
           "sel": "input.h-[20px].w-[20px]"
         },
         "chrome": {
@@ -816,7 +816,7 @@
       "1023": {
         "findings": [],
         "firstAction": {
-          "y": 805,
+          "y": 794,
           "sel": "input.h-[20px].w-[20px]"
         },
         "chrome": {
@@ -840,7 +840,7 @@
       "1024": {
         "findings": [],
         "firstAction": {
-          "y": 759,
+          "y": 748,
           "sel": "input.h-[20px].w-[20px]"
         },
         "chrome": {
@@ -864,7 +864,7 @@
       "1025": {
         "findings": [],
         "firstAction": {
-          "y": 759,
+          "y": 748,
           "sel": "input.h-[20px].w-[20px]"
         },
         "chrome": {

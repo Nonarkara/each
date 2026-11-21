@@ -13,8 +13,8 @@ import {
   Meter,
   Modal,
   ProgressBar,
+  Pair,
   SectionHead,
-  Stat,
   Station,
 } from '../../components/ui/Axiom'
 
@@ -174,9 +174,12 @@ export function ErpModule({ store, api }: ErpModuleProps) {
               { label: copy("Debt service"), value: money(f.monthlyDebtService, f.cur), pct: debtPct, variant: 'muted' },
             ]}
           />
-          <dl className="mt-4 grid gap-x-6 sm:grid-cols-2">
-            <Stat tone="ink" label={copy("Called capital")} value={money(f.founding, f.cur)} />
-            <Stat tone="ink" label={copy("Debt owed")} value={money(f.totalDebt, f.cur)} />
+          {/* The two facts are PAIRS, spread to the ends of the field: the
+              void lands between them, where a centred void is balance, and
+              each number stays beside the word that names it. */}
+          <dl className="mt-4 flex flex-wrap justify-between gap-x-6 gap-y-1">
+            <Pair tone="ink" label={copy("Called capital")} value={money(f.founding, f.cur)} />
+            <Pair tone="ink" label={copy("Debt owed")} value={money(f.totalDebt, f.cur)} />
           </dl>
         </Figure>
       </div>

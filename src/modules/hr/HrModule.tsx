@@ -13,8 +13,8 @@ import {
   Modal,
   ProgressBar,
   SectionHead,
+  Pair,
   StackBar,
-  Stat,
   Station,
 } from '../../components/ui/Axiom'
 
@@ -117,9 +117,12 @@ export function HrModule({ store, api }: HrModuleProps) {
               <span>{t('AI', 'AI')} {Math.round(aiShare * 100)}%</span>
               <span>{t('Human', 'คน')} {Math.round((1 - aiShare) * 100)}%</span>
             </div>
-            <dl className="mt-3 grid gap-x-6 sm:grid-cols-2">
-              <Stat tone="ink" label={t('AI operators', 'AI')} value={money(aiCost, store.currency)} swatch="amber" />
-              <Stat tone="ink" label={t('Human staff', 'คน')} value={money(humCost, store.currency)} swatch="paper" />
+            {/* The split and the two facts that name it are one legend: the
+                square, the word and the number travel together, and the void
+                between the two pairs is the balance of the field. */}
+            <dl className="mt-3 flex flex-wrap justify-between gap-x-6 gap-y-1">
+              <Pair tone="ink" swatch="amber" label={t('AI operators', 'AI')} value={money(aiCost, store.currency)} />
+              <Pair tone="ink" swatch="paper" label={t('Human staff', 'คน')} value={money(humCost, store.currency)} />
             </dl>
           </div>
         </Figure>

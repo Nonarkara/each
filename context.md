@@ -826,3 +826,17 @@ caught, 8 of 8 modes.
 account service is the verified tier. The ERP page's first *control* is a
 key-result checkbox: the money room is read before it is acted on, and no
 action was invented to move that number.
+
+### The facts that flew to the far edge (2026-11-21, one more)
+
+The last thing the screenshots showed: in the ERP hero and the People hero,
+the two facts under the composition flung their numbers to the far edge of
+their own half — "Called capital" and its number four hundred pixels apart,
+in a field whose legend two rows above keeps its colour, word and number
+together. The same field, two rules.
+
+They are **pairs** now (`src/components/ui/Axiom.tsx`, `Pair`): the word and
+the number travel together, and the void between the two pairs is centred —
+which is balance, not a hole. The dossier's four facts keep their ledger
+line, because that strip is four independent facts about a company and not a
+legend of a composition.

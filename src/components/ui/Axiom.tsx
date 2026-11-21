@@ -142,6 +142,35 @@ export function Stat({ label, value, swatch, tone = 'paper' }: StatProps) {
   )
 }
 
+interface PairProps {
+  label: string
+  value: string
+  swatch?: 'ink' | 'amber' | 'muted' | 'paper'
+  tone?: 'paper' | 'ink'
+}
+
+/**
+ * A PAIR: the colour, the word and the number, together.
+ *
+ * A number flung to the far edge of a wide page cannot be matched to the
+ * colour that names it — and a fact whose number sits three hundred pixels
+ * from its own word reads as two unrelated things that happen to share a
+ * row. The pair is the smallest honest unit: the square, the word, the
+ * number, in that order and never apart.
+ */
+export function Pair({ label, value, swatch, tone = 'paper' }: PairProps) {
+  const dark = tone === 'ink'
+  return (
+    <div className="flex flex-wrap items-baseline gap-x-2">
+      <dt className="flex items-center gap-2">
+        {swatch ? <span className={`inline-block h-2 w-2 shrink-0 ${SWATCH_CLASS[swatch]}`} aria-hidden /> : null}
+        <span className={`text-[11px] ${dark ? 'text-paper' : 'text-ink-2'}`}>{label}</span>
+      </dt>
+      <dd className={`font-mono text-[14px] ${dark ? 'text-paper' : 'text-ink'}`}>{value}</dd>
+    </div>
+  )
+}
+
 interface MeterSegment {
   label: string
   value: string

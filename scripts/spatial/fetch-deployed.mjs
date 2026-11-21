@@ -19,9 +19,10 @@
  * Usage: node scripts/spatial/fetch-deployed.mjs <base-url> [out-dir]
  */
 import { createHash } from "node:crypto";
-import { mkdirSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, existsSync, readFileSync, writeFileSync, readdirSync, copyFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { cliffsOf, writeSheet } from "./breakpoints.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "..", "..");
@@ -99,6 +100,38 @@ while (queue.length) {
 
 console.log(`  · deployed mirror: ${path.relative(ROOT, OUT)} — ${written.length} file(s) fetched from ${BASE}`);
 for (const w of written.slice(0, 12)) console.log(`    ${w.route} — ${w.bytes} B — ${w.sha}`);
+
+/**
+ * The stylesheet, where the instrument looks for it, and the cliffs it
+ * states.
+ *
+ * The instrument reads media queries out of <site>/_next/static/css. A mirror
+ * without a stylesheet there falls back to "the project's own widths" and
+ * never measures where the CSS actually changes — the mirror would be
+ * measured at the widths where nothing changes. The bytes are the deployed
+ * ones; only the path of the stylesheet is added, and the mirror is never
+ * deployed.
+ */
+const CSS_DIR = path.join(OUT, "_next", "static", "css");
+const assetDir = path.join(OUT, "assets");
+const sheets = existsSync(assetDir)
+  ? readdirSync(assetDir).filter((f) => f.endsWith(".css"))
+  : [];
+if (sheets.length) {
+  mkdirSync(CSS_DIR, { recursive: true });
+  for (const f of sheets) {
+    copyFileSync(path.join(assetDir, f), path.join(CSS_DIR, f));
+  }
+  const cliffs = cliffsOf(sheets.map((f) => path.join(assetDir, f)));
+  writeSheet(CSS_DIR, cliffs);
+  console.log(
+    `  · the mirror states its own cliffs: ${cliffs.length} breakpoint(s) from the deployed stylesheet`,
+  );
+} else {
+  console.error(
+    "  · the mirror has no stylesheet — the sweep will fall back to the project's own widths",
+  );
+}
 
 // The point of a mirror is that it is the deployment, not a rebuild of it.
 const local = path.join(ROOT, "dist", "index.html");

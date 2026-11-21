@@ -141,7 +141,7 @@ export function DossierView({ store }: DossierViewProps) {
 
       <SectionHead label={copy("Projects in flight")} meta={store.projects.length + ' total'} />
       <div className="overflow-x-auto border border-hairline">
-        <table className="w-full min-w-[480px] text-left text-[14px]">
+        <table className="data-table w-full min-w-[480px] text-left text-[14px]">
           <thead>
             <tr className="border-b border-hairline bg-paper">
               <th className="px-3 py-2 font-body text-[11px] text-ink-2">{copy("Project")}</th>
@@ -156,10 +156,10 @@ export function DossierView({ store }: DossierViewProps) {
               const tot = (p.checklist || []).length
               return (
                 <tr key={p.id} className="border-b border-hairline">
-                  <td className="px-3 py-2">{p.title}</td>
-                  <td className="px-3 py-2">{p.status.toUpperCase()}</td>
-                  <td className="px-3 py-2">{p.owner}</td>
-                  <td className="px-3 py-2 text-right font-mono">{done}/{tot}</td>
+                  <td data-label={copy("Project")} className="px-3 py-2">{p.title}</td>
+                  <td data-label={copy("Status")} className="px-3 py-2">{p.status.toUpperCase()}</td>
+                  <td data-label={copy("Owner")} className="px-3 py-2">{p.owner}</td>
+                  <td data-label={copy("Tasks")} className="px-3 py-2 text-right font-mono">{done}/{tot}</td>
                 </tr>
               )
             })}

@@ -219,11 +219,11 @@ export function ErpModule({ store, api }: ErpModuleProps) {
             {(store.loans || []).length ? (
               store.loans.map((l) => (
                 <tr key={l.id} className="border-b border-hairline">
-                  <td className="py-2 pr-3 text-[14px]">{l.lender}</td>
-                  <td className="py-2 pr-3 text-right font-mono text-[14px]">{money(l.principal, l.currency || f.cur)}</td>
-                  <td className="py-2 pr-3 text-right font-mono text-[14px]">{l.rate}%</td>
-                  <td className="py-2 pr-3 text-right font-mono text-[14px]">{l.termMonths} {t('mo', 'เดือน')}</td>
-                  <td className="py-2 pr-3 text-right font-mono text-[14px]">{money(l.installment, l.currency || f.cur)}</td>
+                  <td data-label={copy("Lender")} className="py-2 pr-3 text-[14px]">{l.lender}</td>
+                  <td data-label={copy("Principal")} className="py-2 pr-3 text-right font-mono text-[14px]">{money(l.principal, l.currency || f.cur)}</td>
+                  <td data-label={copy("Rate")} className="py-2 pr-3 text-right font-mono text-[14px]">{l.rate}%</td>
+                  <td data-label={copy("Term")} className="py-2 pr-3 text-right font-mono text-[14px]">{l.termMonths} {t('mo', 'เดือน')}</td>
+                  <td data-label={copy("Installment")} className="py-2 pr-3 text-right font-mono text-[14px]">{money(l.installment, l.currency || f.cur)}</td>
                   <td className="py-2 text-right">
                     <Btn variant="ghost" onClick={() => removeLoan(l.id)}>{copy("Remove")}</Btn>
                   </td>

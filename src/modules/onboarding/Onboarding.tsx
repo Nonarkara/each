@@ -201,9 +201,9 @@ export function Onboarding({ api, onDone }: OnboardingProps) {
             <tbody>
               {store.foundingCapital.length ? store.foundingCapital.map((x) => (
                 <tr key={x.id} className="border-b border-hairline">
-                  <td className="p-3">{x.source}</td>
-                  <td className="p-3">{x.taxId}</td>
-                  <td className="p-3 text-right font-mono">{money(x.amount, x.currency)}</td>
+                  <td data-label={copy("Source")} className="p-3">{x.source}</td>
+                  <td data-label={copy("Tax ID")} className="p-3">{x.taxId}</td>
+                  <td data-label={copy("Amount")} className="p-3 text-right font-mono">{money(x.amount, x.currency)}</td>
                 </tr>
               )) : (
                 <tr><td colSpan={3} className="p-6 text-center text-ink-2">{copy("No capital recorded yet.")}</td></tr>

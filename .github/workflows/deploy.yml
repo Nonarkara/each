@@ -65,12 +65,19 @@ jobs:
       # under the shorter one. It is the project's own instrument, and it
       # fails when a column stops short of the row it stands in.
       - run: npm run check:balance
+      # The clip gate: a control whose label does not fit its own box is a
+      # word cut in half, and a table wider than the screen is a column cut
+      # off. Both are invisible to the law's instrument.
+      - run: npm run check:clip
       # A gate that has never failed proves nothing: this injects one real
       # defect per mode of spatial hallucination and checks the gate bites.
       - run: npm run check:spatial:false
       # And the gate's own honesty check: a site that never renders must not
       # be certified, and a rendered one must be.
       - run: npm run check:void
+      # And the clip gate's: a page that cuts its own content must not be
+      # certified, and a whole one must be.
+      - run: npm run check:clip:false
 
   deploy:
     if: github.event_name != 'pull_request'

@@ -225,9 +225,9 @@ export function ActModule({ store, api }: ActModuleProps) {
           <tbody>
             {invoices.length ? invoices.map((p) => (
               <tr key={p.id} className="border-b border-hairline">
-                <td className="px-3 py-2">{p.title}</td>
-                <td className="px-3 py-2">{p.client || '—'}</td>
-                <td className="px-3 py-2 text-right font-mono">{money((p.totalValue || 0) - (p.received || 0), store.currency)}</td>
+                <td data-label={copy("Project")} className="px-3 py-2">{p.title}</td>
+                <td data-label={copy("Client")} className="px-3 py-2">{p.client || '—'}</td>
+                <td data-label={copy("Outstanding")} className="px-3 py-2 text-right font-mono">{money((p.totalValue || 0) - (p.received || 0), store.currency)}</td>
                 <td className="px-3 py-2">
                   <Btn variant="ghost" onClick={() => recordPayment(p.id)}>{copy("Mark paid")}</Btn>
                 </td>
@@ -259,12 +259,12 @@ export function ActModule({ store, api }: ActModuleProps) {
           <tbody>
             {store.expenses.length ? store.expenses.slice().reverse().map((e) => (
               <tr key={e.id} className="border-b border-hairline">
-                <td className="px-3 py-2">{e.date}</td>
-                <td className="px-3 py-2">{e.vendor}</td>
-                <td className="px-3 py-2">{e.category}</td>
-                <td className="px-3 py-2"><TagChip tone={e.type === 'capex' ? 'capex' : 'opex'}>{e.type.toUpperCase()}</TagChip></td>
-                <td className="px-3 py-2">{e.owner}</td>
-                <td className="px-3 py-2 text-right font-mono">{money(e.amount, e.currency)}</td>
+                <td data-label={copy("Date")} className="px-3 py-2">{e.date}</td>
+                <td data-label={copy("Vendor")} className="px-3 py-2">{e.vendor}</td>
+                <td data-label={copy("Category")} className="px-3 py-2">{e.category}</td>
+                <td data-label={copy("Type")} className="px-3 py-2"><TagChip tone={e.type === 'capex' ? 'capex' : 'opex'}>{e.type.toUpperCase()}</TagChip></td>
+                <td data-label={copy("Owner")} className="px-3 py-2">{e.owner}</td>
+                <td data-label={copy("Amount")} className="px-3 py-2 text-right font-mono">{money(e.amount, e.currency)}</td>
               </tr>
             )) : (
               <tr><td colSpan={6} className="px-3 py-4 text-[14px] text-ink-2">{copy("No expenses yet. Connect Gmail or add manually.")}</td></tr>

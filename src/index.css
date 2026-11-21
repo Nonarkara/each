@@ -110,6 +110,44 @@ button:active:not(:disabled) { transform: scale(.97); }
    only the workspace identity and the two actions that start work. */
 .workspace-language { display: none; }
 .workspace-nav .workspace-language { display: inline-flex; }
+
+/* A TABLE ON A PHONE IS A LIST OF RECORDS.
+   A table wider than the screen is not a table: the reader sees a column cut
+   in half, a number split down the middle, and nothing saying there is more
+   to the right. Below 640px the table becomes a stack of records, and every
+   cell names the column it came from. */
+@media (max-width: 639px) {
+  .data-table { min-width: 0 !important; display: block; }
+  .data-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .data-table,
+  .data-table tbody,
+  .data-table tr,
+  .data-table td { display: block; }
+  .data-table tr { padding: 6px 0; }
+  .data-table td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 3px 12px;
+  }
+  .data-table td::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    font-size: 11px;
+    color: var(--color-ink-2);
+  }
+  /* A cell with no column name is an action, and an action belongs at the
+     left of the record, not pushed to the far margin. */
+  .data-table td:not([data-label]) { justify-content: flex-start; }
+}
 @media (min-width: 1024px) {
   .workspace-header { grid-template-columns: minmax(160px, 1fr) auto auto; align-items: center; gap: 20px; min-height: 64px; }
   .workspace-identity, .workspace-nav, .workspace-actions { grid-row: 1; }

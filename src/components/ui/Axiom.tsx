@@ -403,10 +403,33 @@ export function Select({
   )
 }
 
-export function DataTable({ children, minWidth = 480 }: { children: ReactNode; minWidth?: number }) {
+/**
+ * A table of records.
+ *
+ * On a desk it is a table. On a phone it is a LIST OF RECORDS: a table that
+ * is wider than the screen is not a table, it is a table with its last
+ * column cut in half, a number split down the middle, and nothing saying
+ * there is more to the right. Every cell below 640px names itself with the
+ * column it belongs to, so a record reads as a record.
+ *
+ * `stack={false}` keeps the table a table — for the one screen that shows a
+ * table as a specimen of the system rather than as the reader's data.
+ */
+export function DataTable({
+  children,
+  minWidth = 480,
+  stack = true,
+}: {
+  children: ReactNode
+  minWidth?: number
+  stack?: boolean
+}) {
   return (
     <div className="overflow-x-auto border border-hairline">
-      <table className="w-full border-collapse text-left text-[14px]" style={{ minWidth }}>
+      <table
+        className={`w-full border-collapse text-left text-[14px] ${stack ? 'data-table' : ''}`}
+        style={{ minWidth }}
+      >
         {children}
       </table>
     </div>

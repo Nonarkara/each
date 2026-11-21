@@ -208,10 +208,10 @@ export function HrModule({ store, api }: HrModuleProps) {
               /* No type column: every row of the human roster is human, and a
                  column that says the same thing nine times is noise. */
               <tr key={h.id} className="border-b border-hairline">
-                <td className="px-3 py-2">{h.name}</td>
-                <td className="px-3 py-2">{h.role}</td>
-                <td className="px-3 py-2">{h.started}</td>
-                <td className="px-3 py-2 text-right font-mono">{money(h.salary, h.currency || store.currency)}</td>
+                <td data-label={copy("Name")} className="px-3 py-2">{h.name}</td>
+                <td data-label={copy("Role")} className="px-3 py-2">{h.role}</td>
+                <td data-label={copy("Started")} className="px-3 py-2">{h.started}</td>
+                <td data-label={copy("Salary / mo")} className="px-3 py-2 text-right font-mono">{money(h.salary, h.currency || store.currency)}</td>
               </tr>
             )) : (
               <tr><td colSpan={4} className="px-3 py-4 text-[14px] text-ink-2">{copy("No human employees yet.")}</td></tr>

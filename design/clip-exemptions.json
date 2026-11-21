@@ -1,0 +1,11 @@
+{
+  "exempt": [
+    {
+      "check": "cut content",
+      "route": "/?demo=1&module=crm",
+      "w": [360, 390, 414, 480],
+      "sel": "div.board",
+      "why": "The pipeline is a BOARD: its columns stand side by side and the reader scrolls along them, the way a board has always worked on a phone. A board is not a table. A table that is wider than the screen is a table with its last column cut in half — a number split down the middle, with nothing saying there is more to the right — and that is why every table in this product became a list of records below 640px."
+    }
+  ]
+}

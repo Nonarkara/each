@@ -656,7 +656,7 @@ had never measured.
 - The ERP page's first *control* is a key-result checkbox: the money room is
   read before it is acted on, and no action was invented to move that number.
 
-## The receipt that measured nothing (2026-11-05, the gate that flaked)
+## The receipt that measured nothing (2026-11-21, the gate that flaked)
 
 The receipt was re-issued twice and the check disagreed with it on six of two
 hundred and ten measurements — half of them reading **111px of chrome in one
@@ -731,3 +731,66 @@ baseline's own history said it: `hr@1537` was recorded at 0px while
   a future one that is meant to be empty would need an exemption.
 - Frappe is still unrun locally (Docker down, Python 3.9); the Node account
   service remains the verified tier.
+
+## The tables that were cut in half (2026-11-21, the census)
+
+The law's gates were green and the phone was not. A census of every region
+on every route at 390, 768, 1024 and 1440 — every region that scrolls
+sideways and cuts its own content — found **six**, and five of them were
+tables.
+
+### Found
+
+1. **Every data table in the product was cut off on a phone.** The ERP's
+   loans, the ACT's invoices and expenses, the HR's people, the dossier's
+   projects: each one cut **120px** of itself, and the cut fell through the
+   middle of a number. Five tables, on five pages, on the device people
+   actually hold.
+2. **The instrument cannot see this class.** A region the reader scrolls is
+   legal to the law's instrument — the page does not scroll sideways, so
+   there is no overflow, and nothing is clipped by its own definition. The
+   reader sees a chopped column and a number split down the middle, and the
+   gate says the page is clean.
+3. **A control that cannot fit its own label is the same defect.** The
+   instrument's clip rule needs `overflow: hidden`; a button has
+   `overflow: visible`, so its label spills out and the neighbour paints
+   over it. (Measured here and found whole, for the record: the Thai on the
+   language switch renders as ไทย, not cut.)
+
+### Changed
+
+- **`src/components/ui/Axiom.tsx`** — `DataTable` is now a table on a desk
+  and a **list of records on a phone**: below 640px the head is hidden from
+  sight (kept for the reader of the page), every cell names the column it
+  came from, and a record reads as a record. `stack={false}` keeps a table
+  a table, for the one screen that shows a table as a specimen.
+- **`src/index.css`** — the rules that do it, below 640px.
+- **Six tables** — the ERP's loans, the ACT's invoices and expenses, the
+  HR's people, the dossier's projects and the onboarding's capital — each
+  cell now carries the name of its column.
+- **`scripts/spatial/clip.mjs`** — **new, the clip gate**: for every route
+  at every width, does every control's own label fit inside the control, and
+  does any region cut its own content. It is the project's instrument; the
+  law's stays byte-identical.
+- **`scripts/spatial/clip-falsify.mjs`** — **new**: the proof that it bites.
+  A page with a control that cannot fit its own label must be refused, and a
+  real page must still be certified.
+- **`design/clip-exemptions.json`** — one entry, with its reason: the CRM
+  pipeline is a **board**, and a board is wider than a phone and is scrolled
+  along. A board is not a table.
+
+### Verified
+
+- **The census, after the fix**: six cut regions → **one**, the board, with
+  its reason written down. No table is cut anywhere.
+- **`npm run check:clip`** — 40 page loads (10 routes × 4 widths), every
+  control's label fits its own box, one exemption (the board).
+- **`npm run check:clip:false`** — the gate refuses a planted defect and
+  certifies a real page.
+
+### Remaining
+
+- The board still scrolls sideways on a phone. That is a board's nature and
+  it is written down, not hidden.
+- A record on a phone is five lines where a row was one. That is the trade:
+  nothing is cut, and the page is longer.

@@ -281,7 +281,7 @@ export function DesignModule() {
           </div>
           <div className="min-w-0">
             <h4 className="mb-2 text-[11px] text-ink-2">{t('A table', 'ตาราง')}</h4>
-            <DataTable minWidth={320}>
+            <DataTable minWidth={320} stack={false}>
               <thead>
                 <tr className="border-b border-hairline font-body text-[11px] text-ink-2">
                   <th className="py-2 pr-3 text-left">{t('Lender', 'ผู้ให้กู้')}</th>

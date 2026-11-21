@@ -103,100 +103,99 @@ export function ErpModule({ store, api }: ErpModuleProps) {
   const opexPct = ((f.recurring + f.monthOpex) / spendTotal) * 100
   const debtPct = (f.monthlyDebtService / spendTotal) * 100
 
+  // The projection is only worth drawing when there is a run to draw. With
+  // one month of cash left there is no curve, and the hero carries the two
+  // facts instead of an empty chart frame.
+  const hasCurve = f.proj.length >= 3 && f.monthlyBurn > 0
+
   return (
     <div>
       <Station disc="E" title={copy("Finances")} meta={t('As of ', 'ข้อมูล ณ ') + store.asOf} />
 
-      {/* THE ONE BOLD MOVE. The runway, the evidence for it, and the one
-          sentence that asks the reader to do something. */}
-      <div className="mb-6 grid items-start gap-6 lg:grid-cols-[1.618fr_1fr]">
-        <div className="min-w-0">
-          <Figure
+      {/* THE ONE BOLD MOVE. The runway, the burn that produced it, the two
+          facts it is made of, and the one sentence that asks the reader to
+          do something. The field is as wide as the page: a deep shade with a
+          number in the corner of it is a hole, not a hero. */}
+      <div className="mb-6">
+        <Figure
+          tone="ink"
+          label={copy("Runway at current burn")}
+          value={Number.isFinite(f.runwayMonths) ? f.runwayMonths + ' ' + t('mo', 'เดือน') : '∞'}
+          note={
+            f.monthlyBurn > 0
+              ? money(f.monthlyBurn, f.cur) + ' / ' + t('month', 'เดือน')
+              : t('No burn recorded', 'ยังไม่มีรายจ่าย')
+          }
+          alert={
+            !safe ? (
+              <p className="border-l-2 border-amber pl-3 text-[14px] font-semibold text-paper">
+                {t(
+                  'Under six months. Collect or cut before the next close.',
+                  'ต่ำกว่า 6 เดือน เก็บเงินหรือลดรายจ่ายก่อนรอบปิดถัดไป',
+                )}
+              </p>
+            ) : null
+          }
+          footer={
+            hasCurve ? (
+              <div>
+                <div className="flex h-[72px] items-end gap-[3px]">
+                  {f.proj.slice(0, 24).map((bal, i) => {
+                    const max = f.proj[0] || 1
+                    const h = Math.max(2, Math.round((bal / max) * 72))
+                    const last = i === f.proj.length - 1
+                    return (
+                      <div
+                        key={i}
+                        title={'M' + i + ': ' + money(Math.max(0, bal), f.cur)}
+                        className={`flex-1 ${last ? 'bg-amber' : 'bg-paper'}`}
+                        style={{ height: h + 'px', opacity: last ? 1 : Math.max(0.35, 1 - i / 30) }}
+                      />
+                    )
+                  })}
+                </div>
+                <div className="mt-1.5 flex justify-between font-mono text-[11px] text-paper">
+                  <span>{copy("Now")}</span>
+                  <span>{copy("Cash hits zero")}</span>
+                </div>
+              </div>
+            ) : null
+          }
+        >
+          {/* What the burn is made of, and what the money is standing on. Both
+              stand inside the field with the number they explain, so the
+              field has no empty corner and no fact is said twice. */}
+          <p className="mb-2 text-[14px] font-semibold text-paper">{copy("Where the burn goes")}</p>
+          <Meter
             tone="ink"
-            label={copy("Runway at current burn")}
-            value={Number.isFinite(f.runwayMonths) ? f.runwayMonths + ' ' + t('mo', 'เดือน') : '∞'}
-            note={
-              f.monthlyBurn > 0
-                ? money(f.monthlyBurn, f.cur) + ' / ' + t('month', 'เดือน')
-                : t('No burn recorded', 'ยังไม่มีรายจ่าย')
-            }
-          >
-          {f.proj.length >= 3 && f.monthlyBurn > 0 ? (
-            <div className="mt-4">
-              <div className="flex h-[72px] items-end gap-[3px]">
-                {f.proj.slice(0, 24).map((bal, i) => {
-                  const max = f.proj[0] || 1
-                  const h = Math.max(2, Math.round((bal / max) * 72))
-                  const last = i === f.proj.length - 1
-                  return (
-                    <div
-                      key={i}
-                      title={'M' + i + ': ' + money(Math.max(0, bal), f.cur)}
-                      className={`w-[10px] ${last ? 'bg-amber' : 'bg-paper'}`}
-                      style={{ height: h + 'px', opacity: last ? 1 : Math.max(0.35, 1 - i / 30) }}
-                    />
-                  )
-                })}
-              </div>
-              <div className="mt-1.5 flex justify-between font-mono text-[11px] text-paper">
-                <span>{copy("Now")}</span>
-                <span>{copy("Cash hits zero")}</span>
-              </div>
-            </div>
-          ) : null}
-          {!safe ? (
-            <p className="mt-4 border-l-2 border-amber pl-3 text-[14px] font-semibold text-paper">
-              {t(
-                'Under six months. Collect or cut before the next close.',
-                'ต่ำกว่า 6 เดือน เก็บเงินหรือลดรายจ่ายก่อนรอบปิดถัดไป',
-              )}
-            </p>
-          ) : null}
-          </Figure>
+            segments={[
+              { label: copy("CapEx this month"), value: money(f.monthCapex, f.cur), pct: capexPct, variant: 'ink' },
+              { label: copy("OpEx this month"), value: money(f.recurring + f.monthOpex, f.cur), pct: opexPct, variant: 'amber' },
+              { label: copy("Debt service"), value: money(f.monthlyDebtService, f.cur), pct: debtPct, variant: 'muted' },
+            ]}
+          />
+          <dl className="mt-4 grid gap-x-6 sm:grid-cols-2">
+            <Stat tone="ink" label={copy("Called capital")} value={money(f.founding, f.cur)} />
+            <Stat tone="ink" label={copy("Debt owed")} value={money(f.totalDebt, f.cur)} />
+          </dl>
+        </Figure>
+      </div>
 
-          {/* What the workspace is worth and what it owes. These two facts
-              are the inputs of the runway above, so they stand under it: the
-              column is not left with a hole under a short field, and a fact
-              is never far from the number it explains. */}
-          <div className="mt-4 grid gap-x-6 sm:grid-cols-2">
-            <dl>
-              <Stat label={copy("Called capital")} value={money(f.founding, f.cur)} />
-            </dl>
-            <dl>
-              <Stat label={copy("Debt owed")} value={money(f.totalDebt, f.cur)} />
-            </dl>
-          </div>
-        </div>
-
-        {/* What the burn is made of, and what is coming in. Two compositions,
-            each a bar with the rows that name its pieces. */}
-        <div className="grid gap-6">
-          <div>
-            <h3 className="mb-2 text-[14px] font-semibold text-ink">{copy("Where the burn goes")}</h3>
-            <Meter
-              segments={[
-                { label: copy("CapEx this month"), value: money(f.monthCapex, f.cur), pct: capexPct, variant: 'ink' },
-                { label: copy("OpEx this month"), value: money(f.recurring + f.monthOpex, f.cur), pct: opexPct, variant: 'amber' },
-                { label: copy("Debt service"), value: money(f.monthlyDebtService, f.cur), pct: debtPct, variant: 'muted' },
-              ]}
-            />
-          </div>
-          <div>
-            <h3 className="mb-2 flex items-baseline justify-between gap-3 text-[14px] font-semibold text-ink">
-              {copy("Revenue")}
-              <span className="font-mono text-[11px] font-normal text-ink-2">
-                {store.projects.length + t(' recorded projects', ' โครงการที่บันทึก')}
-              </span>
-            </h3>
-            <Meter
-              segments={[
-                { label: t('Received', 'รับแล้ว'), value: money(f.receivedRevenue, f.cur), pct: rPct, variant: 'ink' },
-                { label: t('Outstanding', 'ลูกหนี้ค้าง'), value: money(f.outstanding, f.cur), pct: oPct, variant: 'amber' },
-                { label: t('Expected pipeline', 'รายได้ที่คาดหวัง'), value: money(f.expectedPipeline, f.cur), pct: pPct, variant: 'muted' },
-              ]}
-            />
-          </div>
-        </div>
+      {/* What is coming in. The other half of the money, on its own ground. */}
+      <div className="mb-6">
+        <h3 className="mb-2 flex items-baseline justify-between gap-3 text-[14px] font-semibold text-ink">
+          {copy("Revenue")}
+          <span className="font-mono text-[11px] font-normal text-ink-2">
+            {store.projects.length + t(' recorded projects', ' โครงการที่บันทึก')}
+          </span>
+        </h3>
+        <Meter
+          segments={[
+            { label: t('Received', 'รับแล้ว'), value: money(f.receivedRevenue, f.cur), pct: rPct, variant: 'ink' },
+            { label: t('Outstanding', 'ลูกหนี้ค้าง'), value: money(f.outstanding, f.cur), pct: oPct, variant: 'amber' },
+            { label: t('Expected pipeline', 'รายได้ที่คาดหวัง'), value: money(f.expectedPipeline, f.cur), pct: pPct, variant: 'muted' },
+          ]}
+        />
       </div>
 
       <div className="mb-6">

@@ -9,10 +9,10 @@ import {
   Btn,
   DataTable,
   Input,
+  Meter,
   Modal,
   SectionHead,
   Select,
-  Stat,
   Station,
   TagChip,
 } from '../../components/ui/Axiom'
@@ -174,39 +174,17 @@ export function ActModule({ store, api }: ActModuleProps) {
             </p>
           </div>
           <div className="min-w-0">
-            {/* The book, split: collected, still owed, and expected. The
-                legend sits in three columns so each number stays beside the
-                word that names it instead of being stranded at the far edge
-                of a wide page. */}
-            <div className="flex w-full overflow-hidden bg-paper/25" style={{ height: 10 }}>
-              {[
-                { key: 'received', pct: bookPct.received, cls: 'bg-paper' },
-                { key: 'outstanding', pct: bookPct.outstanding, cls: 'bg-amber' },
-                { key: 'expected', pct: bookPct.expected, cls: 'bg-ink-2' },
-              ].map((s) => (
-                <div key={s.key} className={s.cls} style={{ width: `${Math.max(0, Math.min(100, s.pct))}%` }} />
-              ))}
-            </div>
-            <dl className="mt-3 grid gap-x-6 sm:grid-cols-2 xl:grid-cols-3">
-              <Stat
-                tone="ink"
-                swatch="paper"
-                label={t('Collected', 'รับแล้ว')}
-                value={money(f.receivedRevenue, f.cur)}
-              />
-              <Stat
-                tone="ink"
-                swatch="amber"
-                label={t('Outstanding', 'ลูกหนี้ค้าง')}
-                value={money(f.outstanding, f.cur)}
-              />
-              <Stat
-                tone="ink"
-                swatch="muted"
-                label={t('Expected', 'คาดหวัง')}
-                value={money(f.expectedPipeline, f.cur)}
-              />
-            </dl>
+            {/* The book, split: collected, still owed, and expected. The bar
+                and the legend that names its pieces are one block, and each
+                number stands beside the word that names it. */}
+            <Meter
+              tone="ink"
+              segments={[
+                { label: t('Collected', 'รับแล้ว'), value: money(f.receivedRevenue, f.cur), pct: bookPct.received, variant: 'ink' },
+                { label: t('Outstanding', 'ลูกหนี้ค้าง'), value: money(f.outstanding, f.cur), pct: bookPct.outstanding, variant: 'amber' },
+                { label: t('Expected', 'คาดหวัง'), value: money(f.expectedPipeline, f.cur), pct: bookPct.expected, variant: 'muted' },
+              ]}
+            />
           </div>
         </div>
       </div>

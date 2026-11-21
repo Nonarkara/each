@@ -51,30 +51,52 @@ interface FigureProps {
       the voice inverts, and the figure is the only thing on the page that
       wins the first look. */
   tone?: 'paper' | 'ink'
+  /** The evidence that stands beside the number — the curve, the split, the
+      composition. The field is as wide as the page, so the evidence fills
+      the ground beside the voice instead of leaving a corner of it empty. */
   children?: ReactNode
+  /** The facts the number is made of. They sit inside the field under a
+      rule, so the number is never asked to explain itself. */
+  footer?: ReactNode
+  /** The one sentence that asks the reader to do something. */
+  alert?: ReactNode
 }
 
 /**
  * The one bold move: a number that answers the question the page exists to
- * answer, with the evidence it stands on directly beneath it.
+ * answer, with the evidence it stands on directly beside it.
  *
  * On the ink field the labels are the palette's own light — there is no
  * lighter grey to mute them with, and a grey on black would be a lie about
  * contrast. Hierarchy comes from size and from the amber, which is the only
  * thing in the system that points.
  */
-export function Figure({ label, value, note, tone = 'paper', children }: FigureProps) {
+export function Figure({ label, value, note, tone = 'paper', children, footer, alert }: FigureProps) {
   const dark = tone === 'ink'
   return (
     <div className={dark ? 'bg-ink p-5 text-paper sm:p-6' : ''}>
-      <p className={`text-[11px] ${dark ? 'text-paper' : 'text-ink-2'}`}>{label}</p>
-      <p className={`mt-1 font-display text-[32px] font-bold leading-none ${dark ? 'text-paper' : 'text-ink'}`}>
-        {value}
-      </p>
-      {note ? (
-        <p className={`mt-2 font-mono text-[14px] ${dark ? 'text-paper' : 'text-ink-2'}`}>{note}</p>
+      <div
+        className={
+          children
+            ? 'grid gap-5 md:grid-cols-[minmax(0,auto)_minmax(0,1fr)] md:items-center md:gap-10'
+            : ''
+        }
+      >
+        <div className="min-w-0">
+          <p className={`text-[11px] ${dark ? 'text-paper' : 'text-ink-2'}`}>{label}</p>
+          <p className={`mt-1 font-display text-[32px] font-bold leading-none ${dark ? 'text-paper' : 'text-ink'}`}>
+            {value}
+          </p>
+          {note ? (
+            <p className={`mt-2 font-mono text-[14px] ${dark ? 'text-paper' : 'text-ink-2'}`}>{note}</p>
+          ) : null}
+          {alert ? <div className="mt-4">{alert}</div> : null}
+        </div>
+        {children ? <div className="min-w-0">{children}</div> : null}
+      </div>
+      {footer ? (
+        <div className={`mt-4 border-t pt-3 ${dark ? 'border-paper/20' : 'border-hairline'}`}>{footer}</div>
       ) : null}
-      {children}
     </div>
   )
 }
@@ -132,29 +154,68 @@ interface MeterProps {
   /** The share of the bar each segment wears, when it differs from the
       segment's own share of the whole (revenue is a share of the funnel). */
   pctOf?: (segment: MeterSegment) => number
+  /** The ground the composition stands on. On the deep shade the palette
+      inverts: the bar's empty track is the shade's own light at a fifth, and
+      the legend wears the shade's light rather than a grey that would lie
+      about contrast. */
+  tone?: 'paper' | 'ink'
 }
 
 /**
- * A composition, read as one thing: the bar, and the rows that name its
+ * A composition, read as one thing: the bar, and the legend that names its
  * pieces. The bar and its legend are one block, never a bar above and a list
  * below with a gap between them.
+ *
+ * The legend is a GRID of pairs — the colour, the word, the number, together.
+ * A number flung to the far edge of a wide page cannot be matched to its own
+ * colour, and a legend row whose numbers live somewhere else is a table
+ * pretending to be a picture. And it is a grid, not a row that wraps: the
+ * number of columns follows the WIDTH OF THE BLOCK, so the legend is never
+ * left with one pair alone on its last line.
  */
-export function Meter({ segments, pctOf }: MeterProps) {
+export function Meter({ segments, pctOf, tone = 'paper' }: MeterProps) {
   const total = segments.reduce((n, s) => n + Math.max(0, s.pct), 0) || 1
+  const dark = tone === 'ink'
+  const swatchOf = (variant: MeterSegment['variant']) => {
+    if (variant === 'amber') return 'bg-amber'
+    if (variant === 'muted') return 'bg-ink-2'
+    // On the deep shade the deep shade's own voice would vanish into it.
+    return dark ? 'bg-paper' : 'bg-ink'
+  }
+  // One column is never wrong. A second column needs a block wide enough to
+  // hold two pairs side by side, and a third needs three — and wide enough
+  // for the LONGEST pair, because a legend where one pair wraps and the
+  // others do not is a legend with a hole in its middle. 570px is what three
+  // full pairs of this system's values need.
+  const columns =
+    segments.length >= 3
+      ? 'grid-cols-1 @[570px]:grid-cols-3'
+      : segments.length === 2
+        ? 'grid-cols-1 @[340px]:grid-cols-2'
+        : 'grid-cols-1'
   return (
-    <div>
-      <div className="flex w-full overflow-hidden bg-hairline" style={{ height: 10 }}>
+    <div className="@container">
+      <div className={`flex w-full overflow-hidden ${dark ? 'bg-paper/25' : 'bg-hairline'}`} style={{ height: 10 }}>
         {segments.map((s) => (
           <div
             key={s.label}
-            className={s.variant === 'ink' ? 'bg-ink' : s.variant === 'muted' ? 'bg-ink-2' : 'bg-amber'}
+            className={swatchOf(s.variant)}
             style={{ width: `${Math.max(0, Math.min(100, pctOf ? pctOf(s) : (s.pct / total) * 100))}%` }}
           />
         ))}
       </div>
-      <dl className="mt-2">
+      <dl className={`mt-2 grid gap-x-6 gap-y-1 ${columns}`}>
         {segments.map((s) => (
-          <Stat key={s.label} label={s.label} value={s.value} swatch={s.variant} />
+          /* The pair is the colour, the word and the number. The colour and
+             the word travel together, so the pair can never break in a way
+             that strands the number on a line of its own. */
+          <div key={s.label} className="flex flex-wrap items-baseline gap-x-2">
+            <dt className="flex items-center gap-2">
+              <span className={`inline-block h-2 w-2 shrink-0 ${swatchOf(s.variant)}`} aria-hidden />
+              <span className={`text-[11px] ${dark ? 'text-paper' : 'text-ink-2'}`}>{s.label}</span>
+            </dt>
+            <dd className={`font-mono text-[14px] ${dark ? 'text-paper' : 'text-ink'}`}>{s.value}</dd>
+          </div>
         ))}
       </dl>
     </div>

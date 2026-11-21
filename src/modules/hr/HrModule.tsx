@@ -93,9 +93,10 @@ export function HrModule({ store, api }: HrModuleProps) {
     <div>
       <Station disc="H" title={copy("People")} />
 
-      {/* The one number people cost, and the split of it. The roster counts live
-          with their own sections, so nothing is stated twice. */}
-      <div className="mb-6 grid items-start gap-x-8 gap-y-6 lg:grid-cols-[1.618fr_1fr]">
+      {/* The one number people cost, and the split of it. The field is as wide
+          as the page: the roster counts live with their own sections, so
+          nothing is stated twice, and no column is left with a hole under it. */}
+      <div className="mb-6">
         <Figure
           tone="ink"
           label={copy("Monthly people cost")}
@@ -104,7 +105,7 @@ export function HrModule({ store, api }: HrModuleProps) {
         >
           {/* The split, read on the deep shade: amber for the operators, the
               ground's own light for the people. */}
-          <div className="mt-4">
+          <div>
             <StackBar
               tall
               segments={[
@@ -116,15 +117,12 @@ export function HrModule({ store, api }: HrModuleProps) {
               <span>{t('AI', 'AI')} {Math.round(aiShare * 100)}%</span>
               <span>{t('Human', 'คน')} {Math.round((1 - aiShare) * 100)}%</span>
             </div>
+            <dl className="mt-3 grid gap-x-6 sm:grid-cols-2">
+              <Stat tone="ink" label={t('AI operators', 'AI')} value={money(aiCost, store.currency)} swatch="amber" />
+              <Stat tone="ink" label={t('Human staff', 'คน')} value={money(humCost, store.currency)} swatch="paper" />
+            </dl>
           </div>
         </Figure>
-        <div>
-          <SectionHead label={copy("What it pays for")} />
-          <dl>
-            <Stat label={t('AI operators', 'AI') } value={money(aiCost, store.currency)} swatch="amber" />
-            <Stat label={t('Human staff', 'คน')} value={money(humCost, store.currency)} swatch="muted" />
-          </dl>
-        </div>
       </div>
 
       {ai.length ? (

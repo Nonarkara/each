@@ -14,6 +14,26 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <!--
+      THE SCRIPT IS IN THE BODY, AND IT IS ASYNCHRONOUS.
+
+      A module script in <head> is DEFERRED: the browser parses the document,
+      announces "interactive", and only then runs the script. Everything the
+      script paints lands AFTER the document said it was ready — so a reader
+      on a slow connection stares at an empty page, and anything that reads
+      the page the moment it says it is ready reads a page with nothing on
+      it. That is not a theory here: the spatial gate came back with routes
+      measured at ZERO chrome, because the app had not rendered when it
+      looked.
+
+      An async module script runs the moment its bytes arrive, and it waits
+      for the stylesheet above it (a script is blocked by the style sheets
+      that precede it), so the first frame is painted WITH its styles. Placed
+      after #root, it can mount as soon as the DOM node it needs exists.
+
+      The document is therefore never "ready" and empty: by the time it says
+      interactive, the app is on it.
+    -->
+    <script type="module" async src="/src/main.tsx"></script>
   </body>
 </html>

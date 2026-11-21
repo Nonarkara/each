@@ -799,10 +799,10 @@ tables.
 
 | | |
 |---|---|
-| Commit | `1dc226a` — *fix: every table in the product was cut in half on a phone* |
-| Live | https://each.nonarkara.org — serving `assets/index-B11BqJhL.js` (read three times, the same each time) |
-| Deployment | https://3acde72d.each-c3p.pages.dev (Cloudflare Pages, project `each`, branch `main`) |
-| Built from | an isolated worktree at `1dc226a` — the bytes published are the bytes measured |
+| Commit | `bb9f01f` — *fix: the facts under a composition flung their numbers to the far edge* |
+| Live | https://each.nonarkara.org — serving `assets/index-C5fZ221x.js` (read three times, the same each time) |
+| Deployment | https://dfbb41d9.each-c3p.pages.dev (Cloudflare Pages, project `each`, branch `main`) |
+| Built from | an isolated worktree at `bb9f01f` — the bytes published are the bytes measured |
 
 **Measured on the deployed bytes, not on a local build that resembles them:**
 

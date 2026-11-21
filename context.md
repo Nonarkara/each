@@ -548,3 +548,186 @@ are specimens, so its first "action" is not an action a reader has to reach.
 - The ERP page's first *control* is a key-result checkbox at 1132px on a
   phone: the money room is read before it is acted on, and no action was
   invented to move that number.
+
+## The columns that had holes (2026-11-05, "Continue. Audit and deploy, go live when safe.")
+
+The directive was to audit and deploy. The audit found a class of hole the
+law's own instrument cannot see, and a palette screen that stated numbers it
+had never measured.
+
+### Found
+
+1. **Three pages had a column that stopped short of the row it stood in.**
+   ERP 99px, HR 77px, the dossier 83px — measured at 1440 and at 1024.
+   Nothing overflowed, nothing clipped, no element was an orphan: the pages
+   were legal and still looked like accidents, because a column of content
+   with a hole under it is not a layout.
+2. **The instrument cannot see that class.** It measures holes between stacked
+   siblings, orphans, scattered actions, accidental wraps, clipped rows and
+   chrome. A grid whose columns are of unequal height is none of those, so
+   the gate passed a page that had a hole in it. A hole the gate cannot see
+   is a hole the gate cannot protect.
+3. **A legend of a composition stranded its own numbers.** The meter legend
+   was a row that wrapped; where it broke, one pair was left alone on the
+   last line, and the number in a pair sat at the far edge of its column
+   instead of beside the word that names it.
+4. **The palette screen asserted contrast it had not measured** — 15.4:1
+   where the arithmetic gives 16.4:1, and 8.6:1 where it gives 8.3:1 — and
+   stated the rule of the system in words it never checked.
+5. **The target was half met.** The screen showed the neutrals and the
+   allowed pairs, but the system had no stated way for a **shade** or a
+   **light** to enter it. "All those things are part of it" was not yet true.
+
+### Changed
+
+- `src/lib/color.ts` — **new**: the arithmetic. A shade is a mix toward ink,
+  a light is a mix toward paper; luminance, contrast ratio, and what a
+  measured ratio earns a tone the right to do (body / number or rule / fill /
+  nothing). It computes; it decides nothing.
+- `src/modules/design/DesignModule.tsx` — **the shades and lights section**:
+  the rule by which the palette grows (value moves, hue does not; a new hue
+  needs the accent slot, and there is one), and six tones that rule admits —
+  each drawn in itself, with its recipe, its hex, its measured contrast on
+  paper and on the deep shade, and what that measurement earns it. The
+  allowed pairs now carry the ratios the arithmetic actually gives.
+- `src/components/ui/Axiom.tsx` — `Figure` gained the three slots a hero
+  needs (the evidence beside the voice, the facts under a rule, the one
+  sentence that asks the reader to act) and centres its two columns against
+  each other, so neither is a hole beside the other. `Meter`'s legend is now
+  a **grid of pairs** whose column count follows the width of the block
+  (container queries), not the width of the screen: the colour, the word and
+  the number travel together, and the legend can never leave one pair alone.
+- `src/modules/erp/ErpModule.tsx` — the runway is a full-width field: the
+  voice at the left, the burn composition and the two facts it is made of
+  beside it, and the curve under a rule when there is a run to draw. The
+  revenue composition is its own block beneath.
+- `src/modules/hr/HrModule.tsx` — the people cost is a full-width field too:
+  the split bar, the share at each end, and the two facts that name the
+  split, all inside it.
+- `src/modules/dossier/DossierView.tsx` — a document: the verdict on the
+  measure (amber edge), four facts, the reading matter at its measure beside
+  the two compositions and the people counts, and the print action on the
+  letterhead — because a reader on a phone was 1365px from the only thing
+  they could do.
+- `src/modules/act/ActModule.tsx` — the hero's legend is a `Meter` now, so
+  the deep shade inverts in one place instead of three.
+- `scripts/spatial/balance.mjs` — **new, the balance gate**. For every
+  multi-column grid on every route at four widths: how much of the row a
+  column leaves empty. A column of boxes is not a hole (a box that ends is a
+  box); a column of bare content that stops short of its row IS a hole, and
+  a void split above and below (a centred column) is balance, not a hole.
+  A dead column may be kept only with a written reason.
+- `scripts/spatial/breakpoints.mjs` — **new**: the cliff derivation, shared
+  by the built mirror and the deployed one. It states **viewport** cliffs
+  only: a container query is the width of a block, not of the screen, and a
+  sheet that claims the screen changes at 570px because a legend changes its
+  columns there is lying to the instrument.
+- `scripts/spatial/evidence.mjs` — **new**: the evidence capture, from the
+  deployed bytes by default, at 390, 1024 and 1440.
+- `design/balance-exemptions.json` — the exemption ledger. **Empty**: every
+  dead column was fixed rather than explained away.
+
+### Verified
+
+- `npm run check:balance` — **40 page loads (10 routes × 4 widths), 0 dead
+  columns.** The gate was proven to bite first: a 160px spacer planted in
+  the People hero was caught as a 78px hole in three widths, and the ERP's
+  own 60px imbalance at 768 was found by the gate, not by eye.
+- `npm run check:spatial` — **210 measurements (10 routes × 21 widths), 0
+  findings.** The receipt was re-issued (`--update`) because the pages moved,
+  and the re-issue reported every decision with a reason.
+- `npm run check:design` — pass. `npm run check:instrument` — the four
+  instrument files are byte-identical. `npm test` — 27 pass (5 of them new:
+  the colour arithmetic is measured, not asserted). `npm run test:server` —
+  23 pass. `npx tsc -b` — clean.
+- The design screen's numbers are now the arithmetic's: the reading pair is
+  16.4:1, the point on the deep shade is 8.3:1, and a tone's admission is
+  read off its measured ratio.
+
+### Remaining
+
+- The instrument's chrome reading is occasionally zero on a page that has
+  chrome: four of 210 measurements disagreed between the run that wrote the
+  receipt and the run that checked it. The instrument is byte-identical and
+  cannot be edited, so the defence is the receipt itself — the baseline is
+  written and then checked, and a disagreement fails the build.
+- Frappe is still unrun locally (Docker down, Python 3.9); the Node account
+  service remains the verified tier.
+- The ERP page's first *control* is a key-result checkbox: the money room is
+  read before it is acted on, and no action was invented to move that number.
+
+## The receipt that measured nothing (2026-11-05, the gate that flaked)
+
+The receipt was re-issued twice and the check disagreed with it on six of two
+hundred and ten measurements — half of them reading **111px of chrome in one
+run and 0px in the next**, on pages that carry a header every time. The
+baseline's own history said it: `hr@1537` was recorded at 0px while
+`act@641` was recorded at 111px, and neither page is 0px wide.
+
+### Found
+
+1. **The instrument could measure a page before the app painted.** The
+   document reaches "interactive" when it has parsed; a single-page app
+   paints after its JavaScript arrives. The instrument reads the page once
+   the DOM has been still for a beat, and a page that has not painted yet is
+   still, quiet, and empty — indistinguishable from a finished page. It
+   recorded 0px of chrome, no text, and no heading for a page that has all
+   three.
+2. **The receipt could agree with itself and still be a lie.** A void
+   measurement written into the baseline is compared against the next run's
+   void measurement, and 0px == 0px passes. The gate could have certified an
+   empty site.
+3. **The product was late to paint, and the machine was crowded.** Measured
+   with an instrumented copy of the build: the app's DOM arrived **40–164ms
+   after** the document said "interactive", while the instrument's read
+   window closed about 140ms after it. The margin was a coin toss. The
+   machine's load average was **251** at the worst moment — other agents'
+   browsers — and every measurement on this page is a wall-clock one.
+
+### Changed
+
+- **`index.html` + `vite.config.ts`** — the document order is now part of the
+  product: the **stylesheet first** (a script is blocked by the style sheets
+  that precede it, so the app cannot paint before its styles arrive), and the
+  **entry script after `#root`, and asynchronous** (an async module runs the
+  moment its bytes arrive, and can mount while the parser is still working).
+  A small Vite plugin pins that order, because the build hoists module
+  scripts into `<head>` on its own and would have undone both.
+- **`src/main.tsx`** — the mount waits for `#root` if the script beat the
+  parser, and the first frame is still flushed synchronously.
+- **`scripts/spatial/void.mjs`** — **new**: what makes a measurement void.
+  A page measured with no text at all was not there yet.
+- **`scripts/spatial/check-spatial.mjs`** — **new**: the gate, run so that it
+  measures pages. Every sweep is checked for void measurements, and a sweep
+  that contains one is **not a verdict**: it is run again. The instrument is
+  byte-identical and its own verdict stands on the sweep that measured every
+  page as a page.
+- **`scripts/spatial/void-falsify.mjs`** — **new**: the proof that the proof
+  bites. A build with the painting script removed must be refused, and a
+  real page must still be certified.
+- **`tests/spatial-void.test.ts`** — **new**: seven tests, so the detector's
+  two promises (a rendered page is never void, an unrendered page always is)
+  are pinned rather than asserted.
+
+### Verified
+
+- **The product fix, measured**: the app's DOM now arrives **2–27ms after**
+  "interactive" (it was 40–164ms), over 14 consecutive loads.
+- **`npm run check:spatial:receipt`** — the receipt was issued through the
+  wrapper: sweep 1 measured 3 pages before they rendered and was refused,
+  sweep 2 measured 1 and was refused, sweep 3 measured every page as a page
+  and the instrument's verdict stood. **210 measurements, 0 findings.**
+- **`npm run check:spatial`** — the check against that receipt: **210
+  measurements, 0 findings, 0 disagreements.** The receipt and its check
+  agree, which is the property the flake had broken.
+
+### Remaining
+
+- The gate can still be *slow* to certify: a sweep that catches an
+  unrendered page is run again (up to three times). On a loaded machine that
+  is minutes, not seconds.
+- The void detector keys on the page's own content. A page that renders
+  **nothing** would be judged void, and this product has no such page — but
+  a future one that is meant to be empty would need an exemption.
+- Frappe is still unrun locally (Docker down, Python 3.9); the Node account
+  service remains the verified tier.

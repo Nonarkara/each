@@ -794,3 +794,35 @@ tables.
   it is written down, not hidden.
 - A record on a phone is five lines where a row was one. That is the trade:
   nothing is cut, and the page is longer.
+
+## Deployment receipt (2026-11-21, the tables and the first frame)
+
+| | |
+|---|---|
+| Commit | `1dc226a` — *fix: every table in the product was cut in half on a phone* |
+| Live | https://each.nonarkara.org — serving `assets/index-B11BqJhL.js` (read three times, the same each time) |
+| Deployment | https://3acde72d.each-c3p.pages.dev (Cloudflare Pages, project `each`, branch `main`) |
+| Built from | an isolated worktree at `1dc226a` — the bytes published are the bytes measured |
+
+**Measured on the deployed bytes, not on a local build that resembles them:**
+
+- `npm run check:spatial:live` — 210 measurements (10 routes × 21 widths), 0
+  findings; the receipt and the live site agree.
+- `npm run check:balance:live` — 40 page loads, 0 dead columns.
+- `npm run check:clip:live` — 40 page loads, every control's label fits its
+  own box, one exemption (the CRM board, with its reason).
+- `node scripts/spatial/evidence.mjs` — **30 frames** of the live site at
+  390, 1024 and 1440, in `docs/images/msh-2026-11-21-live/`.
+
+**Locally, on the same commit:** `check:design` pass · `check:instrument`
+(4 files byte-identical) · `npm test` 34 pass · `npm run test:server` 23
+pass · `npx tsc -b` clean · `check:spatial` 210 measurements, 0 findings ·
+`check:balance` 40 loads, 0 dead columns · `check:clip` 40 loads ·
+`check:void` pass · `check:clip:false` pass · `check:spatial:false` —
+10 injected defects, 12 broken-baseline cases and 1 instrument case, all
+caught, 8 of 8 modes.
+
+**Still open:** Frappe is unrun locally (Docker down, Python 3.9) — the Node
+account service is the verified tier. The ERP page's first *control* is a
+key-result checkbox: the money room is read before it is acted on, and no
+action was invented to move that number.
